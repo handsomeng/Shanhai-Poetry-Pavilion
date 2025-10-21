@@ -150,7 +150,7 @@ private struct PoemCardView: View {
                                 .font(Fonts.footnote())
                                 .foregroundColor(Colors.accentTeal)
                                 .padding(.horizontal, Spacing.sm)
-                                .padding(.vertical: 4)
+                                .padding(.vertical, 4)
                                 .background(Colors.accentTeal.opacity(0.1))
                                 .cornerRadius(8)
                         }

@@ -8,7 +8,6 @@
 import Foundation
 
 /// 诗歌管理器（单例模式）
-@MainActor
 class PoemManager: ObservableObject {
     
     static let shared = PoemManager()
