@@ -24,59 +24,69 @@ enum AppConstants {
     static let openAIBaseURL = "https://api.openai.com/v1/chat/completions"
 }
 
-// MARK: - 设计系统：颜色（极简白色调）
+// MARK: - 设计系统：颜色（Dribbble 高级极简风格）
 
 enum Colors {
     // 主背景：纯白
     static let backgroundCream = Color.white
     
-    // 文字：极简黑白灰
-    static let textInk = Color(hex: "1A1A1A")           // 主文字：几乎纯黑
-    static let textSecondary = Color(hex: "8E8E8E")     // 次要文字：优雅灰
-    static let textTertiary = Color(hex: "C7C7C7")      // 三级文字：浅灰
+    // 文字：精致黑白灰系统
+    static let textInk = Color(hex: "0A0A0A")           // 主文字：深邃黑
+    static let textSecondary = Color(hex: "6B6B6B")     // 次要文字：中性灰
+    static let textTertiary = Color(hex: "ABABAB")      // 三级文字：浅灰
+    static let textQuaternary = Color(hex: "D4D4D4")    // 四级文字：极浅灰
     
-    // 强调色：克制的深灰蓝
-    static let accentTeal = Color(hex: "2C3E50")        // 深灰蓝，优雅内敛
+    // 强调色：优雅的深色系统
+    static let accentTeal = Color(hex: "1A1A1A")        // 纯黑强调，极简
+    static let accentSecondary = Color(hex: "4A4A4A")   // 灰色强调
     
-    // 辅助色
+    // 边框和分割
     static let white = Color.white
-    static let divider = Color(hex: "F0F0F0")           // 极浅分割线
-    static let cardBackground = Color(hex: "FAFAFA")    // 卡片背景：极浅灰
+    static let divider = Color(hex: "EFEFEF")           // 几乎不可见的分割线
+    static let border = Color(hex: "E8E8E8")            // 精致边框
+    static let cardBackground = Color(hex: "FBFBFB")    // 卡片背景：几乎白色
+    
+    // 状态色
     static let error = Color(hex: "D32F2F")
     static let success = Color(hex: "388E3C")
 }
 
-// MARK: - 设计系统：字体（优雅宋体+增大字号）
+// MARK: - 设计系统：字体（Dribbble 极简风格）
 
 enum Fonts {
-    // 标题：宋体，细腻优雅
-    static func titleLarge() -> Font { .system(size: 32, weight: .light, design: .serif) }
-    static func titleMedium() -> Font { .system(size: 24, weight: .light, design: .serif) }
-    static func titleSmall() -> Font { .system(size: 20, weight: .light, design: .serif) }
+    // 超大标题：震撼视觉
+    static func displayLarge() -> Font { .system(size: 48, weight: .thin, design: .serif) }
+    static func displayMedium() -> Font { .system(size: 36, weight: .ultraLight, design: .serif) }
     
-    // 诗歌内容：宋体，大字号，增加行距
-    static func bodyPoem() -> Font { .system(size: 20, weight: .light, design: .serif) }
+    // 标题：极细优雅
+    static func titleLarge() -> Font { .system(size: 28, weight: .ultraLight, design: .serif) }
+    static func titleMedium() -> Font { .system(size: 22, weight: .thin, design: .serif) }
+    static func titleSmall() -> Font { .system(size: 18, weight: .light, design: .serif) }
     
-    // 正文：简洁无衬线
-    static func bodyRegular() -> Font { .system(size: 16, weight: .regular, design: .default) }
-    static func bodyLight() -> Font { .system(size: 16, weight: .light, design: .default) }
+    // 诗歌内容：宋体，超大字号
+    static func bodyPoem() -> Font { .system(size: 24, weight: .ultraLight, design: .serif) }
     
-    // 辅助文字：更小更轻
-    static func caption() -> Font { .system(size: 13, weight: .light) }
-    static func footnote() -> Font { .system(size: 11, weight: .light) }
-    static func monospace() -> Font { .system(size: 14, weight: .light, design: .monospaced) }
+    // 正文：极细无衬线
+    static func bodyRegular() -> Font { .system(size: 15, weight: .light, design: .default) }
+    static func bodyLight() -> Font { .system(size: 15, weight: .ultraLight, design: .default) }
+    
+    // 辅助文字：几乎透明的轻盈
+    static func caption() -> Font { .system(size: 12, weight: .ultraLight) }
+    static func footnote() -> Font { .system(size: 10, weight: .ultraLight) }
+    static func monospace() -> Font { .system(size: 13, weight: .ultraLight, design: .monospaced) }
 }
 
-// MARK: - 设计系统：间距（大幅增加留白）
+// MARK: - 设计系统：间距（Dribbble 级别留白）
 
 enum Spacing {
-    static let xs: CGFloat = 6
-    static let sm: CGFloat = 12
-    static let md: CGFloat = 20
-    static let lg: CGFloat = 32
-    static let xl: CGFloat = 48
-    static let xxl: CGFloat = 64
-    static let xxxl: CGFloat = 96     // 超大留白
+    static let xs: CGFloat = 8
+    static let sm: CGFloat = 16
+    static let md: CGFloat = 24
+    static let lg: CGFloat = 40        // 加大
+    static let xl: CGFloat = 64        // 加大
+    static let xxl: CGFloat = 96       // 加大
+    static let xxxl: CGFloat = 128     // 超大留白
+    static let huge: CGFloat = 160     // 巨大留白
 }
 
 // MARK: - 设计系统：圆角（极简化，减小圆角）

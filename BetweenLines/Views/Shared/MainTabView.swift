@@ -14,10 +14,10 @@ struct MainTabView: View {
         case learning = "学诗", writing = "写诗", explore = "赏诗", library = "我的"
         var iconName: String {
             switch self {
-            case .learning: return "book.fill"
-            case .writing: return "pencil.and.outline"
-            case .explore: return "compass.fill"
-            case .library: return "folder.fill"
+            case .learning: return "book.closed"               // 学诗：闭合的书，更简洁
+            case .writing: return "square.and.pencil"          // 写诗：方块和笔，写作感
+            case .explore: return "eye"                        // 赏诗：眼睛，欣赏的意思
+            case .library: return "person.circle"              // 我的：人物圈，个人中心
             }
         }
     }

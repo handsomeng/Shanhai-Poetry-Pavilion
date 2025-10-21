@@ -17,35 +17,42 @@ struct LandingView: View {
         ZStack {
             Colors.backgroundCream.ignoresSafeArea()
             
-            VStack(spacing: Spacing.xxl) {
+            VStack(spacing: Spacing.huge) {
                 Spacer()
                 
+                // 主标题 - Dribbble 风格：超大、超细
                 Text("山海诗馆")
-                    .font(Fonts.titleLarge())
+                    .font(Fonts.displayLarge())
                     .foregroundColor(Colors.textInk)
-                    .tracking(4)                   // 字间距
+                    .tracking(8)                   // 增大字间距
+                    .padding(.bottom, Spacing.xs)
                 
+                // 副标题 - 极致轻盈
                 Text("在这里开始你的诗歌之旅")
                     .font(Fonts.caption())
-                    .foregroundColor(Colors.textSecondary)
+                    .foregroundColor(Colors.textTertiary)
+                    .tracking(2)
                 
-                VStack(alignment: .leading, spacing: Spacing.md) {
+                // 输入框 - 极简无边框设计
+                VStack(alignment: .leading, spacing: Spacing.lg) {
                     Text("笔名")
                         .font(Fonts.footnote())
-                        .foregroundColor(Colors.textTertiary)
-                        .tracking(1)
+                        .foregroundColor(Colors.textQuaternary)
+                        .tracking(3)
+                        .textCase(.uppercase)     // 小写变大写，更高级
                     
-                    TextField("", text: $penName, prompt: Text("给自己起个富有诗意的名字").foregroundColor(Colors.textTertiary))
-                        .font(Fonts.bodyRegular())
-                        .padding(.vertical, Spacing.md)
+                    TextField("", text: $penName, prompt: Text("给自己起个富有诗意的名字").foregroundColor(Colors.textQuaternary))
+                        .font(Fonts.titleSmall())
+                        .foregroundColor(Colors.textInk)
+                        .padding(.vertical, Spacing.lg)
                         .overlay(
                             Rectangle()
-                                .frame(height: 0.5)
-                                .foregroundColor(Colors.divider)
+                                .frame(height: 0.3)      // 更细的线
+                                .foregroundColor(Colors.border)
                             , alignment: .bottom
                         )
                 }
-                .padding(.horizontal, Spacing.xl)
+                .padding(.horizontal, Spacing.xxl)   // 更大的边距
                 
                 if showError {
                     Text(errorMessage)
@@ -53,6 +60,7 @@ struct LandingView: View {
                         .foregroundColor(Colors.error)
                 }
                 
+                // 按钮 - 极简边框风格
                 Button(action: {
                     let trimmed = penName.trimmingCharacters(in: .whitespacesAndNewlines)
                     if trimmed.count < ContentLimits.penNameMin {
@@ -65,14 +73,19 @@ struct LandingView: View {
                     onComplete()
                 }) {
                     Text("开始创作")
-                        .font(Fonts.bodyLight())
-                        .tracking(2)
+                        .font(Fonts.bodyRegular())
+                        .tracking(4)
+                        .textCase(.uppercase)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.lg)
-                        .background(Colors.accentTeal)
+                        .padding(.vertical, Spacing.xl)
                         .foregroundColor(.white)
+                        .background(Colors.accentTeal)
+                        .overlay(
+                            Rectangle()
+                                .stroke(Colors.accentTeal, lineWidth: 0.5)
+                        )
                 }
-                .padding(.horizontal, Spacing.xl)
+                .padding(.horizontal, Spacing.xxl)
                 
                 Spacer()
             }
