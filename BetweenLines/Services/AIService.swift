@@ -14,8 +14,22 @@ class AIService {
     
     private init() {}
     
+    /// 获取当前 API Key（优先从设置读取，否则使用默认值）
+    private var apiKey: String {
+        let savedKey = UserDefaults.standard.string(forKey: UserDefaultsKeys.openAIAPIKey)
+        return savedKey?.isEmpty == false ? savedKey! : AppConstants.openAIAPIKey
+    }
+    
+    /// 验证 API Key
+    private func validateAPIKey() throws {
+        guard !apiKey.isEmpty, apiKey.hasPrefix("sk-") else {
+            throw AppError.aiAPIKeyMissing
+        }
+    }
+    
     /// 获取诗歌点评
     func getPoemComment(content: String) async throws -> String {
+        try validateAPIKey()
         let prompt = """
         请你作为一位专业的现代诗评论家，对以下诗歌进行点评。请从以下几个方面进行分析：
         
@@ -47,7 +61,7 @@ class AIService {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(AppConstants.openAIAPIKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = AppConstants.openAITimeout
         
@@ -77,6 +91,7 @@ class AIService {
     
     /// 获取创作建议
     func getWritingSuggestion(theme: String) async throws -> String {
+        try validateAPIKey()
         let prompt = """
         用户想要围绕「\(theme)」这个主题创作一首现代诗。
         请提供3-5个具体的创作建议，包括：
@@ -103,7 +118,7 @@ class AIService {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(AppConstants.openAIAPIKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = AppConstants.openAITimeout
         
@@ -111,9 +126,12 @@ class AIService {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw AIError.invalidResponse
+        }
+        
+        guard httpResponse.statusCode == 200 else {
+            throw AIError.httpError(statusCode: httpResponse.statusCode)
         }
         
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
