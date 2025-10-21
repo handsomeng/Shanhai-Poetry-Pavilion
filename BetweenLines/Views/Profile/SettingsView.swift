@@ -10,7 +10,6 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("penName") private var penName: String = ""
-    @AppStorage(UserDefaultsKeys.openAIAPIKey) private var apiKey: String = AppConstants.openAIAPIKey
     @State private var showResetAlert = false
     @State private var showSuccessToast = false
     
@@ -34,27 +33,11 @@ struct SettingsView: View {
                             )
                         }
                         
-                        // AI 设置区域
-                        settingsSection(title: "AI 功能") {
-                            settingRow(
-                                label: "OpenAI API Key",
-                                value: $apiKey,
-                                placeholder: "sk-xxxxxxxxxxxxxxxxxxxxxxxx",
-                                isSecure: true
-                            )
-                            
-                            Text("获取 API Key：访问 platform.openai.com")
-                                .font(Fonts.footnote())
-                                .foregroundColor(Colors.textTertiary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, Spacing.md)
-                        }
-                        
                         // 关于区域
-                        settingsSection(title: "关于") {
+                        settingsSection(title: "关于应用") {
                             infoRow(label: "应用名称", value: AppConstants.appName)
-                            infoRow(label: "版本", value: AppConstants.version)
-                            infoRow(label: "作者", value: "HandsoMeng")
+                            infoRow(label: "版本号", value: "v\(AppConstants.version)")
+                            infoRow(label: "开发者", value: "HandsoMeng")
                         }
                         
                         // 危险操作区域
@@ -99,15 +82,15 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("设置")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)  // 改为 inline，更简洁
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("完成") {
                         saveSettings()
                         dismiss()
                     }
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.accentTeal)
+                    .font(Fonts.bodyLight())
+                    .foregroundColor(Colors.textInk)
                 }
             }
             .alert("重置所有数据", isPresented: $showResetAlert) {
@@ -131,7 +114,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
             Text(title.uppercased())
                 .font(Fonts.footnote())
-                .foregroundColor(Colors.textQuaternary)
+                .foregroundColor(Colors.textTertiary)  // 改为更清晰的颜色
                 .tracking(3)
                 .padding(.horizontal, Spacing.md)
             
@@ -158,7 +141,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(label)
                 .font(Fonts.caption())
-                .foregroundColor(Colors.textTertiary)
+                .foregroundColor(Colors.textSecondary)  // 改为更清晰的颜色
             
             if isSecure {
                 SecureField(placeholder, text: value)
