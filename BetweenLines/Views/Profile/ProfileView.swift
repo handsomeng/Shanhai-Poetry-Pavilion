@@ -13,6 +13,7 @@ struct ProfileView: View {
     @State private var selectedTab: ProfileTab = .published
     @State private var poemToDelete: Poem?
     @State private var showingDeleteAlert = false
+    @State private var showingSettings = false
     
     enum ProfileTab: String, CaseIterable {
         case published = "已发布"
@@ -41,6 +42,20 @@ struct ProfileView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingSettings = true
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 18, weight: .ultraLight))
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
             Button("取消", role: .cancel) {}

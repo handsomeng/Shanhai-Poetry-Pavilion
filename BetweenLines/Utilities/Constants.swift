@@ -130,6 +130,8 @@ enum ContentLimits {
 enum UserDefaultsKeys {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let penName = "penName"
+    static let poemsStorageKey = "saved_poems"
+    static let openAIAPIKey = "openAI_API_Key"
 }
 
 extension Color {

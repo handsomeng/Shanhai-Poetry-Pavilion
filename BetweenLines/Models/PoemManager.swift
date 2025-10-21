@@ -223,5 +223,14 @@ class PoemManager: ObservableObject {
         let likes = myPublishedPoems.reduce(0) { $0 + $1.likeCount }
         return (published, drafts, likes)
     }
+    
+    // MARK: - 数据管理
+    
+    /// 删除所有诗歌（用于重置数据）
+    func deleteAll() {
+        allPoems.removeAll()
+        savePoems()
+        UserDefaults.standard.set(false, forKey: "has_loaded_public_poems")
+    }
 }
 
