@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// 诗歌管理器（单例模式）
 class PoemManager: ObservableObject {

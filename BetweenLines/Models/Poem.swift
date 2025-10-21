@@ -8,7 +8,7 @@
 import Foundation
 
 /// 诗歌模型
-struct Poem: Identifiable, Codable, Equatable {
+struct Poem: Identifiable, Equatable {
     let id: String
     var title: String                  // 诗歌标题
     var content: String                // 诗歌内容
@@ -84,6 +84,16 @@ struct Poem: Identifiable, Codable, Equatable {
         formatter.locale = Locale(identifier: "zh_CN")
         formatter.unitsStyle = .short
         return formatter.localizedString(for: createdAt, relativeTo: Date())
+    }
+}
+
+// MARK: - Codable
+
+extension Poem: Codable {
+    enum CodingKeys: String, CodingKey {
+        case id, title, content, authorName, createdAt, updatedAt
+        case tags, writingMode, referencePoem, aiComment
+        case likeCount, isLiked, isFavorited, isPublished
     }
 }
 
