@@ -90,7 +90,7 @@ enum CornerRadius {
 
 // MARK: - 业务常量
 
-enum WritingMode: String, CaseIterable, Identifiable {
+enum WritingMode: String, CaseIterable, Identifiable, Codable {
     case direct = "direct", mimic = "mimic", theme = "theme"
     var id: String { rawValue }
     var displayName: String {
