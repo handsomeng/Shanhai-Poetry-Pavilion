@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 // MARK: - 应用错误类型
 
