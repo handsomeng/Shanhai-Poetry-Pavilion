@@ -1,0 +1,318 @@
+//
+//  ProfileView.swift
+//  山海诗馆
+//
+//  我的主页：个人诗歌管理
+//
+
+import SwiftUI
+
+struct ProfileView: View {
+    
+    @StateObject private var poemManager = PoemManager.shared
+    @State private var selectedTab: ProfileTab = .published
+    @State private var poemToDelete: Poem?
+    @State private var showingDeleteAlert = false
+    
+    enum ProfileTab: String, CaseIterable {
+        case published = "已发布"
+        case drafts = "草稿"
+        case favorites = "收藏"
+    }
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Colors.backgroundCream
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    // 头部信息
+                    headerSection
+                    
+                    // 统计信息
+                    statsSection
+                    
+                    // 选项卡
+                    tabSection
+                    
+                    // 诗歌列表
+                    poemsListSection
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
+            Button("取消", role: .cancel) {}
+            Button("删除", role: .destructive) {
+                poemManager.deletePoem(poem)
+            }
+        } message: { poem in
+            Text("确定要删除《\(poem.title)》吗？")
+        }
+    }
+    
+    // MARK: - Header Section
+    
+    private var headerSection: some View {
+        VStack(spacing: Spacing.md) {
+            // 头像
+            Circle()
+                .fill(Colors.accentTeal.opacity(0.2))
+                .frame(width: 80, height: 80)
+                .overlay(
+                    Text(String(poemManager.currentUserName.prefix(1)))
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(Colors.accentTeal)
+                )
+            
+            // 笔名
+            Text(poemManager.currentUserName)
+                .font(Fonts.titleMedium())
+                .foregroundColor(Colors.textInk)
+            
+            Text("诗人")
+                .font(Fonts.caption())
+                .foregroundColor(Colors.textSecondary)
+        }
+        .padding(.vertical, Spacing.xl)
+    }
+    
+    // MARK: - Stats Section
+    
+    private var statsSection: some View {
+        HStack(spacing: 0) {
+            StatItem(
+                value: "\(poemManager.myStats.totalPoems)",
+                label: "作品"
+            )
+            
+            Divider()
+                .frame(height: 40)
+            
+            StatItem(
+                value: "\(poemManager.myStats.totalDrafts)",
+                label: "草稿"
+            )
+            
+            Divider()
+                .frame(height: 40)
+            
+            StatItem(
+                value: "\(poemManager.myStats.totalLikes)",
+                label: "获赞"
+            )
+        }
+        .padding(.vertical, Spacing.lg)
+        .background(Colors.white)
+        .cornerRadius(CornerRadius.card)
+        .padding(.horizontal, Spacing.lg)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    // MARK: - Tab Section
+    
+    private var tabSection: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.md) {
+                ForEach(ProfileTab.allCases, id: \.self) { tab in
+                    Button(action: {
+                        selectedTab = tab
+                    }) {
+                        VStack(spacing: 4) {
+                            Text(tab.rawValue)
+                                .font(Fonts.bodyRegular())
+                                .foregroundColor(selectedTab == tab ? Colors.accentTeal : Colors.textSecondary)
+                            
+                            if selectedTab == tab {
+                                Rectangle()
+                                    .fill(Colors.accentTeal)
+                                    .frame(height: 2)
+                            }
+                        }
+                        .padding(.horizontal, Spacing.md)
+                    }
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+        .padding(.vertical, Spacing.md)
+    }
+    
+    // MARK: - Poems List
+    
+    private var poemsListSection: some View {
+        ScrollView {
+            LazyVStack(spacing: Spacing.md) {
+                ForEach(currentPoems) { poem in
+                    NavigationLink(destination: destinationView(for: poem)) {
+                        MyPoemCard(
+                            poem: poem,
+                            onDelete: {
+                                poemToDelete = poem
+                                showingDeleteAlert = true
+                            }
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                
+                if currentPoems.isEmpty {
+                    emptyStateView
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
+        }
+    }
+    
+    private var emptyStateView: some View {
+        VStack(spacing: Spacing.md) {
+            Image(systemName: emptyStateIcon)
+                .font(.system(size: 48))
+                .foregroundColor(Colors.textSecondary.opacity(0.5))
+            
+            Text(emptyStateText)
+                .font(Fonts.bodyRegular())
+                .foregroundColor(Colors.textSecondary)
+        }
+        .padding(.top, Spacing.xxl)
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var currentPoems: [Poem] {
+        switch selectedTab {
+        case .published:
+            return poemManager.myPublishedPoems
+        case .drafts:
+            return poemManager.myDrafts
+        case .favorites:
+            return poemManager.myFavorites
+        }
+    }
+    
+    private var emptyStateIcon: String {
+        switch selectedTab {
+        case .published: return "doc.text"
+        case .drafts: return "doc.plaintext"
+        case .favorites: return "star"
+        }
+    }
+    
+    private var emptyStateText: String {
+        switch selectedTab {
+        case .published: return "还没有发布作品"
+        case .drafts: return "没有草稿"
+        case .favorites: return "还没有收藏"
+        }
+    }
+    
+    private func destinationView(for poem: Poem) -> some View {
+        Group {
+            if selectedTab == .drafts {
+                DirectWritingView(existingPoem: poem)
+            } else {
+                PoemDetailView(poem: poem)
+            }
+        }
+    }
+}
+
+// MARK: - Stat Item
+
+private struct StatItem: View {
+    let value: String
+    let label: String
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(Fonts.titleMedium())
+                .foregroundColor(Colors.textInk)
+            
+            Text(label)
+                .font(Fonts.caption())
+                .foregroundColor(Colors.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - My Poem Card
+
+private struct MyPoemCard: View {
+    let poem: Poem
+    let onDelete: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(poem.title.isEmpty ? "无标题" : poem.title)
+                        .font(Fonts.titleMedium())
+                        .foregroundColor(Colors.textInk)
+                    
+                    Text(poem.shortDate)
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
+                }
+                
+                Spacer()
+                
+                Button(action: onDelete) {
+                    Image(systemName: "trash")
+                        .foregroundColor(Colors.error)
+                }
+            }
+            
+            Text(poem.content)
+                .font(Fonts.bodyPoem())
+                .foregroundColor(Colors.textInk)
+                .lineSpacing(6)
+                .lineLimit(4)
+            
+            HStack {
+                if !poem.isPublished {
+                    Text("草稿")
+                        .font(Fonts.footnote())
+                        .foregroundColor(Colors.textSecondary)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, 2)
+                        .background(Colors.textSecondary.opacity(0.1))
+                        .cornerRadius(4)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: Spacing.md) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 10))
+                        Text("\(poem.wordCount) 字")
+                    }
+                    
+                    if poem.isPublished {
+                        HStack(spacing: 4) {
+                            Image(systemName: "heart")
+                                .font(.system(size: 10))
+                            Text("\(poem.likeCount)")
+                        }
+                    }
+                }
+                .font(Fonts.footnote())
+                .foregroundColor(Colors.textSecondary)
+            }
+        }
+        .padding(Spacing.md)
+        .background(Colors.white)
+        .cornerRadius(CornerRadius.medium)
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    ProfileView()
+}
+
