@@ -127,10 +127,17 @@ struct PoemDetailView: View {
                     poem = updated
                 }
             }) {
-                Image(systemName: poem.isLiked ? "heart.fill" : "heart")
-                    .font(.system(size: 28))
-                    .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
-                    .scaleEffect(likeScale)
+                VStack(spacing: 8) {
+                    Image(systemName: poem.isLiked ? "heart.fill" : "heart")
+                        .font(.system(size: 28))
+                        .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
+                        .scaleEffect(likeScale)
+                    
+                    Text("\(poem.likeCount)")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
+                        .contentTransition(.numericText())
+                }
             }
             
             Spacer()
