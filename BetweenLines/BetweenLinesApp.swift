@@ -16,11 +16,13 @@ struct BetweenLinesApp: App {
             if hasCompletedOnboarding {
                 MainTabView()
                     .preferredColorScheme(.light)
+                    .withToast()
             } else {
                 LandingView(onComplete: {
                     hasCompletedOnboarding = true
                 })
                 .preferredColorScheme(.light)
+                .withToast()
             }
         }
     }

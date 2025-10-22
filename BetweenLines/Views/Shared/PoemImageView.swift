@@ -10,11 +10,10 @@ import SwiftUI
 struct PoemImageView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var toastManager = ToastManager.shared
     let poem: Poem
     
     @State private var renderedImage: UIImage?
-    @State private var showingSaveAlert = false
-    @State private var alertMessage = ""
     
     var body: some View {
         NavigationView {
@@ -44,11 +43,6 @@ struct PoemImageView: View {
                     .font(Fonts.bodyRegular())
                     .foregroundColor(Colors.textSecondary)
                 }
-            }
-            .alert("提示", isPresented: $showingSaveAlert) {
-                Button("确定") {}
-            } message: {
-                Text(alertMessage)
             }
         }
     }
@@ -157,16 +151,14 @@ struct PoemImageView: View {
     
     private func saveToPhotos() {
         guard let image = renderPoemAsImage() else {
-            alertMessage = "图片生成失败，请重试"
-            showingSaveAlert = true
+            toastManager.showError("图片生成失败，请重试")
             return
         }
         
         // 保存到相册
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
         
-        alertMessage = "图片已保存到相册"
-        showingSaveAlert = true
+        toastManager.showSuccess("图片已保存到相册")
         
         // 延迟关闭
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -176,8 +168,7 @@ struct PoemImageView: View {
     
     private func shareImage() {
         guard let image = renderPoemAsImage() else {
-            alertMessage = "图片生成失败，请重试"
-            showingSaveAlert = true
+            toastManager.showError("图片生成失败，请重试")
             return
         }
         

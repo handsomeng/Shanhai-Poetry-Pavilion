@@ -11,11 +11,11 @@ struct ShareSheet: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
+    @StateObject private var toastManager = ToastManager.shared
     
     let poem: Poem
     
     @State private var showingImageShare = false
-    @State private var showingPublishSuccess = false
     
     var body: some View {
         NavigationView {
@@ -52,11 +52,6 @@ struct ShareSheet: View {
             }
             .sheet(isPresented: $showingImageShare) {
                 PoemImageView(poem: poem)
-            }
-            .alert("发布成功", isPresented: $showingPublishSuccess) {
-                Button("好的") {}
-            } message: {
-                Text("你的诗歌已发布到广场")
             }
         }
     }
@@ -207,7 +202,7 @@ struct ShareSheet: View {
     
     private func publishToSquare() {
         poemManager.publishPoem(poem)
-        showingPublishSuccess = true
+        toastManager.showSuccess("诗歌已发布到广场")
         
         // 延迟关闭，让用户看到成功提示
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
