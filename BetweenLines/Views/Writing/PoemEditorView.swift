@@ -16,6 +16,8 @@ struct PoemEditorView: View {
     let placeholder: String
     let showWordCount: Bool
     
+    // 焦点管理
+    @FocusState private var isContentFocused: Bool
     
     init(
         title: Binding<String>,
@@ -85,6 +87,7 @@ struct PoemEditorView: View {
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.md)
                 .scrollContentBackground(.hidden)
+                .focused($isContentFocused) // 绑定焦点
                 .background(
                     ZStack(alignment: .topLeading) {
                         Colors.white
@@ -101,6 +104,11 @@ struct PoemEditorView: View {
                         }
                     }
                 )
+                // 添加点击手势，点击整个编辑区域都能唤醒键盘
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isContentFocused = true
+                }
         }
         .background(Colors.white)
     }
