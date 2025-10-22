@@ -59,24 +59,22 @@ struct ExploreView: View {
     // MARK: - Filter Section
     
     private var filterSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.md) {
-                ForEach(FilterType.allCases, id: \.self) { filter in
-                    Button(action: {
-                        selectedFilter = filter
-                    }) {
-                        Text(filter.rawValue)
-                            .font(Fonts.bodyRegular())
-                            .foregroundColor(selectedFilter == filter ? .white : Colors.textInk)
-                            .padding(.horizontal, Spacing.lg)
-                            .padding(.vertical, Spacing.sm)
-                            .background(selectedFilter == filter ? Colors.accentTeal : Colors.white)
-                            .cornerRadius(CornerRadius.medium)
-                    }
+        HStack(spacing: Spacing.sm) {
+            ForEach(FilterType.allCases, id: \.self) { filter in
+                Button(action: {
+                    selectedFilter = filter
+                }) {
+                    Text(filter.rawValue)
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(selectedFilter == filter ? .white : Colors.textInk)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.sm)
+                        .background(selectedFilter == filter ? Colors.accentTeal : Colors.white)
+                        .cornerRadius(CornerRadius.medium)
                 }
             }
-            .padding(.horizontal, Spacing.lg)
         }
+        .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.sm)
         .background(Colors.backgroundCream)
     }

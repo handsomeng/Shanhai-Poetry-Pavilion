@@ -12,7 +12,6 @@ struct PoemDetailView: View {
     @StateObject private var poemManager = PoemManager.shared
     @State var poem: Poem
     @State private var likeScale: CGFloat = 1.0
-    @State private var favoriteScale: CGFloat = 1.0
     
     var body: some View {
         ZStack {
@@ -106,8 +105,10 @@ struct PoemDetailView: View {
     // MARK: - Action Section
     
     private var actionSection: some View {
-        HStack(spacing: Spacing.xl) {
-            // 点赞
+        HStack {
+            Spacer()
+            
+            // 点赞（居中）
             Button(action: {
                 // 触发动画
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
@@ -126,70 +127,15 @@ struct PoemDetailView: View {
                     poem = updated
                 }
             }) {
-                VStack(spacing: 4) {
-                    Image(systemName: poem.isLiked ? "heart.fill" : "heart")
-                        .font(.system(size: 24))
-                        .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
-                        .scaleEffect(likeScale)
-                    
-                    Text("\(poem.likeCount)")
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
-                        .contentTransition(.numericText())
-                }
-            }
-            
-            // 收藏
-            Button(action: {
-                // 触发动画
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-                    favoriteScale = 1.3
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        favoriteScale = 1.0
-                    }
-                }
-                
-                // 更新状态
-                poemManager.toggleFavorite(for: poem)
-                if let updated = poemManager.getPoem(by: poem.id) {
-                    poem = updated
-                }
-            }) {
-                VStack(spacing: 4) {
-                    Image(systemName: poem.isFavorited ? "star.fill" : "star")
-                        .font(.system(size: 24))
-                        .foregroundColor(poem.isFavorited ? Colors.accentTeal : Colors.textSecondary)
-                        .scaleEffect(favoriteScale)
-                    
-                    Text(poem.isFavorited ? "已收藏" : "收藏")
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
-                }
+                Image(systemName: poem.isLiked ? "heart.fill" : "heart")
+                    .font(.system(size: 28))
+                    .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
+                    .scaleEffect(likeScale)
             }
             
             Spacer()
-            
-            // 统计信息
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack(spacing: 4) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 12))
-                    Text("\(poem.wordCount) 字")
-                }
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "text.alignleft")
-                        .font(.system(size: 12))
-                    Text("\(poem.lineCount) 行")
-                }
-            }
-            .font(Fonts.footnote())
-            .foregroundColor(Colors.textSecondary)
         }
-        .padding(Spacing.lg)
+        .padding(.vertical, Spacing.lg)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
     }
