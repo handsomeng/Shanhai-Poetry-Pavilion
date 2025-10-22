@@ -152,50 +152,39 @@ struct MimicWritingView: View {
     
     private var splitView: some View {
         VStack(spacing: 0) {
-            // 上半部分：AI 示例诗
-            VStack(alignment: .leading, spacing: Spacing.md) {
+            // 上半部分：AI 示例诗（可折叠）
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Text("示例诗歌")
-                        .font(Fonts.h2Small())
+                        .font(Fonts.caption())
                         .foregroundColor(Colors.textSecondary)
                     
                     Spacer()
                     
                     Text("AI 生成")
-                        .font(Fonts.caption())
+                        .font(Fonts.captionSmall())
                         .foregroundColor(Colors.accentTeal)
-                        .padding(.horizontal, Spacing.sm)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, Spacing.xs)
+                        .padding(.vertical, 2)
                         .background(Colors.accentTeal.opacity(0.1))
                         .cornerRadius(CornerRadius.small)
                 }
                 
-                ScrollView {
-                    Text(aiExamplePoem)
-                        .font(Fonts.bodyPoem())
-                        .foregroundColor(Colors.textInk)
-                        .lineSpacing(8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                Text(aiExamplePoem)
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(Colors.textInk)
+                    .lineSpacing(6)
+                    .lineLimit(4) // 最多显示4行
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(Spacing.lg)
-            .frame(height: UIScreen.main.bounds.height * 0.35)
-            .background(Colors.white.opacity(0.5))
+            .padding(Spacing.md)
+            .background(Colors.backgroundCream.opacity(0.5))
             
             Divider()
-                .background(Colors.border)
+                .background(Colors.border.opacity(0.3))
             
             // 下半部分：用户创作区
             VStack(spacing: 0) {
-                // 标题
-                Text("你的创作")
-                    .font(Fonts.h2Small())
-                    .foregroundColor(Colors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.top, Spacing.md)
-                    .padding(.bottom, Spacing.sm)
-                
                 // 编辑器
                 PoemEditorView(
                     title: $title,

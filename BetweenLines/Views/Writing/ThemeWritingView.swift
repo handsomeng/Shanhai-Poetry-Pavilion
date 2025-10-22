@@ -152,7 +152,7 @@ struct ThemeWritingView: View {
     
     private var writingView: some View {
         VStack(spacing: 0) {
-            // 顶部主题卡片
+            // 顶部主题卡片（精简）
             themeCard
             
             // 编辑器
@@ -173,37 +173,29 @@ struct ThemeWritingView: View {
     // MARK: - Theme Card
     
     private var themeCard: some View {
-        VStack(spacing: Spacing.md) {
-            HStack {
+        HStack(spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("创作主题")
-                    .font(Fonts.caption())
+                    .font(Fonts.captionSmall())
                     .foregroundColor(Colors.textSecondary)
                 
-                Spacer()
-                
-                Text("AI 推荐")
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.accentTeal)
-                    .padding(.horizontal, Spacing.sm)
-                    .padding(.vertical, 4)
-                    .background(Colors.accentTeal.opacity(0.1))
-                    .cornerRadius(CornerRadius.small)
+                Text(aiTheme)
+                    .font(.system(size: 20, weight: .medium, design: .serif))
+                    .foregroundColor(Colors.textInk)
             }
             
-            Text(aiTheme)
-                .font(.system(size: 32, weight: .thin, design: .serif))
-                .foregroundColor(Colors.textInk)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Spacing.lg)
+            Spacer()
+            
+            Text("AI 推荐")
+                .font(Fonts.captionSmall())
+                .foregroundColor(Colors.accentTeal)
+                .padding(.horizontal, Spacing.xs)
+                .padding(.vertical, 2)
+                .background(Colors.accentTeal.opacity(0.1))
+                .cornerRadius(CornerRadius.small)
         }
-        .padding(Spacing.lg)
-        .background(
-            LinearGradient(
-                colors: [Colors.white, Colors.backgroundCream.opacity(0.3)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
+        .padding(Spacing.md)
+        .background(Colors.backgroundCream.opacity(0.5))
     }
     
     // MARK: - Bottom Buttons
