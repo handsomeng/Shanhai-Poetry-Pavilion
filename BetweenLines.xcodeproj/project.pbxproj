@@ -69,10 +69,11 @@
 			fileSystemSynchronizedGroups = (
 				9A14486B2EA7A8A8001833F6 /* BetweenLines */,
 			);
-			name = BetweenLines;
-			packageProductDependencies = (
-			);
-			productName = BetweenLines;
+		name = BetweenLines;
+		packageProductDependencies = (
+			61A2D4ED2EA920230025F504 /* Supabase */,
+		);
+		productName = BetweenLines;
 			productReference = 9A1448692EA7A8A8001833F6 /* BetweenLines.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -357,6 +358,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		61A2D4ED2EA920230025F504 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 61A2D4EC2EA920230025F504 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9A1448612EA7A8A8001833F6 /* Project object */;
 }
