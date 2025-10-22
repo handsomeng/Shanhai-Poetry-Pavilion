@@ -11,13 +11,12 @@ import Supabase
 /// Supabase 配置管理
 enum SupabaseConfig {
     
-    /// ⚠️ 替换为你的 Supabase 项目 URL
-    /// 获取方式：Supabase Dashboard → Settings → API → Project URL
-    static let url = URL(string: "https://your-project.supabase.co")!
+    /// ✅ Supabase 项目 URL
+    /// Project ID: bfudbchnwwckqryoiwst
+    static let url = URL(string: "https://bfudbchnwwckqryoiwst.supabase.co")!
     
-    /// ⚠️ 替换为你的 Supabase anon/public key
-    /// 获取方式：Supabase Dashboard → Settings → API → Project API keys → anon public
-    static let anonKey = "your-anon-key-here"
+    /// ✅ Supabase anon/public key
+    static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmdWRiY2hud3dja3FyeW9pd3N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExMjUxNjcsImV4cCI6MjA3NjcwMTE2N30.VMRbtiKRbSBuAzteG2h-mfDtA3wiY2YpJg76FSDQJ7w"
     
     /// 检查配置是否正确
     static func validate() -> Bool {
