@@ -161,6 +161,53 @@ class AIService {
         )
     }
     
+    /// 内容审核（用于发布到广场前）
+    func moderateContent(title: String, content: String) async throws -> ContentModerationResult {
+        try validateAPIKey()
+        
+        let prompt = """
+        你是一位内容审核专员，需要审核以下诗歌是否适合发布到公开平台。
+        
+        **审核标准**（任何一条不通过即拒绝）：
+        1. 字数检查：诗歌正文至少 10 个字（不含标题）
+        2. 内容质量：不能全是符号、数字、乱码
+        3. 语言文明：不包含脏话、辱骂、低俗内容
+        4. 政治敏感：不涉及政治敏感话题、领导人、政治体制等
+        5. 违法内容：不包含暴力、色情、赌博、毒品等违法内容
+        6. 广告营销：不包含广告、营销、联系方式
+        
+        诗歌标题：\(title.isEmpty ? "（无标题）" : title)
+        诗歌正文：
+        \(content)
+        
+        **请严格按以下 JSON 格式输出审核结果**：
+        {
+            "pass": true/false,
+            "reason": "如果不通过，简短说明原因（1-2句话）；如果通过，填 null"
+        }
+        
+        **只输出 JSON，不要任何其他内容。**
+        """
+        
+        let result = try await callAI(
+            prompt: prompt,
+            systemMessage: "你是一位严谨、公正的内容审核专员。你会客观评估内容是否符合社区规范，既不会过度宽松，也不会过度严格。",
+            temperature: 0.3, // 低温度，确保审核稳定性
+            maxTokens: 200
+        )
+        
+        // 解析 JSON 结果
+        guard let jsonData = result.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+              let pass = json["pass"] as? Bool else {
+            // 如果解析失败，默认通过（避免误伤）
+            return ContentModerationResult(pass: true, reason: nil)
+        }
+        
+        let reason = json["reason"] as? String
+        return ContentModerationResult(pass: pass, reason: reason)
+    }
+    
     /// 通用 AI 调用方法
     private func callAI(
         prompt: String,
@@ -211,6 +258,14 @@ class AIService {
         
         return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+}
+
+// MARK: - Content Moderation Result
+
+/// 内容审核结果
+struct ContentModerationResult {
+    let pass: Bool       // 是否通过审核
+    let reason: String?  // 如果不通过，原因是什么
 }
 
 // MARK: - AI Error

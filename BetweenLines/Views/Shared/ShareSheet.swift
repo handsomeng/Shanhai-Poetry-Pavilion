@@ -164,21 +164,47 @@ struct ShareSheet: View {
     private func publishToSquare() {
         isPublishing = true
         
-        do {
-            try poemManager.publishToSquare(poem)
-            toastManager.showSuccess("诗歌已发布到广场")
-            
-            // 延迟关闭，让用户看到成功提示
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                isPublishing = false
-                dismiss()
-            }
-        } catch {
-            isPublishing = false
-            if let publishError = error as? PoemPublishError {
-                toastManager.showError(publishError.errorDescription ?? "发布失败")
-            } else {
-                toastManager.showError("发布失败，请重试")
+        // Step 1: AI 内容审核
+        Task {
+            do {
+                let moderationResult = try await AIService.shared.moderateContent(
+                    title: poem.title,
+                    content: poem.content
+                )
+                
+                await MainActor.run {
+                    if !moderationResult.pass {
+                        // 审核不通过
+                        isPublishing = false
+                        let reason = moderationResult.reason ?? "内容不符合社区规范"
+                        toastManager.showError("无法发布：\(reason)")
+                        return
+                    }
+                    
+                    // Step 2: 审核通过，执行发布
+                    do {
+                        try poemManager.publishToSquare(poem)
+                        toastManager.showSuccess("诗歌已发布到广场")
+                        
+                        // 延迟关闭，让用户看到成功提示
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            isPublishing = false
+                            dismiss()
+                        }
+                    } catch {
+                        isPublishing = false
+                        if let publishError = error as? PoemPublishError {
+                            toastManager.showError(publishError.errorDescription ?? "发布失败")
+                        } else {
+                            toastManager.showError("发布失败，请重试")
+                        }
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isPublishing = false
+                    toastManager.showError("内容审核失败，请重试")
+                }
             }
         }
     }
