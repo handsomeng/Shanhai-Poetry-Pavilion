@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		61122FA22EA8CD5A00E7E0F6 /* Products 2.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 61122FA12EA8CD5A00E7E0F6 /* Products 2.storekit */; };
+		61A2D5BC2EA921560025F504 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 61A2D4ED2EA920230025F504 /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61A2D5BC2EA921560025F504 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,7 +73,6 @@
 			);
 		name = BetweenLines;
 		packageProductDependencies = (
-			61A2D4ED2EA920230025F504 /* Supabase */,
 		);
 		productName = BetweenLines;
 			productReference = 9A1448692EA7A8A8001833F6 /* BetweenLines.app */;
@@ -99,12 +100,11 @@
 				en,
 				Base,
 			);
-			mainGroup = 9A1448602EA7A8A8001833F6;
-			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				61A2D4EC2EA920230025F504 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-			);
-			preferredProjectObjectVersion = 77;
+		mainGroup = 9A1448602EA7A8A8001833F6;
+		minimizedProjectReferenceProxies = 1;
+		packageReferences = (
+		);
+		preferredProjectObjectVersion = 77;
 			productRefGroup = 9A14486A2EA7A8A8001833F6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -347,25 +347,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		61A2D4EC2EA920230025F504 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/supabase/supabase-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.5.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		61A2D4ED2EA920230025F504 /* Supabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 61A2D4EC2EA920230025F504 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Supabase;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9A1448612EA7A8A8001833F6 /* Project object */;
 }
