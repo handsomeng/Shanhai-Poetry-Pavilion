@@ -94,7 +94,7 @@ struct LoginView: View {
     
     private var appleSignInSection: some View {
         VStack(spacing: Spacing.md) {
-            SignInWithAppleButton(
+            CustomAppleSignInButton(
                 onRequest: { request in
                     request.requestedScopes = [.fullName, .email]
                 },
@@ -102,9 +102,6 @@ struct LoginView: View {
                     handleAppleSignIn(result)
                 }
             )
-            .signInWithAppleButtonStyle(.black)
-            .frame(height: 50)
-            .cornerRadius(CornerRadius.medium)
             
             Text("推荐使用 Apple 登录，快速且安全")
                 .font(Fonts.caption())
