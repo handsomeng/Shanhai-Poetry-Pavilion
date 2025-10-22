@@ -30,25 +30,43 @@ class AIService {
     /// 获取诗歌点评
     func getPoemComment(content: String) async throws -> String {
         try validateAPIKey()
-        let prompt = """
-        请你作为一位专业的现代诗评论家，对以下诗歌进行点评。请从以下几个方面进行分析：
         
-        1. 意象运用：诗中使用了哪些意象，是否新鲜有力？
-        2. 情感表达：诗歌传递了什么样的情感或氛围？
-        3. 语言特色：语言是否简洁有力，是否有过度修饰？
-        4. 结构节奏：分行和节奏是否合理？
-        5. 改进建议：给出1-2条具体的改进建议
+        // 检查内容长度，太短则提示
+        let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        let wordCount = trimmedContent.count
+        
+        if wordCount < 10 {
+            return "诗歌内容似乎还不太完整呢。建议先完整地写下你的想法和感受，再来点评会更有帮助。现代诗虽然可以很短，但也需要有完整的意境和表达哦。"
+        }
+        
+        let prompt = """
+        你是一位专业的现代诗评论家，需要对以下诗歌进行中肯的点评。
+
+        **评价原则**：
+        1. 先判断这是否是一首完整的诗（是否有诗的意象、节奏、情感）
+        2. 如果只是随意的文字或不完整，委婉提醒作者"可以写得更完整些再点评"
+        3. 如果是完整的诗，遵循"先肯定亮点 → 再指出不足 → 后给建议"的结构
+        4. 不要过度夸奖，要实事求是
+        5. 改进建议要具体、可操作
+        
+        **评价维度**（如果是完整的诗）：
+        - 意象：是否新鲜？是否陈词滥调？
+        - 情感：是否真挚？是否流于表面？
+        - 语言：是否简练？是否过度修饰？
+        - 结构：分行是否合理？节奏是否流畅？
+        - 深度：是否有思考和层次？
         
         诗歌内容：
         \(content)
         
-        请用温和、鼓励的语气进行点评，字数控制在200字左右。
+        请用专业、温和但不讨好的语气点评，字数控制在150-200字。
+        如果诗歌质量较低，可以坦诚指出问题，但语气要鼓励而非打击。
         """
         
         let requestBody: [String: Any] = [
             "model": AppConstants.openAIModel,
             "messages": [
-                ["role": "system", "content": "你是一位专业且友善的现代诗评论家，擅长用简洁易懂的语言帮助初学者提升诗歌创作水平。"],
+                ["role": "system", "content": "你是一位严谨而温和的现代诗评论家。你既能看到作品的闪光点，也能指出需要改进的地方。你的点评实事求是，既不过度夸奖，也不过分苛刻，目标是帮助创作者真正提升。"],
                 ["role": "user", "content": prompt]
             ],
             "max_tokens": AppConstants.openAIMaxTokens,
