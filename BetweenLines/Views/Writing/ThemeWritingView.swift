@@ -89,11 +89,6 @@ struct ThemeWritingView: View {
             ) { _ in
                 isKeyboardVisible = false
             }
-            
-            // 首次进入，自动生成主题
-            if aiTheme.isEmpty {
-                generateTheme()
-            }
         }
     }
     
@@ -121,21 +116,22 @@ struct ThemeWritingView: View {
                 Text("💡")
                     .font(.system(size: 64))
                 
-                Text("让 AI 为你推荐一个主题")
+                Text("主题写诗")
                     .font(Fonts.h2())
                     .foregroundColor(Colors.textInk)
                     .multilineTextAlignment(.center)
                 
-                Text("围绕主题展开你的创作")
+                Text("AI 为你推荐创作主题和角度\n围绕主题展开你的创作")
                     .font(Fonts.bodyRegular())
                     .foregroundColor(Colors.textSecondary)
                     .multilineTextAlignment(.center)
+                    .lineSpacing(4)
             }
             
             Spacer()
             
-            Button(action: generateTheme) {
-                Text("生成主题")
+            Button(action: handleStart) {
+                Text("开始创作")
                     .font(Fonts.bodyRegular())
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -236,16 +232,18 @@ struct ThemeWritingView: View {
     
     // MARK: - Actions
     
-    private func generateTheme() {
-        // 检查是否有权限
+    private func handleStart() {
+        // 检查是否有会员权限
         guard subscriptionManager.isSubscribed else {
-            toastManager.showError("主题写诗需要会员权限")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                showingSubscription = true
-            }
+            showingSubscription = true
             return
         }
         
+        // 会员用户，开始生成主题
+        generateTheme()
+    }
+    
+    private func generateTheme() {
         isLoadingTheme = true
         
         Task {
@@ -301,3 +299,4 @@ struct ThemeWritingView: View {
         ThemeWritingView()
     }
 }
+

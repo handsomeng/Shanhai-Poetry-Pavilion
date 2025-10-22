@@ -89,11 +89,6 @@ struct MimicWritingView: View {
             ) { _ in
                 isKeyboardVisible = false
             }
-            
-            // 首次进入，自动生成示例
-            if aiExamplePoem.isEmpty {
-                generateExample()
-            }
         }
     }
     
@@ -121,21 +116,22 @@ struct MimicWritingView: View {
                 Text("🎨")
                     .font(.system(size: 64))
                 
-                Text("让 AI 为你生成一首示例诗")
+                Text("模仿写诗")
                     .font(Fonts.h2())
                     .foregroundColor(Colors.textInk)
                     .multilineTextAlignment(.center)
                 
-                Text("对照学习，提升创作技巧")
+                Text("AI 为你生成一首示例诗\n对照学习，提升创作技巧")
                     .font(Fonts.bodyRegular())
                     .foregroundColor(Colors.textSecondary)
                     .multilineTextAlignment(.center)
+                    .lineSpacing(4)
             }
             
             Spacer()
             
-            Button(action: generateExample) {
-                Text("生成示例")
+            Button(action: handleStart) {
+                Text("开始创作")
                     .font(Fonts.bodyRegular())
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -241,16 +237,18 @@ struct MimicWritingView: View {
     
     // MARK: - Actions
     
-    private func generateExample() {
-        // 检查是否有权限
+    private func handleStart() {
+        // 检查是否有会员权限
         guard subscriptionManager.isSubscribed else {
-            toastManager.showError("模仿写诗需要会员权限")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                showingSubscription = true
-            }
+            showingSubscription = true
             return
         }
         
+        // 会员用户，开始生成示例
+        generateExample()
+    }
+    
+    private func generateExample() {
         isLoadingExample = true
         
         Task {
@@ -306,3 +304,4 @@ struct MimicWritingView: View {
         MimicWritingView()
     }
 }
+
