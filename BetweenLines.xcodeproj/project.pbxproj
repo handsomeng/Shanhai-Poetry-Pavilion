@@ -69,10 +69,10 @@
 			fileSystemSynchronizedGroups = (
 				9A14486B2EA7A8A8001833F6 /* BetweenLines */,
 			);
-		name = BetweenLines;
-		packageProductDependencies = (
-		);
-		productName = BetweenLines;
+			name = BetweenLines;
+			packageProductDependencies = (
+			);
+			productName = BetweenLines;
 			productReference = 9A1448692EA7A8A8001833F6 /* BetweenLines.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -98,11 +98,12 @@
 				en,
 				Base,
 			);
-		mainGroup = 9A1448602EA7A8A8001833F6;
-		minimizedProjectReferenceProxies = 1;
-		packageReferences = (
-		);
-		preferredProjectObjectVersion = 77;
+			mainGroup = 9A1448602EA7A8A8001833F6;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				61A2D4EC2EA920230025F504 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 9A14486A2EA7A8A8001833F6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -345,6 +346,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		61A2D4EC2EA920230025F504 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 9A1448612EA7A8A8001833F6 /* Project object */;
 }
