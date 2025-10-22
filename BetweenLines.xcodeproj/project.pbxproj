@@ -71,7 +71,6 @@
 			);
 		name = BetweenLines;
 		packageProductDependencies = (
-			9ASUPABASE02 /* Supabase */,
 		);
 		productName = BetweenLines;
 			productReference = 9A1448692EA7A8A8001833F6 /* BetweenLines.app */;
@@ -102,7 +101,6 @@
 		mainGroup = 9A1448602EA7A8A8001833F6;
 		minimizedProjectReferenceProxies = 1;
 		packageReferences = (
-			9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 		);
 		preferredProjectObjectVersion = 77;
 			productRefGroup = 9A14486A2EA7A8A8001833F6 /* Products */;
@@ -347,25 +345,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/supabase/supabase-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		9ASUPABASE02 /* Supabase */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Supabase;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9A1448612EA7A8A8001833F6 /* Project object */;
 }
