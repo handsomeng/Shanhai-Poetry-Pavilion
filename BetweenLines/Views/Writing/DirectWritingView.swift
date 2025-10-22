@@ -35,7 +35,7 @@ struct DirectWritingView: View {
     var body: some View {
         ZStack {
             Colors.backgroundCream
-                .ignoresSafeArea()
+                .ignoresSafeArea(edges: .top)  // 只忽略顶部，让键盘能推动界面
             
             VStack(spacing: 0) {
                 // 诗歌编辑器
@@ -51,6 +51,8 @@ struct DirectWritingView: View {
                 bottomButtons
             }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)  // 不让键盘被自动处理，我们手动控制
+        .animation(.easeOut(duration: 0.25), value: UUID())  // 平滑动画
         .navigationTitle("直接写诗")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)

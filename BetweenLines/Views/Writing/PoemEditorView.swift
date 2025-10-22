@@ -76,30 +76,28 @@ struct PoemEditorView: View {
     // MARK: - Content Editor
     
     private var contentEditor: some View {
-        ScrollView {
-            ZStack(alignment: .topLeading) {
-                // 占位符
-                if content.isEmpty {
-                    Text(placeholder)
-                        .font(Fonts.bodyPoem())
-                        .foregroundColor(Colors.textSecondary.opacity(0.5))
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.md)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .allowsHitTesting(false)
-                }
-                
-                // 文本编辑器 - 使用 TextEditor 并设置最小高度
-                TextEditor(text: $content)
+        ZStack(alignment: .topLeading) {
+            // 占位符
+            if content.isEmpty {
+                Text(placeholder)
                     .font(Fonts.bodyPoem())
-                    .foregroundColor(Colors.textInk)
+                    .foregroundColor(Colors.textSecondary.opacity(0.5))
                     .padding(.horizontal, Spacing.lg)
                     .padding(.vertical, Spacing.md)
-                    .scrollContentBackground(.hidden)
-                    .frame(minHeight: 400, alignment: .topLeading)
-                    .background(Colors.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .allowsHitTesting(false)
             }
+            
+            // 文本编辑器 - 自动适应键盘
+            TextEditor(text: $content)
+                .font(Fonts.bodyPoem())
+                .foregroundColor(Colors.textInk)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.md)
+                .scrollContentBackground(.hidden)
+                .background(Colors.white)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Colors.white)
     }
     
