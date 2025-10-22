@@ -13,6 +13,8 @@ struct MimicWritingView: View {
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var subscriptionManager = SubscriptionManager.shared
     @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var authService = AuthService.shared
+    @StateObject private var poemService = PoemService.shared
     
     // AI 生成的示例诗
     @State private var aiExamplePoem: String = ""
@@ -26,6 +28,8 @@ struct MimicWritingView: View {
     @State private var showingShareSheet = false
     @State private var isKeyboardVisible = false
     @State private var showingSubscription = false
+    @State private var isPublishing = false
+    @State private var showLoginSheet = false
     
     var body: some View {
         ZStack {
@@ -216,23 +220,67 @@ struct MimicWritingView: View {
     
     private var bottomButtons: some View {
         HStack(spacing: Spacing.md) {
-            Button(action: savePoem) {
-                HStack {
-                    Image(systemName: "checkmark.circle")
-                    Text("保存")
+            // 保存草稿
+            Button(action: saveDraft) {
+                VStack(spacing: 4) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 20))
+                    Text("草稿")
+                        .font(Fonts.caption())
+                }
+                .foregroundColor(Colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.sm)
+            }
+            .disabled(content.isEmpty)
+            
+            // 保存到诗集
+            Button(action: saveToCollection) {
+                VStack(spacing: 4) {
+                    Image(systemName: "book.closed")
+                        .font(.system(size: 20))
+                    Text("诗集")
+                        .font(Fonts.caption())
+                }
+                .foregroundColor(Colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.sm)
+            }
+            .disabled(content.isEmpty)
+            
+            // 发布到广场
+            Button(action: {
+                if authService.isAuthenticated {
+                    publishToSquare()
+                } else {
+                    showLoginSheet = true
+                }
+            }) {
+                HStack(spacing: 6) {
+                    if isPublishing {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "paperplane.fill")
+                    }
+                    Text("发布")
+                        .fontWeight(.medium)
                 }
                 .font(Fonts.bodyRegular())
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .padding(Spacing.md)
+                .padding(.vertical, Spacing.md)
                 .background(Colors.accentTeal)
                 .cornerRadius(CornerRadius.medium)
             }
-            .scaleButtonStyle()
+            .disabled(content.isEmpty || isPublishing)
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.white)
+        .sheet(isPresented: $showLoginSheet) {
+            LoginView()
+        }
     }
     
     // MARK: - Actions
@@ -267,15 +315,53 @@ struct MimicWritingView: View {
         }
     }
     
-    private func savePoem() {
+    // MARK: - Save Actions
+    
+    /// 保存为草稿
+    private func saveDraft() {
         guard !content.isEmpty else {
             toastManager.showError("诗歌内容不能为空")
             return
         }
         
-        // 创建新诗歌并保存到诗集
+        if authService.isAuthenticated {
+            Task {
+                do {
+                    guard let userId = authService.currentUser?.id else { return }
+                    _ = try await poemService.saveDraft(
+                        authorId: userId,
+                        title: title.isEmpty ? "无标题" : title,
+                        content: content,
+                        style: "modern"
+                    )
+                    await MainActor.run {
+                        dismiss()
+                    }
+                } catch {
+                    print("保存草稿失败: \(error)")
+                }
+            }
+        } else {
+            let newPoem = poemManager.createDraft(
+                title: title,
+                content: content,
+                tags: [],
+                writingMode: .mimic
+            )
+            poemManager.savePoem(newPoem)
+            dismiss()
+        }
+    }
+    
+    /// 保存到诗集
+    private func saveToCollection() {
+        guard !content.isEmpty else {
+            toastManager.showError("诗歌内容不能为空")
+            return
+        }
+        
         let poem = Poem(
-            title: title,
+            title: title.isEmpty ? "无标题" : title,
             content: content,
             authorName: poemManager.currentUserName,
             tags: [],
@@ -287,9 +373,45 @@ struct MimicWritingView: View {
         currentPoem = poem
         poemManager.saveToCollection(poem)
         
-        // 保存成功后，显示分享选项
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             showingShareSheet = true
+        }
+    }
+    
+    /// 发布到广场
+    private func publishToSquare() {
+        guard authService.isAuthenticated,
+              let userId = authService.currentUser?.id else {
+            showLoginSheet = true
+            return
+        }
+        
+        guard !content.isEmpty else {
+            toastManager.showError("诗歌内容不能为空")
+            return
+        }
+        
+        isPublishing = true
+        
+        Task {
+            do {
+                _ = try await poemService.publishPoem(
+                    authorId: userId,
+                    title: title.isEmpty ? "无标题" : title,
+                    content: content,
+                    style: "modern"
+                )
+                
+                await MainActor.run {
+                    isPublishing = false
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    isPublishing = false
+                    print("发布失败: \(error)")
+                }
+            }
         }
     }
     
