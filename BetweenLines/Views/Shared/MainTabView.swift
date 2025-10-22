@@ -47,8 +47,8 @@ struct MainTabView: View {
                 .environmentObject(tabManager)
         }
         .tint(Colors.accentTeal)
-        .onChange(of: tabManager.selectedTab) { newTab in
-            selectedTab = newTab
+        .onChange(of: tabManager.selectedTab) {
+            selectedTab = tabManager.selectedTab
         }
     }
 }

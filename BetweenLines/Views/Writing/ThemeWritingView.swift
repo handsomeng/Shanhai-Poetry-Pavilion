@@ -287,7 +287,7 @@ struct ThemeWritingView: View {
     }
     
     private func savePoem() {
-        guard let theme = selectedTheme else { return }
+        guard selectedTheme != nil else { return }
         
         let poem = poemManager.createDraft(
             title: title,
