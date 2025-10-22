@@ -20,6 +20,7 @@ class SubscriptionManager: ObservableObject {
     @Published private(set) var currentSubscription: SubscriptionType?
     @Published private(set) var products: [Product] = []
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var expirationDate: Date?
     
     // AI 点评限额（免费用户）
     @Published private(set) var dailyAICommentCount: Int = 0
@@ -115,6 +116,7 @@ class SubscriptionManager: ObservableObject {
     
     func updateSubscriptionStatus() async {
         var activeSubscription: SubscriptionType?
+        var foundExpirationDate: Date?
         
         for await result in Transaction.currentEntitlements {
             switch result {
@@ -122,6 +124,8 @@ class SubscriptionManager: ObservableObject {
                 // 检查是否是有效订阅
                 if let subscriptionType = subscriptionTypeFromProductID(transaction.productID) {
                     activeSubscription = subscriptionType
+                    // 获取到期时间（StoreKit Testing 模拟）
+                    foundExpirationDate = transaction.expirationDate
                     break
                 }
             case .unverified:
@@ -131,6 +135,7 @@ class SubscriptionManager: ObservableObject {
         
         isSubscribed = activeSubscription != nil
         currentSubscription = activeSubscription
+        expirationDate = foundExpirationDate
         
         // 保存订阅状态
         if let subscription = activeSubscription {
@@ -225,6 +230,31 @@ class SubscriptionManager: ObservableObject {
     /// 检查是否可以使用 AI 生成模板
     func canUseAITemplates() -> Bool {
         isSubscribed
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// 到期时间格式化字符串
+    var expirationDateString: String {
+        guard let date = expirationDate else {
+            // StoreKit Testing 模拟到期时间
+            if isSubscribed, let subscription = currentSubscription {
+                let mockExpiration = Calendar.current.date(
+                    byAdding: subscription == .monthly ? .month : (subscription == .quarterly ? .month : .year),
+                    value: subscription == .monthly ? 1 : (subscription == .quarterly ? 3 : 1),
+                    to: Date()
+                ) ?? Date()
+                
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy.MM.dd"
+                return formatter.string(from: mockExpiration)
+            }
+            return "长期有效"
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy.MM.dd"
+        return formatter.string(from: date)
     }
     
     // MARK: - Helper Methods

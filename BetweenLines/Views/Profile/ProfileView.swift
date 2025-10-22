@@ -106,24 +106,42 @@ struct ProfileView: View {
         Button(action: {
             showingSubscription = true
         }) {
-            HStack {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack(spacing: 6) {
-                        Image(systemName: subscriptionManager.isSubscribed ? "crown.fill" : "crown")
-                            .font(.system(size: 16))
-                        
-                        Text(subscriptionManager.isSubscribed ? "会员已激活" : "升级会员")
-                            .font(Fonts.bodyLarge())
-                    }
-                    .foregroundColor(subscriptionManager.isSubscribed ? Colors.accentTeal : Colors.textInk)
-                    
+            HStack(alignment: .top, spacing: Spacing.md) {
+                // 左侧图标
+                Image(systemName: subscriptionManager.isSubscribed ? "crown.fill" : "crown")
+                    .font(.system(size: subscriptionManager.isSubscribed ? 20 : 16))
+                    .foregroundColor(subscriptionManager.isSubscribed ? Colors.accentTeal : Colors.textSecondary)
+                    .frame(width: 24)
+                
+                // 中间内容
+                VStack(alignment: .leading, spacing: 6) {
                     if subscriptionManager.isSubscribed {
+                        // 已订阅：诗意文案
+                        Text("山海已在你心间")
+                            .font(Fonts.bodyLarge())
+                            .foregroundColor(Colors.accentTeal)
+                        
                         if let subscription = subscriptionManager.currentSubscription {
-                            Text("当前订阅：\(subscription.displayName)")
-                                .font(Fonts.caption())
-                                .foregroundColor(Colors.textSecondary)
+                            HStack(spacing: 4) {
+                                Text("\(subscription.displayName)订阅")
+                                    .font(Fonts.caption())
+                                    .foregroundColor(Colors.textSecondary)
+                                
+                                Text("·")
+                                    .font(Fonts.caption())
+                                    .foregroundColor(Colors.textSecondary.opacity(0.5))
+                                
+                                Text("到期 \(subscriptionManager.expirationDateString)")
+                                    .font(Fonts.caption())
+                                    .foregroundColor(Colors.textSecondary)
+                            }
                         }
                     } else {
+                        // 未订阅：引导文案
+                        Text("升级会员")
+                            .font(Fonts.bodyLarge())
+                            .foregroundColor(Colors.textInk)
+                        
                         Text("解锁全部高级功能")
                             .font(Fonts.caption())
                             .foregroundColor(Colors.textSecondary)
@@ -132,6 +150,7 @@ struct ProfileView: View {
                 
                 Spacer()
                 
+                // 右侧按钮
                 if !subscriptionManager.isSubscribed {
                     Text("立即订阅")
                         .font(Fonts.bodyRegular())
@@ -140,6 +159,11 @@ struct ProfileView: View {
                         .padding(.vertical, Spacing.sm)
                         .background(Colors.accentTeal)
                         .cornerRadius(CornerRadius.medium)
+                } else {
+                    // 已订阅显示小图标
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(Colors.textSecondary.opacity(0.5))
                 }
             }
             .padding(Spacing.md)
