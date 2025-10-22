@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import AuthenticationServices
 
 /// 认证服务
 @MainActor
@@ -81,9 +82,99 @@ class AuthService: ObservableObject {
         isAuthenticated = true
     }
     
-    // MARK: - 登录
+    // MARK: - Apple 登录
     
-    /// 登录
+    /// Apple Sign In
+    func signInWithApple(credential: ASAuthorizationAppleIDCredential) async throws {
+        errorMessage = nil
+        
+        // 1. 获取必要信息
+        guard let identityToken = credential.identityToken,
+              let tokenString = String(data: identityToken, encoding: .utf8) else {
+            throw SupabaseError.unknown("无法获取 Apple ID Token")
+        }
+        
+        let userId = credential.user
+        
+        // 2. 构建请求体
+        struct AppleSignInRequest: Codable {
+            let provider: String
+            let idToken: String
+            
+            enum CodingKeys: String, CodingKey {
+                case provider
+                case idToken = "id_token"
+            }
+        }
+        
+        let request = AppleSignInRequest(
+            provider: "apple",
+            idToken: tokenString
+        )
+        
+        // 3. 调用 Supabase Auth API
+        let response: AuthResponse = try await client.authRequest(
+            method: .post,
+            endpoint: "token?grant_type=id_token",
+            body: request
+        )
+        
+        // 4. 保存 tokens
+        saveTokens(accessToken: response.accessToken, refreshToken: response.refreshToken)
+        saveUserId(response.user.id)
+        client.accessToken = response.accessToken
+        
+        // 5. 检查用户资料是否存在
+        let profiles: [UserProfile] = try await client.request(
+            method: .get,
+            path: SupabaseConfig.profilesTable,
+            queryItems: [
+                URLQueryItem(name: "id", value: "eq.\(response.user.id)"),
+                URLQueryItem(name: "select", value: "*")
+            ]
+        )
+        
+        if let profile = profiles.first {
+            // 用户资料已存在
+            currentProfile = profile
+        } else {
+            // 首次登录，创建用户资料
+            let username: String
+            if let fullName = credential.fullName {
+                // 使用 Apple 提供的姓名
+                let givenName = fullName.givenName ?? ""
+                let familyName = fullName.familyName ?? ""
+                username = (familyName + givenName).isEmpty ? "诗人\(String(userId.prefix(6)))" : (familyName + givenName)
+            } else {
+                // 使用默认用户名
+                username = "诗人\(String(userId.prefix(6)))"
+            }
+            
+            let email = credential.email ?? "\(userId)@privaterelay.appleid.com"
+            
+            let profileRequest = CreateProfileRequest(
+                id: response.user.id,
+                username: username,
+                email: email
+            )
+            
+            let profile: UserProfile = try await client.request(
+                method: .post,
+                path: SupabaseConfig.profilesTable,
+                body: profileRequest
+            )
+            
+            currentProfile = profile
+        }
+        
+        // 6. 更新状态
+        currentUser = response.user
+        isAuthenticated = true
+    }
+    
+    // MARK: - 邮箱登录
+    
+    /// 邮箱登录
     func signIn(email: String, password: String) async throws {
         errorMessage = nil
         

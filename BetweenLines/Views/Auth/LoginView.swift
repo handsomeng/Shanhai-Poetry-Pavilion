@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     
@@ -17,6 +18,7 @@ struct LoginView: View {
     @State private var password = ""
     @State private var username = ""
     @State private var isLoading = false
+    @State private var showEmailLogin = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -31,14 +33,28 @@ struct LoginView: View {
                         // Logo 和标题
                         header
                         
-                        // 表单
-                        formSection
-                        
-                        // 提交按钮
-                        submitButton
-                        
-                        // 切换按钮
-                        switchModeButton
+                        // Apple 登录（主推荐）
+                        if !showEmailLogin {
+                            appleSignInSection
+                            
+                            // 分割线
+                            dividerSection
+                            
+                            // 邮箱登录入口
+                            emailLoginEntryButton
+                        } else {
+                            // 表单
+                            formSection
+                            
+                            // 提交按钮
+                            submitButton
+                            
+                            // 切换按钮
+                            switchModeButton
+                            
+                            // 返回按钮
+                            backToAppleButton
+                        }
                     }
                     .padding(Spacing.xl)
                 }
@@ -62,16 +78,100 @@ struct LoginView: View {
             Text("🏮")
                 .font(.system(size: 80))
             
-            Text(isSignUp ? "加入诗馆" : "欢迎回来")
+            Text("欢迎来到山海诗馆")
                 .font(Fonts.titleLarge())
                 .foregroundColor(Colors.textInk)
             
-            Text(isSignUp ? "创建账号，开始创作之旅" : "登录以发布和管理你的诗歌")
+            Text("登录以发布和管理你的诗歌")
                 .font(Fonts.bodyRegular())
                 .foregroundColor(Colors.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.top, Spacing.xl)
+    }
+    
+    // MARK: - Apple Sign In Section
+    
+    private var appleSignInSection: some View {
+        VStack(spacing: Spacing.md) {
+            SignInWithAppleButton(
+                onRequest: { request in
+                    request.requestedScopes = [.fullName, .email]
+                },
+                onCompletion: { result in
+                    handleAppleSignIn(result)
+                }
+            )
+            .signInWithAppleButtonStyle(.black)
+            .frame(height: 50)
+            .cornerRadius(CornerRadius.medium)
+            
+            Text("推荐使用 Apple 登录，快速且安全")
+                .font(Fonts.caption())
+                .foregroundColor(Colors.textSecondary)
+        }
+    }
+    
+    // MARK: - Divider
+    
+    private var dividerSection: some View {
+        HStack(spacing: Spacing.md) {
+            Rectangle()
+                .fill(Colors.textSecondary.opacity(0.3))
+                .frame(height: 1)
+            
+            Text("或")
+                .font(Fonts.bodyRegular())
+                .foregroundColor(Colors.textSecondary)
+            
+            Rectangle()
+                .fill(Colors.textSecondary.opacity(0.3))
+                .frame(height: 1)
+        }
+        .padding(.vertical, Spacing.sm)
+    }
+    
+    // MARK: - Email Login Entry
+    
+    private var emailLoginEntryButton: some View {
+        Button {
+            withAnimation {
+                showEmailLogin = true
+            }
+        } label: {
+            HStack {
+                Image(systemName: "envelope")
+                Text("使用邮箱登录")
+                    .font(Fonts.bodyRegular())
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .foregroundColor(Colors.textInk)
+            .background(Colors.white)
+            .cornerRadius(CornerRadius.medium)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .stroke(Colors.textSecondary.opacity(0.3), lineWidth: 1)
+            )
+        }
+    }
+    
+    // MARK: - Back to Apple Button
+    
+    private var backToAppleButton: some View {
+        Button {
+            withAnimation {
+                showEmailLogin = false
+                clearForm()
+            }
+        } label: {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "chevron.left")
+                Text("返回")
+            }
+            .font(Fonts.bodyRegular())
+            .foregroundColor(Colors.textSecondary)
+        }
     }
     
     // MARK: - Form
@@ -200,6 +300,40 @@ struct LoginView: View {
                     errorHandler.handle(error)
                     isLoading = false
                 }
+            }
+        }
+    }
+    
+    // MARK: - Handle Apple Sign In
+    
+    private func handleAppleSignIn(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+                errorHandler.handle(SupabaseError.unknown("无法获取 Apple 登录凭证"))
+                return
+            }
+            
+            isLoading = true
+            
+            Task {
+                do {
+                    try await authService.signInWithApple(credential: credential)
+                    await MainActor.run {
+                        dismiss()
+                    }
+                } catch {
+                    await MainActor.run {
+                        errorHandler.handle(error)
+                        isLoading = false
+                    }
+                }
+            }
+            
+        case .failure(let error):
+            // 用户取消登录不显示错误
+            if (error as NSError).code != 1001 {
+                errorHandler.handle(error)
             }
         }
     }
