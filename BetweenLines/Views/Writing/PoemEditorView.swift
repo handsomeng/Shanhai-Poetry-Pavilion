@@ -123,7 +123,8 @@ struct PoemEditorView: View {
         }
         .background(Colors.white)
         // 根据键盘高度调整底部 padding，确保输入区域不被遮挡
-        .padding(.bottom, keyboardHeight > 0 ? max(0, keyboardHeight - 200) : 0)
+        // 减去底部工具栏的高度（约60pt）让光标保持可见
+        .padding(.bottom, keyboardHeight > 0 ? max(0, keyboardHeight - 60) : 0)
         .animation(.easeOut(duration: 0.3), value: keyboardHeight)
     }
     
