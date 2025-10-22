@@ -72,11 +72,6 @@
 		name = BetweenLines;
 		packageProductDependencies = (
 			9ASUPABASE02 /* Supabase */,
-			9ASUPABASE03 /* Auth */,
-			9ASUPABASE04 /* Functions */,
-			9ASUPABASE05 /* PostgREST */,
-			9ASUPABASE06 /* Realtime */,
-			9ASUPABASE07 /* Storage */,
 		);
 		productName = BetweenLines;
 			productReference = 9A1448692EA7A8A8001833F6 /* BetweenLines.app */;
@@ -369,31 +364,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
-		};
-		9ASUPABASE03 /* Auth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Auth;
-		};
-		9ASUPABASE04 /* Functions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Functions;
-		};
-		9ASUPABASE05 /* PostgREST */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = PostgREST;
-		};
-		9ASUPABASE06 /* Realtime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Realtime;
-		};
-		9ASUPABASE07 /* Storage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9ASUPABASE01 /* XCRemoteSwiftPackageReference "supabase-swift" */;
-			productName = Storage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
