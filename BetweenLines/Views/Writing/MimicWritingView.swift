@@ -17,6 +17,7 @@ struct MimicWritingView: View {
     // AI 生成的示例诗
     @State private var aiExamplePoem: String = ""
     @State private var isLoadingExample = false
+    @State private var isExampleExpanded = false // 示例诗是否展开
     
     // 创作内容
     @State private var title = ""
@@ -152,32 +153,45 @@ struct MimicWritingView: View {
     
     private var splitView: some View {
         VStack(spacing: 0) {
-            // 上半部分：AI 示例诗（可折叠）
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                HStack {
-                    Text("示例诗歌")
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
-                    
-                    Spacer()
-                    
-                    Text("AI 生成")
-                        .font(Fonts.captionSmall())
-                        .foregroundColor(Colors.accentTeal)
-                        .padding(.horizontal, Spacing.xs)
-                        .padding(.vertical, 2)
-                        .background(Colors.accentTeal.opacity(0.1))
-                        .cornerRadius(CornerRadius.small)
+            // 上半部分：AI 示例诗（可展开）
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isExampleExpanded.toggle()
                 }
-                
-                Text(aiExamplePoem)
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .lineSpacing(6)
-                    .lineLimit(4) // 最多显示4行
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            }) {
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    HStack {
+                        Text("示例诗歌")
+                            .font(Fonts.caption())
+                            .foregroundColor(Colors.textSecondary)
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 4) {
+                            Text("AI 生成")
+                                .font(Fonts.captionSmall())
+                                .foregroundColor(Colors.accentTeal)
+                                .padding(.horizontal, Spacing.xs)
+                                .padding(.vertical, 2)
+                                .background(Colors.accentTeal.opacity(0.1))
+                                .cornerRadius(CornerRadius.small)
+                            
+                            Image(systemName: isExampleExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Colors.textSecondary)
+                        }
+                    }
+                    
+                    Text(aiExamplePoem)
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.textInk)
+                        .lineSpacing(6)
+                        .lineLimit(isExampleExpanded ? nil : 3) // 展开时无限制，否则3行
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(Spacing.md)
             }
-            .padding(Spacing.md)
+            .buttonStyle(PlainButtonStyle())
             .background(Colors.backgroundCream.opacity(0.5))
             
             Divider()

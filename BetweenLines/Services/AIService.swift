@@ -132,33 +132,49 @@ class AIService {
         )
     }
     
-    /// 生成诗歌主题（用于主题写诗）
-    func generatePoemTheme() async throws -> String {
+    /// 生成诗歌主题和引导（用于主题写诗）
+    func generatePoemThemeWithGuidance() async throws -> PoemThemeResult {
         try validateAPIKey()
         
         let prompt = """
-        请推荐一个适合写现代诗的创作主题。
+        请推荐一个适合写现代诗的创作主题，并提供创作引导。
         
-        要求：
-        1. 主题要具体而有诗意（如"雨后的窗"、"城市夜晚"、"等待"）
-        2. 不要太抽象（避免"人生"、"梦想"这类）
-        3. 能激发具体的意象和情感
-        4. 2-5个字，简洁有力
+        **要求**：
+        1. 主题：2-5个字，具体而有诗意（如"雨后的窗"、"城市夜晚"）
+        2. 引导：50字左右，提供创作角度、可用意象、情感方向等
         
-        **只输出主题本身，不要任何解释。**
+        **严格按以下 JSON 格式输出**：
+        {
+            "theme": "主题名称",
+            "guidance": "创作引导内容（50字左右）"
+        }
         
-        示例格式：
-        城市夜晚
-        雨后的窗
-        孤独的树
+        **只输出 JSON，不要任何其他内容。**
+        
+        示例：
+        {
+            "theme": "城市夜晚",
+            "guidance": "可以从街灯、人群、寂静等角度切入。描绘孤独与喧嚣的对比，探索都市人内心的疏离感。注意捕捉夜晚独有的氛围和情绪。"
+        }
         """
         
-        return try await callAI(
+        let result = try await callAI(
             prompt: prompt,
-            systemMessage: "你是一位富有创造力的诗歌导师，擅长给出启发性的创作主题。",
+            systemMessage: "你是一位富有创造力的诗歌导师，擅长给出启发性的创作主题和引导。",
             temperature: 1.0,
-            maxTokens: 50
+            maxTokens: 300
         )
+        
+        // 解析 JSON 结果
+        guard let jsonData = result.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+              let theme = json["theme"] as? String,
+              let guidance = json["guidance"] as? String else {
+            // 如果解析失败，使用默认值
+            return PoemThemeResult(theme: "日常片刻", guidance: "观察身边的小事物，捕捉瞬间的情感。可以从光影、声音、触感等感官入手，写出真实的感受。")
+        }
+        
+        return PoemThemeResult(theme: theme, guidance: guidance)
     }
     
     /// 内容审核（用于发布到广场前）
@@ -258,6 +274,14 @@ class AIService {
         
         return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+}
+
+// MARK: - Poem Theme Result
+
+/// 诗歌主题生成结果
+struct PoemThemeResult {
+    let theme: String      // 主题名称
+    let guidance: String   // 创作引导
 }
 
 // MARK: - Content Moderation Result

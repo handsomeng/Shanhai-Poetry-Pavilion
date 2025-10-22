@@ -14,8 +14,9 @@ struct ThemeWritingView: View {
     @StateObject private var subscriptionManager = SubscriptionManager.shared
     @StateObject private var toastManager = ToastManager.shared
     
-    // AI 生成的主题
+    // AI 生成的主题和引导
     @State private var aiTheme: String = ""
+    @State private var aiGuidance: String = "" // 创作引导
     @State private var isLoadingTheme = false
     
     // 创作内容
@@ -173,26 +174,38 @@ struct ThemeWritingView: View {
     // MARK: - Theme Card
     
     private var themeCard: some View {
-        HStack(spacing: Spacing.md) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("创作主题")
-                    .font(Fonts.captionSmall())
-                    .foregroundColor(Colors.textSecondary)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            // 头部：主题标题
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("创作主题")
+                        .font(Fonts.captionSmall())
+                        .foregroundColor(Colors.textSecondary)
+                    
+                    Text(aiTheme)
+                        .font(.system(size: 20, weight: .medium, design: .serif))
+                        .foregroundColor(Colors.textInk)
+                }
                 
-                Text(aiTheme)
-                    .font(.system(size: 20, weight: .medium, design: .serif))
-                    .foregroundColor(Colors.textInk)
+                Spacer()
+                
+                Text("AI 推荐")
+                    .font(Fonts.captionSmall())
+                    .foregroundColor(Colors.accentTeal)
+                    .padding(.horizontal, Spacing.xs)
+                    .padding(.vertical, 2)
+                    .background(Colors.accentTeal.opacity(0.1))
+                    .cornerRadius(CornerRadius.small)
             }
             
-            Spacer()
-            
-            Text("AI 推荐")
-                .font(Fonts.captionSmall())
-                .foregroundColor(Colors.accentTeal)
-                .padding(.horizontal, Spacing.xs)
-                .padding(.vertical, 2)
-                .background(Colors.accentTeal.opacity(0.1))
-                .cornerRadius(CornerRadius.small)
+            // 引导内容
+            if !aiGuidance.isEmpty {
+                Text(aiGuidance)
+                    .font(Fonts.caption())
+                    .foregroundColor(Colors.textSecondary)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(Spacing.md)
         .background(Colors.backgroundCream.opacity(0.5))
@@ -237,9 +250,10 @@ struct ThemeWritingView: View {
         
         Task {
             do {
-                let theme = try await AIService.shared.generatePoemTheme()
+                let result = try await AIService.shared.generatePoemThemeWithGuidance()
                 await MainActor.run {
-                    aiTheme = theme
+                    aiTheme = result.theme
+                    aiGuidance = result.guidance
                     isLoadingTheme = false
                 }
             } catch {
