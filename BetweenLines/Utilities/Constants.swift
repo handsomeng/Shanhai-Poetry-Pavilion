@@ -80,8 +80,14 @@ enum Fonts {
     
     // 兼容旧代码的别名
     static func displayLarge() -> Font { h1() }
+    static func displayMedium() -> Font { h2() }
     static func titleLarge() -> Font { h2() }
+    static func titleMedium() -> Font { h2Small() }
+    static func titleSmall() -> Font { bodyLarge() }
     static func bodyRegular() -> Font { body() }
+    static func bodyLight() -> Font { bodySmall() }
+    static func footnote() -> Font { captionSmall() }
+    static func monospace() -> Font { .system(size: 13, weight: .ultraLight, design: .monospaced) }
 }
 
 // MARK: - 设计系统：间距（Dribbble 级别留白）
