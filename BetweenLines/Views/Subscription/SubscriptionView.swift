@@ -314,7 +314,7 @@ private struct SubscriptionOptionCard: View {
                 
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(product.displayPrice)
-                        .font(Fonts.h3())
+                        .font(Fonts.h2Small())
                         .foregroundColor(Colors.accentTeal)
                     
                     if subscriptionType == .quarterly || subscriptionType == .yearly {

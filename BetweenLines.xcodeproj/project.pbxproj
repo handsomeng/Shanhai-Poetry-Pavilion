@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		61122FA22EA8CD5A00E7E0F6 /* Products 2.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 61122FA12EA8CD5A00E7E0F6 /* Products 2.storekit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		61122FA12EA8CD5A00E7E0F6 /* Products 2.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Products 2.storekit"; sourceTree = "<group>"; };
 		9A1448692EA7A8A8001833F6 /* BetweenLines.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BetweenLines.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		9A1448602EA7A8A8001833F6 = {
 			isa = PBXGroup;
 			children = (
+				61122FA12EA8CD5A00E7E0F6 /* Products 2.storekit */,
 				9A14486B2EA7A8A8001833F6 /* BetweenLines */,
 				9A14486A2EA7A8A8001833F6 /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61122FA22EA8CD5A00E7E0F6 /* Products 2.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,7 +275,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = HandsoMeng.BetweenLines;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shanhai.poetry;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -302,7 +309,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = HandsoMeng.BetweenLines;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shanhai.poetry;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
