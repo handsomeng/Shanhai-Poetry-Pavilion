@@ -11,6 +11,8 @@ struct PoemDetailView: View {
     
     @StateObject private var poemManager = PoemManager.shared
     @State var poem: Poem
+    @State private var likeScale: CGFloat = 1.0
+    @State private var favoriteScale: CGFloat = 1.0
     
     var body: some View {
         ZStack {
@@ -107,6 +109,18 @@ struct PoemDetailView: View {
         HStack(spacing: Spacing.xl) {
             // 点赞
             Button(action: {
+                // 触发动画
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                    likeScale = 1.3
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        likeScale = 1.0
+                    }
+                }
+                
+                // 更新状态
                 poemManager.toggleLike(for: poem)
                 if let updated = poemManager.getPoem(by: poem.id) {
                     poem = updated
@@ -116,15 +130,29 @@ struct PoemDetailView: View {
                     Image(systemName: poem.isLiked ? "heart.fill" : "heart")
                         .font(.system(size: 24))
                         .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
+                        .scaleEffect(likeScale)
                     
                     Text("\(poem.likeCount)")
                         .font(Fonts.caption())
                         .foregroundColor(Colors.textSecondary)
+                        .contentTransition(.numericText())
                 }
             }
             
             // 收藏
             Button(action: {
+                // 触发动画
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                    favoriteScale = 1.3
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        favoriteScale = 1.0
+                    }
+                }
+                
+                // 更新状态
                 poemManager.toggleFavorite(for: poem)
                 if let updated = poemManager.getPoem(by: poem.id) {
                     poem = updated
@@ -134,6 +162,7 @@ struct PoemDetailView: View {
                     Image(systemName: poem.isFavorited ? "star.fill" : "star")
                         .font(.system(size: 24))
                         .foregroundColor(poem.isFavorited ? Colors.accentTeal : Colors.textSecondary)
+                        .scaleEffect(favoriteScale)
                     
                     Text(poem.isFavorited ? "已收藏" : "收藏")
                         .font(Fonts.caption())
