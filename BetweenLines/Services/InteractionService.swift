@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// 互动服务
 @MainActor

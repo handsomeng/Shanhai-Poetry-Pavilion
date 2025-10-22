@@ -10,7 +10,7 @@ import SwiftUI
 struct LoginView: View {
     
     @StateObject private var authService = AuthService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var errorHandler = ErrorHandler.shared
     
     @State private var isSignUp = false
     @State private var email = ""
@@ -127,7 +127,7 @@ struct LoginView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 } else {
                     Text(isSignUp ? "注册" : "登录")
-                        .font(Fonts.buttonLarge())
+                        .font(Fonts.bodyLarge())
                 }
             }
             .frame(maxWidth: .infinity)
@@ -185,19 +185,19 @@ struct LoginView: View {
                 if isSignUp {
                     try await authService.signUp(email: email, password: password, username: username)
                     await MainActor.run {
-                        toastManager.show("注册成功！欢迎加入诗馆", type: .success)
+                        // 注册成功，直接关闭
                         dismiss()
                     }
                 } else {
                     try await authService.signIn(email: email, password: password)
                     await MainActor.run {
-                        toastManager.show("登录成功！", type: .success)
+                        // 登录成功，直接关闭
                         dismiss()
                     }
                 }
             } catch {
                 await MainActor.run {
-                    toastManager.show(error.localizedDescription, type: .error)
+                    errorHandler.handle(error)
                     isLoading = false
                 }
             }

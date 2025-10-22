@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// 认证服务
 @MainActor

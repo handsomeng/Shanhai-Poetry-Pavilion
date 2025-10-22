@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 /// 诗歌服务
 @MainActor

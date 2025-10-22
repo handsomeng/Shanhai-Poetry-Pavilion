@@ -9,10 +9,14 @@ import SwiftUI
 
 struct ExploreView: View {
     
-    // 暂时使用本地模式
-    @StateObject private var poemManager = PoemManager.shared
+    // 后端服务
+    @StateObject private var authService = AuthService.shared
+    @StateObject private var poemService = PoemService.shared
+    @StateObject private var interactionService = InteractionService.shared
     
+    // UI 状态
     @State private var selectedFilter: FilterType = .latest
+    @State private var showLoginSheet = false
     
     enum FilterType: String, CaseIterable {
         case latest = "最新"
@@ -38,6 +42,51 @@ struct ExploreView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if authService.isAuthenticated {
+                        // 已登录，显示用户名
+                        Text(authService.currentProfile?.username ?? "")
+                            .font(Fonts.caption())
+                            .foregroundColor(Colors.textSecondary)
+                    } else {
+                        // 未登录，显示登录按钮
+                        Button("登录") {
+                            showLoginSheet = true
+                        }
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.accentTeal)
+                    }
+                }
+            }
+            .sheet(isPresented: $showLoginSheet) {
+                LoginView()
+            }
+            .task {
+                // 加载广场诗歌
+                await loadPoems()
+            }
+            .refreshable {
+                // 下拉刷新
+                await loadPoems()
+            }
+        }
+    }
+    
+    // MARK: - Load Poems
+    
+    private func loadPoems() async {
+        do {
+            switch selectedFilter {
+            case .latest:
+                try await poemService.fetchSquarePoems(limit: 50)
+            case .popular:
+                try await poemService.fetchPopularPoems(limit: 50)
+            case .random:
+                try await poemService.fetchSquarePoems(limit: 50)
+            }
+        } catch {
+            print("加载诗歌失败: \(error)")
         }
     }
     
@@ -65,6 +114,9 @@ struct ExploreView: View {
             ForEach(FilterType.allCases, id: \.self) { filter in
                 Button(action: {
                     selectedFilter = filter
+                    Task {
+                        await loadPoems()
+                    }
                 }) {
                     Text(filter.rawValue)
                         .font(Fonts.bodyRegular())
@@ -133,13 +185,13 @@ struct ExploreView: View {
     // MARK: - Computed Properties
     
     private var filteredPoems: [Poem] {
+        let poems = poemService.squarePoems.map { $0.toLocalPoem() }
+        
         switch selectedFilter {
-        case .latest:
-            return poemManager.explorePoems
-        case .popular:
-            return poemManager.popularPoems
+        case .latest, .popular:
+            return poems
         case .random:
-            return poemManager.explorePoems.shuffled()
+            return poems.shuffled()
         }
     }
 }
