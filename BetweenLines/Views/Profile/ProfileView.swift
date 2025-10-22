@@ -217,10 +217,12 @@ struct ProfileView: View {
     
     private func destinationView(for poem: Poem) -> some View {
         Group {
-            if selectedTab == .drafts {
-                DirectWritingView(existingPoem: poem)
-            } else {
+            if selectedTab == .favorites {
+                // 赞过的诗歌只能查看
                 PoemDetailView(poem: poem)
+            } else {
+                // 诗集和草稿都可以编辑
+                DirectWritingView(existingPoem: poem)
             }
         }
     }
@@ -254,14 +256,15 @@ private struct MyPoemCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
+            // 标题和作者
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(poem.title.isEmpty ? "无标题" : poem.title)
-                        .font(Fonts.titleMedium())
+                        .font(Fonts.bodyLarge())
                         .foregroundColor(Colors.textInk)
                     
-                    Text(poem.shortDate)
-                        .font(Fonts.caption())
+                    Text(poem.authorName)
+                        .font(Fonts.captionSmall())
                         .foregroundColor(Colors.textSecondary)
                 }
                 
@@ -269,51 +272,45 @@ private struct MyPoemCard: View {
                 
                 Button(action: onDelete) {
                     Image(systemName: "trash")
+                        .font(.system(size: 16))
                         .foregroundColor(Colors.error)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
             
+            // 诗歌内容
             Text(poem.content)
-                .font(Fonts.bodyPoem())
+                .font(Fonts.body())
                 .foregroundColor(Colors.textInk)
-                .lineSpacing(6)
+                .lineSpacing(4)
                 .lineLimit(4)
             
+            // 底部信息
             HStack {
-                if !poem.isPublished {
-                    Text("草稿")
+                HStack(spacing: 4) {
+                    if poem.isLiked {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.red)
+                    } else {
+                        Image(systemName: "heart")
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                    Text("\(poem.likeCount)")
                         .font(Fonts.footnote())
-                        .foregroundColor(Colors.textSecondary)
-                        .padding(.horizontal, Spacing.sm)
-                        .padding(.vertical, 2)
-                        .background(Colors.textSecondary.opacity(0.1))
-                        .cornerRadius(4)
                 }
+                .foregroundColor(Colors.textSecondary)
                 
                 Spacer()
                 
-                HStack(spacing: Spacing.md) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "doc.text")
-                            .font(.system(size: 10))
-                        Text("\(poem.wordCount) 字")
-                    }
-                    
-                    if poem.isPublished {
-                        HStack(spacing: 4) {
-                            Image(systemName: "heart")
-                                .font(.system(size: 10))
-                            Text("\(poem.likeCount)")
-                        }
-                    }
-                }
-                .font(Fonts.footnote())
-                .foregroundColor(Colors.textSecondary)
+                Text(poem.shortDate)
+                    .font(Fonts.footnote())
+                    .foregroundColor(Colors.textSecondary)
             }
         }
-        .padding(Spacing.md)
+        .padding(Spacing.lg)
         .background(Colors.white)
-        .cornerRadius(CornerRadius.medium)
+        .cornerRadius(CornerRadius.card)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 }
 
