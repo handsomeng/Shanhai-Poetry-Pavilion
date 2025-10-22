@@ -122,11 +122,9 @@ struct PoemEditorDetailView: View {
                         .font(Fonts.caption())
                         .foregroundColor(Colors.textSecondary)
                     
-                    if let mode = poem.writingMode {
-                        Text("创作方式：\(mode.rawValue)")
-                            .font(Fonts.caption())
-                            .foregroundColor(Colors.textSecondary)
-                    }
+                    Text("创作方式：\(poem.writingMode.rawValue)")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
                     
                     if let reference = poem.referencePoem {
                         Text("参考：\(reference)")

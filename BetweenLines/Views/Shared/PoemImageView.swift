@@ -204,17 +204,12 @@ struct PoemImageView: View {
     
     @MainActor
     private func renderPoemAsImage() async -> UIImage? {
-        // 创建渲染器
+        // 创建渲染器（在 MainActor 上直接渲染）
         let renderer = ImageRenderer(content: poemTemplate)
         renderer.scale = 3.0 // 3x 分辨率，确保清晰
         
-        // 异步渲染，避免卡住
-        return await withCheckedContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                let image = renderer.uiImage
-                continuation.resume(returning: image)
-            }
-        }
+        // ImageRenderer 已经优化过性能，直接返回即可
+        return renderer.uiImage
     }
 }
 

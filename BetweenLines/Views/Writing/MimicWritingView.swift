@@ -223,7 +223,7 @@ struct MimicWritingView: View {
         guard let reference = selectedReference else { return }
         
         // 创建新诗歌并保存到诗集
-        var poem = Poem(
+        let poem = Poem(
             title: title,
             content: content,
             authorName: poemManager.currentUserName,

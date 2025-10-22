@@ -167,7 +167,7 @@ struct DirectWritingView: View {
             currentPoem = updated
         } else {
             // 创建新诗歌并保存到诗集
-            var newPoem = Poem(
+            let newPoem = Poem(
                 title: title,
                 content: content,
                 authorName: poemManager.currentUserName,
