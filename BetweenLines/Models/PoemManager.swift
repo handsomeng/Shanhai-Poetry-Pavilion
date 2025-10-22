@@ -353,6 +353,38 @@ class PoemManager: ObservableObject {
         return (collection, drafts, likes)
     }
     
+    // MARK: - 诗人称号
+    
+    /// 当前诗人称号
+    var currentPoetTitle: PoetTitle {
+        let totalCount = myCollection.count
+        return PoetTitle.title(forPoemCount: totalCount)
+    }
+    
+    /// 所有称号的解锁状态
+    var titleAchievements: [TitleAchievement] {
+        let totalCount = myCollection.count
+        return PoetTitle.allCases.map { title in
+            TitleAchievement(
+                title: title,
+                isUnlocked: totalCount >= title.requiredCount,
+                currentCount: totalCount
+            )
+        }
+    }
+    
+    /// 距离下一称号还需多少首
+    var poemsToNextTitle: Int? {
+        let totalCount = myCollection.count
+        return currentPoetTitle.poemsToNextTitle(currentCount: totalCount)
+    }
+    
+    /// 到下一称号的进度（0.0 - 1.0）
+    var progressToNextTitle: Double {
+        let totalCount = myCollection.count
+        return currentPoetTitle.progress(currentCount: totalCount)
+    }
+    
     // MARK: - 数据管理
     
     /// 删除所有诗歌（用于重置数据）

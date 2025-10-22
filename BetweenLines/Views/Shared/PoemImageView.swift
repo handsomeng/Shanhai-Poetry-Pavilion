@@ -11,6 +11,7 @@ struct PoemImageView: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var poemManager = PoemManager.shared
     let poem: Poem
     
     @State private var renderedImage: UIImage?
@@ -81,18 +82,32 @@ struct PoemImageView: View {
                     .frame(height: 0.5)
                     .foregroundColor(Color(hex: "E5E5E5"))
                 
-                HStack {
-                    Text(poem.authorName)
+                // 第一行：第 X 首诗
+                Text("第 \(poemManager.myCollection.count) 首诗")
+                    .font(.system(size: 13, weight: .light))
+                    .foregroundColor(Color(hex: "ABABAB"))
+                    .tracking(1.5)
+                
+                // 第二行：称号 · 作者名
+                HStack(spacing: 4) {
+                    Text(poemManager.currentPoetTitle.displayName)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(Color(hex: "6A6A6A"))
+                    
+                    Text("·")
                         .font(.system(size: 14, weight: .ultraLight))
                         .foregroundColor(Color(hex: "ABABAB"))
                     
-                    Spacer()
-                    
-                    Text("山海诗馆")
-                        .font(.system(size: 13, weight: .ultraLight, design: .serif))
+                    Text(poem.authorName)
+                        .font(.system(size: 14, weight: .ultraLight))
                         .foregroundColor(Color(hex: "ABABAB"))
-                        .tracking(2)
                 }
+                
+                // 第三行：山海诗馆
+                Text("山海诗馆")
+                    .font(.system(size: 12, weight: .ultraLight, design: .serif))
+                    .foregroundColor(Color(hex: "ABABAB"))
+                    .tracking(2)
             }
         }
         .padding(.horizontal, 56)

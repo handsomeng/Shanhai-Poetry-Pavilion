@@ -17,6 +17,7 @@ struct ProfileView: View {
     @State private var showingSettings = false
     @State private var showingSubscription = false
     @State private var showingMembershipDetail = false
+    @State private var showingPoetTitle = false
     
     enum ProfileTab: String, CaseIterable {
         case collection = "诗集"
@@ -65,6 +66,9 @@ struct ProfileView: View {
             .sheet(isPresented: $showingMembershipDetail) {
                 MembershipDetailView()
             }
+            .sheet(isPresented: $showingPoetTitle) {
+                PoetTitleView()
+            }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
             Button("取消", role: .cancel) {}
@@ -79,25 +83,60 @@ struct ProfileView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        HStack(spacing: 6) {
-            Text("诗人")
-                .font(Fonts.h2Small())
-                .foregroundColor(Colors.textSecondary)
-            
-            Text("·")
-                .font(Fonts.h2Small())
-                .foregroundColor(Colors.textSecondary)
-            
-            Text(String(poemManager.currentUserName.prefix(7)))
-                .font(Fonts.h2Small())
-                .foregroundColor(Colors.textInk)
-            
-            // 会员标识
-            if subscriptionManager.isSubscribed {
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(Colors.accentTeal)
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            // 第一行：诗人 · XXX + 会员标识
+            HStack(spacing: 6) {
+                Text("诗人")
+                    .font(Fonts.h2Small())
+                    .foregroundColor(Colors.textSecondary)
+                
+                Text("·")
+                    .font(Fonts.h2Small())
+                    .foregroundColor(Colors.textSecondary)
+                
+                Text(String(poemManager.currentUserName.prefix(7)))
+                    .font(Fonts.h2Small())
+                    .foregroundColor(Colors.textInk)
+                
+                // 会员标识
+                if subscriptionManager.isSubscribed {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(hex: "D4AF37"))
+                }
             }
+            
+            // 第二行：称号 + 统计（可点击）
+            Button(action: {
+                showingPoetTitle = true
+            }) {
+                HStack(spacing: 8) {
+                    // 称号图标
+                    Text(poemManager.currentPoetTitle.icon)
+                        .font(.system(size: 16))
+                    
+                    // 称号名称
+                    Text(poemManager.currentPoetTitle.displayName)
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.accentTeal)
+                    
+                    // 分隔符
+                    Text("·")
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.textSecondary.opacity(0.5))
+                    
+                    // 已写诗歌数
+                    Text("已写 \(poemManager.myCollection.count) 首")
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.textSecondary)
+                    
+                    // 箭头指示可点击
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Colors.textSecondary.opacity(0.4))
+                }
+            }
+            .buttonStyle(PlainButtonStyle())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
