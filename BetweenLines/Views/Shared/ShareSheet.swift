@@ -19,6 +19,7 @@ struct ShareSheet: View {
     @State private var showingAIComment = false
     @State private var aiComment = ""
     @State private var isLoadingAI = false
+    @State private var isPublishing = false
     
     var body: some View {
         NavigationView {
@@ -85,12 +86,18 @@ struct ShareSheet: View {
     
     private var bottomActions: some View {
         VStack(spacing: Spacing.xs) {
-            // 分享到广场
-            if !poem.isPublished {
+            // 分享到广场（只有未发布的才显示）
+            if !poem.inSquare {
                 Button(action: publishToSquare) {
                     HStack {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("分享到广场")
+                        if isPublishing {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        Text(isPublishing ? "发布中..." : "分享到广场")
                     }
                     .font(Fonts.bodyRegular())
                     .foregroundColor(.white)
@@ -99,6 +106,7 @@ struct ShareSheet: View {
                     .background(Colors.accentTeal)
                     .cornerRadius(CornerRadius.medium)
                 }
+                .disabled(isPublishing)
                 .scaleButtonStyle()
             }
             
@@ -149,12 +157,24 @@ struct ShareSheet: View {
     // MARK: - Actions
     
     private func publishToSquare() {
-        poemManager.publishPoem(poem)
-        toastManager.showSuccess("诗歌已发布到广场")
+        isPublishing = true
         
-        // 延迟关闭，让用户看到成功提示
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            dismiss()
+        do {
+            try poemManager.publishToSquare(poem)
+            toastManager.showSuccess("诗歌已发布到广场")
+            
+            // 延迟关闭，让用户看到成功提示
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                isPublishing = false
+                dismiss()
+            }
+        } catch {
+            isPublishing = false
+            if let publishError = error as? PoemPublishError {
+                toastManager.showError(publishError.errorDescription ?? "发布失败")
+            } else {
+                toastManager.showError("发布失败，请重试")
+            }
         }
     }
     

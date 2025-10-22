@@ -9,9 +9,12 @@ import SwiftUI
 
 struct PoemDetailView: View {
     
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
+    @StateObject private var toastManager = ToastManager.shared
     @State var poem: Poem
     @State private var likeScale: CGFloat = 1.0
+    @State private var showingDeleteAlert = false
     
     var body: some View {
         ZStack {
@@ -43,6 +46,30 @@ struct PoemDetailView: View {
         }
         .navigationTitle("诗歌详情")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if poem.authorName == poemManager.currentUserName {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingDeleteAlert = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(Colors.error)
+                    }
+                }
+            }
+        }
+        .alert("从广场删除", isPresented: $showingDeleteAlert) {
+            Button("取消", role: .cancel) {}
+            Button("删除", role: .destructive) {
+                poemManager.removeFromSquare(poem)
+                toastManager.showSuccess("已从广场删除")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
+            }
+        } message: {
+            Text("确定要从广场删除这首诗吗？删除后其他用户将无法看到。")
+        }
     }
     
     // MARK: - Header Section
@@ -133,7 +160,7 @@ struct PoemDetailView: View {
                         .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
                         .scaleEffect(likeScale)
                     
-                    Text("\(poem.likeCount)")
+                    Text("\(poem.squareLikeCount)")
                         .font(Fonts.caption())
                         .foregroundColor(Colors.textSecondary)
                         .contentTransition(.numericText())
