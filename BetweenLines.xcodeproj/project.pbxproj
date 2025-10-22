@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		61122FA22EA8CD5A00E7E0F6 /* Products 2.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 61122FA12EA8CD5A00E7E0F6 /* Products 2.storekit */; };
-		61A2D5BC2EA921560025F504 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 61A2D4ED2EA920230025F504 /* Supabase */; };
+		61A2D5BC2EA921560025F504 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,7 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61A2D5BC2EA921560025F504 /* Supabase in Frameworks */,
+				61A2D5BC2EA921560025F504 /* (null) in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,10 +71,10 @@
 			fileSystemSynchronizedGroups = (
 				9A14486B2EA7A8A8001833F6 /* BetweenLines */,
 			);
-		name = BetweenLines;
-		packageProductDependencies = (
-		);
-		productName = BetweenLines;
+			name = BetweenLines;
+			packageProductDependencies = (
+			);
+			productName = BetweenLines;
 			productReference = 9A1448692EA7A8A8001833F6 /* BetweenLines.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -100,11 +100,11 @@
 				en,
 				Base,
 			);
-		mainGroup = 9A1448602EA7A8A8001833F6;
-		minimizedProjectReferenceProxies = 1;
-		packageReferences = (
-		);
-		preferredProjectObjectVersion = 77;
+			mainGroup = 9A1448602EA7A8A8001833F6;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 9A14486A2EA7A8A8001833F6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
