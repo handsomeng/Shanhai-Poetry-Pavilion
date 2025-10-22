@@ -202,12 +202,12 @@ private struct TitleRow: View {
                 Text(achievement.title.displayName)
                     .font(Fonts.bodyLarge())
                     .foregroundColor(achievement.isUnlocked ? Colors.textInk : Colors.textSecondary)
-                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
                 
                 Text(achievement.title.description)
                     .font(Fonts.caption())
                     .foregroundColor(Colors.textSecondary)
-                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
             Spacer()

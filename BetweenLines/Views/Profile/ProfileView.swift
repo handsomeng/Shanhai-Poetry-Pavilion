@@ -150,7 +150,7 @@ struct ProfileView: View {
                             Text("山海已在你心间")
                                 .font(Fonts.bodyLarge())
                                 .foregroundColor(Color(hex: "B8860B"))
-                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
                             
                             if let subscription = subscriptionManager.currentSubscription {
                                 HStack(spacing: 4) {
@@ -166,7 +166,7 @@ struct ProfileView: View {
                                         .font(Fonts.caption())
                                         .foregroundColor(Colors.textSecondary)
                                 }
-                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
                             }
                         }
                         
@@ -196,12 +196,12 @@ struct ProfileView: View {
                             Text("升级会员")
                                 .font(Fonts.bodyLarge())
                                 .foregroundColor(Colors.textInk)
-                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
                             
                             Text("解锁全部高级功能")
                                 .font(Fonts.caption())
                                 .foregroundColor(Colors.textSecondary)
-                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
                         }
                         
                         Spacer()
