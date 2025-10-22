@@ -36,8 +36,38 @@ struct SettingsView: View {
                         // 关于区域
                         settingsSection(title: "关于应用") {
                             infoRow(label: "应用名称", value: AppConstants.appName)
+                            
+                            Divider()
+                                .padding(.horizontal, Spacing.md)
+                            
                             infoRow(label: "版本号", value: "v\(AppConstants.version)")
-                            infoRow(label: "开发者", value: "HandsoMeng")
+                            
+                            Divider()
+                                .padding(.horizontal, Spacing.md)
+                            
+                            // 开发者信息（可点击）
+                            Button(action: {
+                                if let url = URL(string: "https://www.handsomeng.com") {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                HStack {
+                                    Text("开发者")
+                                        .font(Fonts.bodyRegular())
+                                        .foregroundColor(Colors.textSecondary)
+                                    Spacer()
+                                    Text("HandsoMeng")
+                                        .font(Fonts.bodyRegular())
+                                        .foregroundColor(Colors.accentTeal)
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.system(size: 12, weight: .light))
+                                        .foregroundColor(Colors.accentTeal.opacity(0.6))
+                                }
+                                .padding(.vertical, Spacing.md)
+                                .padding(.horizontal, Spacing.md)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                         
                         // 危险操作区域
@@ -122,10 +152,12 @@ struct SettingsView: View {
                 content()
             }
             .background(Colors.white)
+            .cornerRadius(CornerRadius.card)
             .overlay(
-                Rectangle()
-                    .stroke(Colors.border, lineWidth: 0.3)
+                RoundedRectangle(cornerRadius: CornerRadius.card)
+                    .stroke(Colors.border.opacity(0.3), lineWidth: 1)
             )
+            .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
         }
     }
     
