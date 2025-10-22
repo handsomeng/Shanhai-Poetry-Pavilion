@@ -22,11 +22,17 @@ struct Poem: Identifiable, Equatable {
     var referencePoem: String?         // 参考诗歌（模仿模式下使用）
     var aiComment: String?             // AI 点评
     
+    // 存储位置（新逻辑）
+    var inMyCollection: Bool           // 是否在【我的诗集】
+    var inSquare: Bool                 // 是否在【广场】
+    var squareId: String?              // 广场上的ID（如果发布过）
+    var squarePublishedAt: Date?       // 发布到广场的时间
+    var squareLikeCount: Int           // 广场上的点赞数
+    
     // 社交数据
-    var likeCount: Int                 // 点赞数
+    var likeCount: Int                 // 本地点赞数（废弃，改用 squareLikeCount）
     var isLiked: Bool                  // 当前用户是否点赞
-    var isFavorited: Bool              // 是否收藏
-    var isPublished: Bool              // 是否发布（否则是草稿）
+    var isPublished: Bool              // 是否发布（废弃，改用 inSquare）
     
     // 初始化方法
     init(
@@ -40,9 +46,13 @@ struct Poem: Identifiable, Equatable {
         writingMode: WritingMode = .direct,
         referencePoem: String? = nil,
         aiComment: String? = nil,
+        inMyCollection: Bool = false,
+        inSquare: Bool = false,
+        squareId: String? = nil,
+        squarePublishedAt: Date? = nil,
+        squareLikeCount: Int = 0,
         likeCount: Int = 0,
         isLiked: Bool = false,
-        isFavorited: Bool = false,
         isPublished: Bool = false
     ) {
         self.id = id
@@ -55,9 +65,13 @@ struct Poem: Identifiable, Equatable {
         self.writingMode = writingMode
         self.referencePoem = referencePoem
         self.aiComment = aiComment
+        self.inMyCollection = inMyCollection
+        self.inSquare = inSquare
+        self.squareId = squareId
+        self.squarePublishedAt = squarePublishedAt
+        self.squareLikeCount = squareLikeCount
         self.likeCount = likeCount
         self.isLiked = isLiked
-        self.isFavorited = isFavorited
         self.isPublished = isPublished
     }
     
@@ -93,7 +107,8 @@ extension Poem: Codable {
     enum CodingKeys: String, CodingKey {
         case id, title, content, authorName, createdAt, updatedAt
         case tags, writingMode, referencePoem, aiComment
-        case likeCount, isLiked, isFavorited, isPublished
+        case inMyCollection, inSquare, squareId, squarePublishedAt, squareLikeCount
+        case likeCount, isLiked, isPublished
     }
 }
 
@@ -117,14 +132,18 @@ extension Poem {
             authorName: "行者",
             tags: ["城市", "夜晚", "孤独"],
             writingMode: .direct,
-            likeCount: 23,
+            inSquare: true,
+            squareId: UUID().uuidString,
+            squarePublishedAt: Date(),
+            squareLikeCount: 23,
             isPublished: true
         )
     }
     
     /// 多个示例诗歌
     static var examples: [Poem] {
-        [
+        let now = Date()
+        return [
             Poem(
                 title: "城市夜晚",
                 content: """
@@ -138,9 +157,13 @@ extension Poem {
                 我还在路上
                 """,
                 authorName: "行者",
+                createdAt: now.addingTimeInterval(-86400 * 5),
                 tags: ["城市", "夜晚"],
                 writingMode: .direct,
-                likeCount: 23,
+                inSquare: true,
+                squareId: UUID().uuidString,
+                squarePublishedAt: now.addingTimeInterval(-86400 * 5),
+                squareLikeCount: 23,
                 isPublished: true
             ),
             Poem(
@@ -155,9 +178,13 @@ extension Poem {
                 雨还在下
                 """,
                 authorName: "诗人甲",
+                createdAt: now.addingTimeInterval(-86400 * 4),
                 tags: ["雨", "思念"],
                 writingMode: .theme,
-                likeCount: 45,
+                inSquare: true,
+                squareId: UUID().uuidString,
+                squarePublishedAt: now.addingTimeInterval(-86400 * 4),
+                squareLikeCount: 45,
                 isPublished: true
             ),
             Poem(
@@ -174,9 +201,13 @@ extension Poem {
                 窗
                 """,
                 authorName: "云游",
+                createdAt: now.addingTimeInterval(-86400 * 3),
                 tags: ["窗", "自由"],
                 writingMode: .direct,
-                likeCount: 67,
+                inSquare: true,
+                squareId: UUID().uuidString,
+                squarePublishedAt: now.addingTimeInterval(-86400 * 3),
+                squareLikeCount: 67,
                 isPublished: true
             ),
             Poem(
@@ -190,9 +221,13 @@ extension Poem {
                 继续等
                 """,
                 authorName: "行者",
+                createdAt: now.addingTimeInterval(-86400 * 2),
                 tags: ["等待", "孤独"],
                 writingMode: .theme,
-                likeCount: 34,
+                inSquare: true,
+                squareId: UUID().uuidString,
+                squarePublishedAt: now.addingTimeInterval(-86400 * 2),
+                squareLikeCount: 34,
                 isPublished: true
             ),
             Poem(
@@ -209,9 +244,13 @@ extension Poem {
                 洗不掉
                 """,
                 authorName: "诗人甲",
+                createdAt: now.addingTimeInterval(-86400 * 1),
                 tags: ["海", "记忆"],
                 writingMode: .direct,
-                likeCount: 89,
+                inSquare: true,
+                squareId: UUID().uuidString,
+                squarePublishedAt: now.addingTimeInterval(-86400 * 1),
+                squareLikeCount: 89,
                 isPublished: true
             )
         ]
