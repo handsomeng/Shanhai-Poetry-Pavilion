@@ -222,15 +222,19 @@ struct MimicWritingView: View {
     private func savePoem() {
         guard let reference = selectedReference else { return }
         
-        let poem = poemManager.createDraft(
+        // 创建新诗歌并保存到诗集
+        var poem = Poem(
             title: title,
             content: content,
+            authorName: poemManager.currentUserName,
             tags: [],
             writingMode: .mimic,
-            referencePoem: "《\(reference.title)》- \(reference.author)"
+            referencePoem: "《\(reference.title)》- \(reference.author)",
+            inMyCollection: true,  // 保存到诗集
+            inSquare: false
         )
         currentPoem = poem
-        poemManager.savePoem(poem)
+        poemManager.saveToCollection(poem)
         
         // 保存成功后，显示分享选项
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
