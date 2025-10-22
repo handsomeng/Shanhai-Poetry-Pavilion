@@ -17,12 +17,11 @@ extension SquarePoem {
             title: title,
             content: content,
             authorName: authorUsername,
-            style: style,
-            tags: tags ?? [],
             createdAt: ISO8601DateFormatter().date(from: createdAt) ?? Date(),
-            isPublic: true,
+            tags: tags ?? [],
+            inSquare: true,
             squareLikeCount: likeCount,
-            squareCommentCount: commentCount
+            isPublished: true
         )
     }
 }
@@ -37,12 +36,11 @@ extension RemotePoem {
             title: title,
             content: content,
             authorName: authorName,
-            style: style,
-            tags: tags ?? [],
             createdAt: ISO8601DateFormatter().date(from: createdAt) ?? Date(),
-            isPublic: isPublic,
+            tags: tags ?? [],
+            inSquare: isPublic,
             squareLikeCount: likeCount,
-            squareCommentCount: commentCount
+            isPublished: isPublic
         )
     }
 }
