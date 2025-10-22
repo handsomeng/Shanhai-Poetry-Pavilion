@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 
 /// 诗歌编辑器（通用组件）
 struct PoemEditorView: View {
@@ -17,8 +16,6 @@ struct PoemEditorView: View {
     let placeholder: String
     let showWordCount: Bool
     
-    // 监听键盘事件
-    @State private var keyboardHeight: CGFloat = 0
     
     init(
         title: Binding<String>,
@@ -46,26 +43,6 @@ struct PoemEditorView: View {
             // 底部工具栏
             if showWordCount {
                 bottomToolbar
-            }
-        }
-        .onAppear {
-            // 监听键盘显示/隐藏事件
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillShowNotification,
-                object: nil,
-                queue: .main
-            ) { notification in
-                if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
-                    keyboardHeight = keyboardFrame.height
-                }
-            }
-            
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillHideNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                keyboardHeight = 0
             }
         }
     }
@@ -122,10 +99,6 @@ struct PoemEditorView: View {
                 .background(Colors.white)
         }
         .background(Colors.white)
-        // 根据键盘高度调整底部 padding，确保输入区域不被遮挡
-        // 减去底部工具栏的高度（约60pt）让光标保持可见
-        .padding(.bottom, keyboardHeight > 0 ? max(0, keyboardHeight - 60) : 0)
-        .animation(.easeOut(duration: 0.3), value: keyboardHeight)
     }
     
     // MARK: - Bottom Toolbar
