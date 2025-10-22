@@ -27,11 +27,6 @@ struct WritingView: View {
                         // 三种创作模式
                         modesSection
                         
-                        // 最近草稿
-                        if !poemManager.myDrafts.isEmpty {
-                            draftsSection
-                        }
-                        
                         Spacer()
                             .frame(height: Spacing.xl)
                     }

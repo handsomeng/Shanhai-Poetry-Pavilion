@@ -16,9 +16,9 @@ struct ProfileView: View {
     @State private var showingSettings = false
     
     enum ProfileTab: String, CaseIterable {
-        case published = "已发布"
+        case published = "诗集"
         case drafts = "草稿"
-        case favorites = "收藏"
+        case favorites = "赞过"
     }
     
     var body: some View {
@@ -30,9 +30,6 @@ struct ProfileView: View {
                 VStack(spacing: 0) {
                     // 头部信息
                     headerSection
-                    
-                    // 统计信息
-                    statsSection
                     
                     // 选项卡
                     tabSection
@@ -70,27 +67,22 @@ struct ProfileView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        VStack(spacing: Spacing.md) {
-            // 头像
-            Circle()
-                .fill(Colors.accentTeal.opacity(0.2))
-                .frame(width: 80, height: 80)
-                .overlay(
-                    Text(String(poemManager.currentUserName.prefix(1)))
-                        .font(.system(size: 32, weight: .medium))
-                        .foregroundColor(Colors.accentTeal)
-                )
-            
-            // 笔名
-            Text(poemManager.currentUserName)
-                .font(Fonts.titleMedium())
-                .foregroundColor(Colors.textInk)
-            
+        HStack(spacing: 4) {
             Text("诗人")
-                .font(Fonts.caption())
+                .font(Fonts.bodyRegular())
                 .foregroundColor(Colors.textSecondary)
+            
+            Text("·")
+                .font(Fonts.bodyRegular())
+                .foregroundColor(Colors.textSecondary)
+            
+            Text(String(poemManager.currentUserName.prefix(7)))
+                .font(Fonts.bodyRegular())
+                .foregroundColor(Colors.textInk)
         }
-        .padding(.vertical, Spacing.xl)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.md)
     }
     
     // MARK: - Stats Section
