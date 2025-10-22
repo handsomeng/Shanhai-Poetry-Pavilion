@@ -132,6 +132,7 @@ struct PoemImageView: View {
                 .background(Colors.accentTeal)
                 .cornerRadius(CornerRadius.medium)
             }
+            .scaleButtonStyle()
             
             // 使用系统分享
             Button(action: shareImage) {
@@ -147,6 +148,7 @@ struct PoemImageView: View {
                 .background(Colors.white)
                 .cornerRadius(CornerRadius.medium)
             }
+            .scaleButtonStyle()
         }
         .padding(.horizontal, Spacing.lg)
     }

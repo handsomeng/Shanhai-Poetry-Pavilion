@@ -72,6 +72,7 @@ struct WritingView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
+            .cardButtonStyle()
             
             // 模仿写诗
             NavigationLink(destination: MimicWritingView()) {
@@ -83,6 +84,7 @@ struct WritingView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
+            .cardButtonStyle()
             
             // 主题写诗
             NavigationLink(destination: ThemeWritingView()) {
@@ -94,6 +96,7 @@ struct WritingView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
+            .cardButtonStyle()
         }
     }
     

@@ -89,14 +89,15 @@ struct ExploreView: View {
                 // 空状态视图
                 emptyStateView
             } else {
-                LazyVStack(spacing: Spacing.lg) {
-                    ForEach(filteredPoems) { poem in
-                        NavigationLink(destination: PoemDetailView(poem: poem)) {
-                            PoemCardView(poem: poem)
+                    LazyVStack(spacing: Spacing.lg) {
+                        ForEach(filteredPoems) { poem in
+                            NavigationLink(destination: PoemDetailView(poem: poem)) {
+                                PoemCardView(poem: poem)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .cardButtonStyle()
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
-                }
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.md)
             }

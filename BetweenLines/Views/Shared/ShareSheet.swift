@@ -171,6 +171,7 @@ struct ShareSheet: View {
                     .stroke(Colors.accentTeal, lineWidth: 1)
             )
         }
+        .scaleButtonStyle()
     }
     
     private var shareAsImageButton: some View {
@@ -199,6 +200,7 @@ struct ShareSheet: View {
             .background(Colors.white)
             .cornerRadius(CornerRadius.medium)
         }
+        .scaleButtonStyle()
     }
     
     // MARK: - Actions

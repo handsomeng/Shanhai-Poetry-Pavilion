@@ -72,16 +72,17 @@ struct LandingView: View {
                     UserDefaults.standard.set(trimmed, forKey: "penName")
                     onComplete()
                 }) {
-                    Text("开始创作")
-                        .font(.system(size: 15, weight: .regular))
-                        .tracking(2)
-                        .textCase(.uppercase)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
-                        .foregroundColor(.white)
-                        .background(Colors.accentTeal)
-                }
-                .padding(.horizontal, Spacing.xl)
+                Text("开始创作")
+                    .font(.system(size: 15, weight: .regular))
+                    .tracking(2)
+                    .textCase(.uppercase)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.md)
+                    .foregroundColor(.white)
+                    .background(Colors.accentTeal)
+            }
+            .scaleButtonStyle()
+            .padding(.horizontal, Spacing.xl)
                 
                 Spacer()
                 Spacer()
