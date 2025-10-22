@@ -54,29 +54,29 @@ enum Colors {
 // MARK: - 设计系统：字体（基于 Lovart 设计规范）
 
 enum Fonts {
-    // 一级标题：宋体/衬线，极细，72-96pt
-    static func h1() -> Font { .system(size: 84, weight: .ultraLight, design: .serif) }
-    static func h1Large() -> Font { .system(size: 96, weight: .ultraLight, design: .serif) }
-    static func h1Small() -> Font { .system(size: 72, weight: .ultraLight, design: .serif) }
+    // 一级标题：宋体/衬线，极细，36-48pt（页面主标题）
+    static func h1() -> Font { .system(size: 36, weight: .thin, design: .serif) }
+    static func h1Large() -> Font { .system(size: 42, weight: .thin, design: .serif) }
+    static func h1Small() -> Font { .system(size: 32, weight: .thin, design: .serif) }
     
-    // 二级标题：宋体/衬线，极细，48-64pt
-    static func h2() -> Font { .system(size: 56, weight: .ultraLight, design: .serif) }
-    static func h2Large() -> Font { .system(size: 64, weight: .ultraLight, design: .serif) }
-    static func h2Small() -> Font { .system(size: 48, weight: .ultraLight, design: .serif) }
+    // 二级标题：宋体/衬线，极细，24-32pt（卡片标题）
+    static func h2() -> Font { .system(size: 26, weight: .thin, design: .serif) }
+    static func h2Large() -> Font { .system(size: 30, weight: .thin, design: .serif) }
+    static func h2Small() -> Font { .system(size: 24, weight: .thin, design: .serif) }
     
-    // 诗歌内容：宋体，Light，20-24pt（适合诗歌阅读）
-    static func bodyPoem() -> Font { .system(size: 22, weight: .light, design: .serif) }
-    static func bodyPoemLarge() -> Font { .system(size: 24, weight: .light, design: .serif) }
+    // 诗歌内容：宋体，Light，18-20pt（适合诗歌阅读）
+    static func bodyPoem() -> Font { .system(size: 19, weight: .light, design: .serif) }
+    static func bodyPoemLarge() -> Font { .system(size: 20, weight: .light, design: .serif) }
     
-    // 正文：宋体，Light，16-20pt
-    static func body() -> Font { .system(size: 18, weight: .light, design: .serif) }
-    static func bodyLarge() -> Font { .system(size: 20, weight: .light, design: .serif) }
-    static func bodySmall() -> Font { .system(size: 16, weight: .light, design: .serif) }
+    // 正文：宋体，Light，15-18pt
+    static func body() -> Font { .system(size: 16, weight: .light, design: .serif) }
+    static func bodyLarge() -> Font { .system(size: 17, weight: .light, design: .serif) }
+    static func bodySmall() -> Font { .system(size: 15, weight: .light, design: .serif) }
     
-    // 辅助文字：无衬线，极轻，12-14pt
-    static func caption() -> Font { .system(size: 13, weight: .ultraLight, design: .default) }
-    static func captionLarge() -> Font { .system(size: 14, weight: .ultraLight, design: .default) }
-    static func captionSmall() -> Font { .system(size: 12, weight: .ultraLight, design: .default) }
+    // 辅助文字：无衬线，极轻，10-12pt
+    static func caption() -> Font { .system(size: 11, weight: .ultraLight, design: .default) }
+    static func captionLarge() -> Font { .system(size: 12, weight: .ultraLight, design: .default) }
+    static func captionSmall() -> Font { .system(size: 10, weight: .ultraLight, design: .default) }
     
     // 兼容旧代码的别名
     static func displayLarge() -> Font { h1() }
