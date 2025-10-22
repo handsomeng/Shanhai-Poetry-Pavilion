@@ -24,26 +24,26 @@ enum AppConstants {
     static let openAIBaseURL = "https://api.openai.com/v1/chat/completions"
 }
 
-// MARK: - 设计系统：颜色（Dribbble 高级极简风格）
+// MARK: - 设计系统：颜色（基于 Lovart 设计规范）
 
 enum Colors {
     // 主背景：纯白
-    static let backgroundCream = Color.white
+    static let backgroundCream = Color.white            // #FFFFFF
     
-    // 文字：精致黑白灰系统
-    static let textInk = Color(hex: "0A0A0A")           // 主文字：深邃黑
-    static let textSecondary = Color(hex: "6B6B6B")     // 次要文字：中性灰
-    static let textTertiary = Color(hex: "ABABAB")      // 三级文字：浅灰
+    // 文字：墨色美学系统
+    static let textInk = Color(hex: "0A0A0A")           // 主文本：深邃墨黑
+    static let textSecondary = Color(hex: "4A4A4A")     // 次级文本：中灰
+    static let textTertiary = Color(hex: "ABABAB")      // 辅助文本：浅灰
     static let textQuaternary = Color(hex: "D4D4D4")    // 四级文字：极浅灰
     
-    // 强调色：优雅的深色系统
-    static let accentTeal = Color(hex: "1A1A1A")        // 纯黑强调，极简
-    static let accentSecondary = Color(hex: "4A4A4A")   // 灰色强调
+    // 强调色：纯黑系统
+    static let accentTeal = Color(hex: "1A1A1A")        // 强调色：纯黑
+    static let accentSecondary = Color(hex: "4A4A4A")   // 次强调色：中灰
     
     // 边框和分割
     static let white = Color.white
-    static let divider = Color(hex: "EFEFEF")           // 几乎不可见的分割线
-    static let border = Color(hex: "E8E8E8")            // 精致边框
+    static let divider = Color(hex: "E5E5E5")           // 分割线/图标描边
+    static let border = Color(hex: "E5E5E5")            // 边框：1pt
     static let cardBackground = Color(hex: "FBFBFB")    // 卡片背景：几乎白色
     
     // 状态色
@@ -51,29 +51,37 @@ enum Colors {
     static let success = Color(hex: "388E3C")
 }
 
-// MARK: - 设计系统：字体（Dribbble 极简风格）
+// MARK: - 设计系统：字体（基于 Lovart 设计规范）
 
 enum Fonts {
-    // 超大标题：震撼视觉
-    static func displayLarge() -> Font { .system(size: 48, weight: .thin, design: .serif) }
-    static func displayMedium() -> Font { .system(size: 36, weight: .ultraLight, design: .serif) }
+    // 一级标题：宋体/衬线，极细，72-96pt
+    static func h1() -> Font { .system(size: 84, weight: .ultraLight, design: .serif) }
+    static func h1Large() -> Font { .system(size: 96, weight: .ultraLight, design: .serif) }
+    static func h1Small() -> Font { .system(size: 72, weight: .ultraLight, design: .serif) }
     
-    // 标题：极细优雅
-    static func titleLarge() -> Font { .system(size: 28, weight: .ultraLight, design: .serif) }
-    static func titleMedium() -> Font { .system(size: 22, weight: .thin, design: .serif) }
-    static func titleSmall() -> Font { .system(size: 18, weight: .light, design: .serif) }
+    // 二级标题：宋体/衬线，极细，48-64pt
+    static func h2() -> Font { .system(size: 56, weight: .ultraLight, design: .serif) }
+    static func h2Large() -> Font { .system(size: 64, weight: .ultraLight, design: .serif) }
+    static func h2Small() -> Font { .system(size: 48, weight: .ultraLight, design: .serif) }
     
-    // 诗歌内容：宋体，超大字号
-    static func bodyPoem() -> Font { .system(size: 24, weight: .ultraLight, design: .serif) }
+    // 诗歌内容：宋体，Light，20-24pt（适合诗歌阅读）
+    static func bodyPoem() -> Font { .system(size: 22, weight: .light, design: .serif) }
+    static func bodyPoemLarge() -> Font { .system(size: 24, weight: .light, design: .serif) }
     
-    // 正文：极细无衬线
-    static func bodyRegular() -> Font { .system(size: 15, weight: .light, design: .default) }
-    static func bodyLight() -> Font { .system(size: 15, weight: .ultraLight, design: .default) }
+    // 正文：宋体，Light，16-20pt
+    static func body() -> Font { .system(size: 18, weight: .light, design: .serif) }
+    static func bodyLarge() -> Font { .system(size: 20, weight: .light, design: .serif) }
+    static func bodySmall() -> Font { .system(size: 16, weight: .light, design: .serif) }
     
-    // 辅助文字：几乎透明的轻盈
-    static func caption() -> Font { .system(size: 12, weight: .ultraLight) }
-    static func footnote() -> Font { .system(size: 10, weight: .ultraLight) }
-    static func monospace() -> Font { .system(size: 13, weight: .ultraLight, design: .monospaced) }
+    // 辅助文字：无衬线，极轻，12-14pt
+    static func caption() -> Font { .system(size: 13, weight: .ultraLight, design: .default) }
+    static func captionLarge() -> Font { .system(size: 14, weight: .ultraLight, design: .default) }
+    static func captionSmall() -> Font { .system(size: 12, weight: .ultraLight, design: .default) }
+    
+    // 兼容旧代码的别名
+    static func displayLarge() -> Font { h1() }
+    static func titleLarge() -> Font { h2() }
+    static func bodyRegular() -> Font { body() }
 }
 
 // MARK: - 设计系统：间距（Dribbble 级别留白）
@@ -89,13 +97,38 @@ enum Spacing {
     static let huge: CGFloat = 160     // 巨大留白
 }
 
-// MARK: - 设计系统：圆角（极简化，减小圆角）
+// MARK: - 设计系统：圆角（基于 Lovart 设计规范）
 
 enum CornerRadius {
     static let small: CGFloat = 4
     static let medium: CGFloat = 6
     static let large: CGFloat = 8
-    static let card: CGFloat = 0         // 卡片使用直角，更现代
+    static let card: CGFloat = 4         // 卡片圆角：4-8pt
+}
+
+// MARK: - 设计系统：UI组件规范（基于 Lovart 设计规范）
+
+enum ComponentSize {
+    // 按钮：高度48pt，左右内边距32pt
+    static let buttonHeight: CGFloat = 48
+    static let buttonPaddingHorizontal: CGFloat = 32
+    static let buttonBorderWidth: CGFloat = 1
+    
+    // 输入框：高度40-48pt，下划线风格，1pt边框
+    static let inputHeight: CGFloat = 48
+    static let inputHeightMin: CGFloat = 40
+    static let inputBorderWidth: CGFloat = 1
+    
+    // 卡片：内边距32-40pt，微边框1pt
+    static let cardPadding: CGFloat = 36
+    static let cardPaddingMin: CGFloat = 32
+    static let cardPaddingMax: CGFloat = 40
+    static let cardBorderWidth: CGFloat = 1
+    
+    // 图标：线性风格，1px描边，尺寸24×24px或32×32px
+    static let iconSmall: CGFloat = 24
+    static let iconLarge: CGFloat = 32
+    static let iconStrokeWidth: CGFloat = 1
 }
 
 // MARK: - 业务常量
