@@ -21,6 +21,7 @@ struct DirectWritingView: View {
     @State private var showingAICommentSheet = false
     @State private var showingSaveAlert = false
     @State private var showingPublishAlert = false
+    @State private var showingCancelConfirm = false
     @State private var aiComment: String = ""
     @State private var isLoadingAI = false
     
@@ -56,9 +57,21 @@ struct DirectWritingView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("取消") {
-                    dismiss()
+                    handleCancel()
                 }
             }
+        }
+        .alert("确认取消", isPresented: $showingCancelConfirm) {
+            Button("放弃", role: .destructive) {
+                dismiss()
+            }
+            Button("保存草稿") {
+                saveDraft()
+                dismiss()
+            }
+            Button("继续编辑", role: .cancel) {}
+        } message: {
+            Text("诗歌尚未保存，是否保存为草稿？")
         }
         .onAppear {
             loadExistingPoem()
@@ -140,6 +153,15 @@ struct DirectWritingView: View {
     }
     
     // MARK: - Actions
+    
+    private func handleCancel() {
+        // 如果有内容未保存，显示确认弹窗
+        if !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            showingCancelConfirm = true
+        } else {
+            dismiss()
+        }
+    }
     
     private func loadExistingPoem() {
         if let poem = existingPoem {

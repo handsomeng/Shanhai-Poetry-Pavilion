@@ -113,8 +113,8 @@ struct SettingsView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: Spacing.lg) {
             Text(title.uppercased())
-                .font(Fonts.footnote())
-                .foregroundColor(Colors.textTertiary)  // 改为更清晰的颜色
+                .font(.system(size: 13, weight: .light))
+                .foregroundColor(Colors.textSecondary)
                 .tracking(3)
                 .padding(.horizontal, Spacing.md)
             
@@ -140,8 +140,8 @@ struct SettingsView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(label)
-                .font(Fonts.caption())
-                .foregroundColor(Colors.textSecondary)  // 改为更清晰的颜色
+                .font(.system(size: 13, weight: .light))
+                .foregroundColor(Colors.textSecondary)
             
             if isSecure {
                 SecureField(placeholder, text: value)
