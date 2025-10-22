@@ -157,21 +157,27 @@ struct DirectWritingView: View {
     
     private func savePoem() {
         if let existing = currentPoem {
+            // 更新现有诗歌
             var updated = existing
             updated.title = title
             updated.content = content
             updated.tags = []
+            updated.inMyCollection = true  // 保存到诗集
             poemManager.savePoem(updated)
             currentPoem = updated
         } else {
-            let newPoem = poemManager.createDraft(
+            // 创建新诗歌并保存到诗集
+            var newPoem = Poem(
                 title: title,
                 content: content,
+                authorName: poemManager.currentUserName,
                 tags: [],
-                writingMode: .direct
+                writingMode: .direct,
+                inMyCollection: true,  // 保存到诗集
+                inSquare: false
             )
+            poemManager.saveToCollection(newPoem)
             currentPoem = newPoem
-            poemManager.savePoem(newPoem)
         }
         
         // 保存成功后，自动显示分享选项
