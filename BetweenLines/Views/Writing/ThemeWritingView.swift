@@ -2,7 +2,7 @@
 //  ThemeWritingView.swift
 //  山海诗馆
 //
-//  主题写诗模式：选择意象主题激发灵感
+//  主题写诗模式：AI 生成创作主题，用户根据主题创作
 //
 
 import SwiftUI
@@ -11,30 +11,32 @@ struct ThemeWritingView: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var toastManager = ToastManager.shared
     
-    @State private var selectedTheme: String?
+    // AI 生成的主题
+    @State private var aiTheme: String = ""
+    @State private var isLoadingTheme = false
+    
+    // 创作内容
     @State private var title = ""
     @State private var content = ""
-    @State private var aiSuggestion = ""
-    @State private var isLoadingAI = false
-    @State private var showingSuggestion = false
     @State private var currentPoem: Poem?
     @State private var showingShareSheet = false
     @State private var isKeyboardVisible = false
-    
-    let themes = ["风", "雨", "窗", "梦", "城市", "孤独", "爱", "时间", "海", "夜晚"]
+    @State private var showingSubscription = false
     
     var body: some View {
         ZStack {
             Colors.backgroundCream
                 .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                if selectedTheme == nil {
-                    themeSelectionView
-                } else {
-                    writingView
-                }
+            if isLoadingTheme {
+                loadingView
+            } else if aiTheme.isEmpty {
+                generatePromptView
+            } else {
+                writingView
             }
         }
         .navigationTitle("主题写诗")
@@ -43,116 +45,40 @@ struct ThemeWritingView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("取消") {
-                    dismiss()
+                    if content.isEmpty && title.isEmpty {
+                        dismiss()
+                    } else {
+                        // 有内容时，显示保存草稿确认
+                        showSaveAlert()
+                    }
                 }
             }
             
-            if selectedTheme != nil {
+            if !aiTheme.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("换主题") {
-                        selectedTheme = nil
-                        title = ""
-                        content = ""
-                        aiSuggestion = ""
+                        generateTheme()
                     }
+                    .disabled(isLoadingTheme)
                 }
             }
         }
-    }
-    
-    // MARK: - Theme Selection View
-    
-    private var themeSelectionView: some View {
-        VStack(spacing: Spacing.xl) {
-            VStack(spacing: Spacing.sm) {
-                Text("选择一个主题")
-                    .font(Fonts.titleLarge())
-                    .foregroundColor(Colors.textInk)
-                
-                Text("围绕主题意象展开创作")
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.textSecondary)
+        .sheet(isPresented: $showingShareSheet) {
+            if let poem = currentPoem {
+                ShareSheet(poem: poem)
             }
-            .padding(.top, Spacing.xl)
-            
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: Spacing.lg) {
-                ForEach(themes, id: \.self) { theme in
-                    Button(action: {
-                        selectTheme(theme)
-                    }) {
-                        ThemeCard(theme: theme)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
-            .padding(.horizontal, Spacing.lg)
-            
-            Spacer()
         }
-    }
-    
-    // MARK: - Writing View
-    
-    private var writingView: some View {
-        VStack(spacing: 0) {
-            // 主题显示
-            if let theme = selectedTheme {
-                themeHeader(theme: theme)
-            }
-            
-            // 编辑器
-            PoemEditorView(
-                title: $title,
-                content: $content,
-                placeholder: "围绕「\(selectedTheme ?? "")」展开创作...",
-                showWordCount: !isKeyboardVisible
-            )
-            
-            // AI 建议按钮（键盘弹起时隐藏）
-            if !isKeyboardVisible {
-                if !aiSuggestion.isEmpty {
-                    suggestionSection
-                } else if !isLoadingAI {
-                    Button(action: getAISuggestion) {
-                        HStack {
-                            Image(systemName: "lightbulb")
-                            Text("获取创作灵感")
-                        }
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.accentTeal)
-                        .frame(maxWidth: .infinity)
-                        .padding(Spacing.md)
-                        .background(Colors.white)
-                        .cornerRadius(CornerRadius.medium)
-                    }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.vertical, Spacing.sm)
-                } else {
-                    HStack {
-                        ProgressView()
-                        Text("AI 正在生成创作建议...")
-                            .font(Fonts.caption())
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                    .padding(Spacing.md)
-                }
-            }
-            
-            // 底部按钮（键盘弹起时隐藏）
-            if !isKeyboardVisible {
-                bottomButtons
-            }
+        .sheet(isPresented: $showingSubscription) {
+            SubscriptionView()
         }
         .onAppear {
-            // 监听键盘显示/隐藏
+            // 监听键盘
             NotificationCenter.default.addObserver(
                 forName: UIResponder.keyboardWillShowNotification,
                 object: nil,
                 queue: .main
             ) { _ in
-                withAnimation(.easeOut(duration: 0.25)) {
-                    isKeyboardVisible = true
-                }
+                isKeyboardVisible = true
             }
             
             NotificationCenter.default.addObserver(
@@ -160,118 +86,184 @@ struct ThemeWritingView: View {
                 object: nil,
                 queue: .main
             ) { _ in
-                withAnimation(.easeOut(duration: 0.25)) {
-                    isKeyboardVisible = false
-                }
+                isKeyboardVisible = false
+            }
+            
+            // 首次进入，自动生成主题
+            if aiTheme.isEmpty {
+                generateTheme()
             }
         }
     }
     
-    private func themeHeader(theme: String) -> some View {
-        HStack {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: "sparkles")
-                    .foregroundColor(Colors.accentTeal)
-                Text("主题：\(theme)")
-                    .font(Fonts.bodyRegular())
+    // MARK: - Loading View
+    
+    private var loadingView: some View {
+        VStack(spacing: Spacing.xl) {
+            ProgressView()
+                .scaleEffect(1.5)
+                .tint(Colors.accentTeal)
+            
+            Text("AI 正在生成创作主题...")
+                .font(Fonts.bodyRegular())
+                .foregroundColor(Colors.textSecondary)
+        }
+    }
+    
+    // MARK: - Generate Prompt View
+    
+    private var generatePromptView: some View {
+        VStack(spacing: Spacing.xl) {
+            Spacer()
+            
+            VStack(spacing: Spacing.lg) {
+                Text("💡")
+                    .font(.system(size: 64))
+                
+                Text("让 AI 为你推荐一个主题")
+                    .font(Fonts.h2())
                     .foregroundColor(Colors.textInk)
+                    .multilineTextAlignment(.center)
+                
+                Text("围绕主题展开你的创作")
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(Colors.textSecondary)
+                    .multilineTextAlignment(.center)
             }
             
             Spacer()
+            
+            Button(action: generateTheme) {
+                Text("生成主题")
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(Spacing.md)
+                    .background(Colors.accentTeal)
+                    .cornerRadius(CornerRadius.medium)
+            }
+            .scaleButtonStyle()
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.xl)
+        }
+    }
+    
+    // MARK: - Writing View
+    
+    private var writingView: some View {
+        VStack(spacing: 0) {
+            // 顶部主题卡片
+            themeCard
+            
+            // 编辑器
+            PoemEditorView(
+                title: $title,
+                content: $content,
+                placeholder: "围绕主题「\(aiTheme)」，写下你的诗...",
+                showWordCount: !isKeyboardVisible
+            )
+            
+            // 底部按钮
+            if !isKeyboardVisible {
+                bottomButtons
+            }
+        }
+    }
+    
+    // MARK: - Theme Card
+    
+    private var themeCard: some View {
+        VStack(spacing: Spacing.md) {
+            HStack {
+                Text("创作主题")
+                    .font(Fonts.caption())
+                    .foregroundColor(Colors.textSecondary)
+                
+                Spacer()
+                
+                Text("AI 推荐")
+                    .font(Fonts.caption())
+                    .foregroundColor(Colors.accentTeal)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Colors.accentTeal.opacity(0.1))
+                    .cornerRadius(CornerRadius.small)
+            }
+            
+            Text(aiTheme)
+                .font(.system(size: 32, weight: .thin, design: .serif))
+                .foregroundColor(Colors.textInk)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.lg)
+        }
+        .padding(Spacing.lg)
+        .background(
+            LinearGradient(
+                colors: [Colors.white, Colors.backgroundCream.opacity(0.3)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+    }
+    
+    // MARK: - Bottom Buttons
+    
+    private var bottomButtons: some View {
+        HStack(spacing: Spacing.md) {
+            Button(action: savePoem) {
+                HStack {
+                    Image(systemName: "checkmark.circle")
+                    Text("保存")
+                }
+                .font(Fonts.bodyRegular())
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.md)
+                .background(Colors.accentTeal)
+                .cornerRadius(CornerRadius.medium)
+            }
+            .scaleButtonStyle()
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.white)
     }
     
-    private var suggestionSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                Image(systemName: "lightbulb.fill")
-                    .foregroundColor(Colors.accentTeal)
-                Text("创作建议")
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.textSecondary)
-                
-                Spacer()
-                
-                Button(action: {
-                    showingSuggestion.toggle()
-                }) {
-                    Image(systemName: showingSuggestion ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12))
-                        .foregroundColor(Colors.textSecondary)
-                }
-            }
-            
-            if showingSuggestion {
-                Text(aiSuggestion)
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.textInk)
-                    .lineSpacing(4)
-            }
-        }
-        .padding(Spacing.md)
-        .background(Colors.accentTeal.opacity(0.05))
-        .cornerRadius(CornerRadius.medium)
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
-    }
-    
-    private var bottomButtons: some View {
-        Button(action: savePoem) {
-            Text("保存")
-                .font(Fonts.bodyRegular())
-                .fontWeight(.medium)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(Spacing.md)
-                .background(Colors.accentTeal)
-                .cornerRadius(CornerRadius.medium)
-        }
-        .disabled(content.isEmpty)
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
-        .background(Colors.backgroundCream)
-        .sheet(isPresented: $showingShareSheet) {
-            if let poem = currentPoem {
-                ShareSheet(poem: poem)
-            }
-        }
-    }
-    
     // MARK: - Actions
     
-    private func selectTheme(_ theme: String) {
-        selectedTheme = theme
-        getAISuggestion()
-    }
-    
-    private func getAISuggestion() {
-        guard let theme = selectedTheme else { return }
+    private func generateTheme() {
+        // 检查是否有权限
+        guard subscriptionManager.isSubscribed else {
+            toastManager.showError("主题写诗需要会员权限")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                showingSubscription = true
+            }
+            return
+        }
         
-        isLoadingAI = true
+        isLoadingTheme = true
         
         Task {
             do {
-                let suggestion = try await AIService.shared.getWritingSuggestion(theme: theme)
+                let theme = try await AIService.shared.generatePoemTheme()
                 await MainActor.run {
-                    aiSuggestion = suggestion
-                    isLoadingAI = false
-                    showingSuggestion = true
+                    aiTheme = theme
+                    isLoadingTheme = false
                 }
             } catch {
                 await MainActor.run {
-                    aiSuggestion = "暂时无法获取建议，请稍后重试"
-                    isLoadingAI = false
-                    showingSuggestion = true
+                    isLoadingTheme = false
+                    toastManager.showError("主题生成失败，请重试")
                 }
             }
         }
     }
     
     private func savePoem() {
-        guard selectedTheme != nil else { return }
+        guard !content.isEmpty else {
+            toastManager.showError("诗歌内容不能为空")
+            return
+        }
         
         // 创建新诗歌并保存到诗集
         let poem = Poem(
@@ -280,7 +272,7 @@ struct ThemeWritingView: View {
             authorName: poemManager.currentUserName,
             tags: [],
             writingMode: .theme,
-            inMyCollection: true,  // 保存到诗集
+            inMyCollection: true,
             inSquare: false
         )
         currentPoem = poem
@@ -291,54 +283,15 @@ struct ThemeWritingView: View {
             showingShareSheet = true
         }
     }
-}
-
-// MARK: - Theme Card
-
-private struct ThemeCard: View {
-    let theme: String
     
-    var body: some View {
-        VStack(spacing: Spacing.md) {
-            Text(theme)
-                .font(Fonts.titleLarge())
-                .foregroundColor(Colors.textInk)
-            
-            Text(getThemeDescription(theme))
-                .font(Fonts.footnote())
-                .foregroundColor(Colors.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, Spacing.xl)
-        .background(Colors.white)
-        .cornerRadius(CornerRadius.card)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-    
-    private func getThemeDescription(_ theme: String) -> String {
-        switch theme {
-        case "风": return "流动·变化"
-        case "雨": return "洗涤·思念"
-        case "窗": return "界限·眺望"
-        case "梦": return "虚实·愿望"
-        case "城市": return "现代·孤独"
-        case "孤独": return "独处·内心"
-        case "爱": return "情感·连接"
-        case "时间": return "流逝·永恒"
-        case "海": return "广阔·包容"
-        case "夜晚": return "静谧·思考"
-        default: return "意象·诗意"
-        }
+    private func showSaveAlert() {
+        // TODO: 实现保存草稿确认弹窗
+        dismiss()
     }
 }
-
-// MARK: - Preview
 
 #Preview {
     NavigationStack {
         ThemeWritingView()
     }
 }
-
-

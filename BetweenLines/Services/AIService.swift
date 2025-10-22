@@ -107,27 +107,75 @@ class AIService {
         return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    /// 获取创作建议
-    func getWritingSuggestion(theme: String) async throws -> String {
+    /// 生成示例诗歌（用于模仿写诗）
+    func generateExamplePoem() async throws -> String {
         try validateAPIKey()
-        let prompt = """
-        用户想要围绕「\(theme)」这个主题创作一首现代诗。
-        请提供3-5个具体的创作建议，包括：
-        - 可以使用的意象
-        - 可以表达的情感角度
-        - 简短的示例句子
         
-        请用简洁、启发性的语言，字数控制在150字左右。
+        let prompt = """
+        请创作一首优秀的现代诗，用于教学示范。
+        
+        要求：
+        1. 长度：20-50字左右，不要太长
+        2. 风格：简洁、意象鲜明、情感真挚
+        3. 技巧：展示优秀的分行、节奏、留白
+        4. 主题：日常生活、情感、自然等都可以
+        5. 避免陈词滥调，追求新鲜感
+        
+        **只输出诗歌内容本身，不要标题，不要任何解释说明。**
         """
         
+        return try await callAI(
+            prompt: prompt,
+            systemMessage: "你是一位优秀的现代诗人，擅长创作简洁而富有诗意的作品。",
+            temperature: 0.9,
+            maxTokens: 300
+        )
+    }
+    
+    /// 生成诗歌主题（用于主题写诗）
+    func generatePoemTheme() async throws -> String {
+        try validateAPIKey()
+        
+        let prompt = """
+        请推荐一个适合写现代诗的创作主题。
+        
+        要求：
+        1. 主题要具体而有诗意（如"雨后的窗"、"城市夜晚"、"等待"）
+        2. 不要太抽象（避免"人生"、"梦想"这类）
+        3. 能激发具体的意象和情感
+        4. 2-5个字，简洁有力
+        
+        **只输出主题本身，不要任何解释。**
+        
+        示例格式：
+        城市夜晚
+        雨后的窗
+        孤独的树
+        """
+        
+        return try await callAI(
+            prompt: prompt,
+            systemMessage: "你是一位富有创造力的诗歌导师，擅长给出启发性的创作主题。",
+            temperature: 1.0,
+            maxTokens: 50
+        )
+    }
+    
+    /// 通用 AI 调用方法
+    private func callAI(
+        prompt: String,
+        systemMessage: String,
+        temperature: Double = 0.7,
+        maxTokens: Int = 500
+    ) async throws -> String {
         let requestBody: [String: Any] = [
             "model": AppConstants.openAIModel,
             "messages": [
-                ["role": "system", "content": "你是一位富有创造力的诗歌导师，擅长激发创作灵感。"],
+                ["role": "system", "content": systemMessage],
                 ["role": "user", "content": prompt]
             ],
-            "max_tokens": 500,
-            "temperature": 0.8
+            "max_tokens": maxTokens,
+            "temperature": temperature
         ]
         
         guard let url = URL(string: AppConstants.openAIBaseURL) else {
