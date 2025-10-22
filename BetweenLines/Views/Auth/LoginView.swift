@@ -28,6 +28,27 @@ struct LoginView: View {
                 Colors.backgroundCream
                     .ignoresSafeArea()
                 
+                // Loading 遮罩
+                if isLoading {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: Spacing.md) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                        
+                        Text("登录中...")
+                            .font(Fonts.bodyRegular())
+                            .foregroundColor(.white)
+                    }
+                    .padding(Spacing.xl)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(Color.black.opacity(0.7))
+                    )
+                }
+                
                 ScrollView {
                     VStack(spacing: Spacing.xl) {
                         // Logo 和标题
@@ -315,11 +336,20 @@ struct LoginView: View {
             
             Task {
                 do {
+                    print("🍎 开始 Apple 登录...")
                     try await authService.signInWithApple(credential: credential)
+                    print("✅ Apple 登录成功！用户：\(authService.currentProfile?.username ?? "未知")")
+                    
+                    // 延迟一点点，让用户看到"登录中"的反馈
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
+                    
                     await MainActor.run {
+                        isLoading = false
+                        print("🚪 准备关闭登录界面...")
                         dismiss()
                     }
                 } catch {
+                    print("❌ Apple 登录失败：\(error.localizedDescription)")
                     await MainActor.run {
                         errorHandler.handle(error)
                         isLoading = false
@@ -330,7 +360,10 @@ struct LoginView: View {
         case .failure(let error):
             // 用户取消登录不显示错误
             if (error as NSError).code != 1001 {
+                print("❌ Apple 授权失败：\(error.localizedDescription)")
                 errorHandler.handle(error)
+            } else {
+                print("ℹ️ 用户取消了 Apple 登录")
             }
         }
     }
