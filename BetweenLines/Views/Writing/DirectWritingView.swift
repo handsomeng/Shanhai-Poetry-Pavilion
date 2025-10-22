@@ -67,7 +67,22 @@ struct DirectWritingView: View {
                 dismiss()
             }
             Button("保存草稿") {
-                saveDraft()
+                // 保存诗歌但不显示分享面板
+                if let existing = currentPoem {
+                    var updated = existing
+                    updated.title = title
+                    updated.content = content
+                    updated.tags = []
+                    poemManager.savePoem(updated)
+                } else {
+                    let newPoem = poemManager.createDraft(
+                        title: title,
+                        content: content,
+                        tags: [],
+                        writingMode: .direct
+                    )
+                    poemManager.savePoem(newPoem)
+                }
                 dismiss()
             }
             Button("继续编辑", role: .cancel) {}
