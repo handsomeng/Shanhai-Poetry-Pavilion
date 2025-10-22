@@ -7,7 +7,6 @@
 
 import Foundation
 import Supabase
-import Auth
 
 /// 认证服务
 @MainActor
