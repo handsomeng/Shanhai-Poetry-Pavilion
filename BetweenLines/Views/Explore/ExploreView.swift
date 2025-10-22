@@ -85,17 +85,48 @@ struct ExploreView: View {
     
     private var poemsListSection: some View {
         ScrollView {
-            LazyVStack(spacing: Spacing.lg) {
-                ForEach(filteredPoems) { poem in
-                    NavigationLink(destination: PoemDetailView(poem: poem)) {
-                        PoemCardView(poem: poem)
+            if filteredPoems.isEmpty {
+                // 空状态视图
+                emptyStateView
+            } else {
+                LazyVStack(spacing: Spacing.lg) {
+                    ForEach(filteredPoems) { poem in
+                        NavigationLink(destination: PoemDetailView(poem: poem)) {
+                            PoemCardView(poem: poem)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.md)
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
         }
+    }
+    
+    // MARK: - Empty State
+    
+    private var emptyStateView: some View {
+        VStack(spacing: Spacing.xl) {
+            Spacer()
+            
+            Image(systemName: "book.closed")
+                .font(.system(size: 64, weight: .thin))
+                .foregroundColor(Colors.textQuaternary)
+            
+            VStack(spacing: Spacing.sm) {
+                Text("还没有诗歌")
+                    .font(Fonts.titleLarge())
+                    .foregroundColor(Colors.textInk)
+                
+                Text("成为第一个创作者吧")
+                    .font(Fonts.body())
+                    .foregroundColor(Colors.textSecondary)
+            }
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, Spacing.xxxl)
     }
     
     // MARK: - Computed Properties
