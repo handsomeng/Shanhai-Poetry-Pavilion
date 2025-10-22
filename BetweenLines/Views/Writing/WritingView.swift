@@ -57,24 +57,24 @@ struct WritingView: View {
     
     private var modesSection: some View {
         VStack(spacing: Spacing.md) {
-            // 直接写诗
+            // 自由写诗
             NavigationLink(destination: DirectWritingView()) {
                 ModeCardView(
                     icon: "pencil.and.outline",
-                    title: "直接写诗",
-                    description: "自由创作，记录此刻的灵感",
+                    title: "自由写诗",
+                    description: "尽情创作你此刻的山河",
                     color: Colors.accentTeal
                 )
             }
             .buttonStyle(PlainButtonStyle())
             .cardButtonStyle()
             
-            // 模仿写诗
+            // 临摹写诗
             NavigationLink(destination: MimicWritingView()) {
                 ModeCardView(
                     icon: "doc.on.doc",
-                    title: "模仿写诗",
-                    description: "参考经典诗歌，学习创作技巧",
+                    title: "临摹写诗",
+                    description: "临摹是进步的起点",
                     color: Color(hex: "8B7355")
                 )
             }
@@ -86,7 +86,7 @@ struct WritingView: View {
                 ModeCardView(
                     icon: "sparkles",
                     title: "主题写诗",
-                    description: "选择意象主题，激发创作灵感",
+                    description: "没灵感也没关系，我给你灵感",
                     color: Color(hex: "B8860B")
                 )
             }

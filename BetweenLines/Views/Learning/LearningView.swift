@@ -301,6 +301,14 @@ struct ArticleDetailView: View {
                         .foregroundColor(Colors.textInk)
                         .padding(.horizontal, Spacing.lg)
                     
+                    // 免责声明
+                    Text("此模块内容为 AI 生成，如有问题联系开发者修改")
+                        .font(Fonts.footnote())
+                        .foregroundColor(Colors.textSecondary.opacity(0.6))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal, Spacing.lg)
+                        .padding(.top, Spacing.lg)
+                    
                     // 底部操作按钮
                     VStack(spacing: Spacing.md) {
                         Divider()
