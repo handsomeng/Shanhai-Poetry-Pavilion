@@ -18,11 +18,8 @@ struct DirectWritingView: View {
     @State private var currentPoem: Poem?
     
     // UI 状态
-    @State private var showingAICommentSheet = false
     @State private var showingShareSheet = false
     @State private var showingCancelConfirm = false
-    @State private var aiComment: String = ""
-    @State private var isLoadingAI = false
     @State private var isKeyboardVisible = false
     
     // 初始化（可选：编辑现有诗歌）
@@ -44,11 +41,6 @@ struct DirectWritingView: View {
                     content: $content,
                     showWordCount: !isKeyboardVisible
                 )
-                
-                // AI 点评按钮（键盘弹起时隐藏）
-                if !isKeyboardVisible {
-                    aiCommentButton
-                }
                 
                 // 底部操作按钮（键盘弹起时隐藏）
                 if !isKeyboardVisible {
@@ -118,40 +110,11 @@ struct DirectWritingView: View {
         .onAppear {
             loadExistingPoem()
         }
-        .sheet(isPresented: $showingAICommentSheet) {
-            AICommentSheet(comment: aiComment)
-        }
         .sheet(isPresented: $showingShareSheet) {
             if let poem = currentPoem {
                 ShareSheet(poem: poem)
             }
         }
-    }
-    
-    // MARK: - AI Comment Button
-    
-    private var aiCommentButton: some View {
-        Button(action: requestAIComment) {
-            HStack {
-                if isLoadingAI {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .scaleEffect(0.8)
-                } else {
-                    Image(systemName: "sparkles")
-                }
-                Text(isLoadingAI ? "AI 点评中..." : "获取 AI 点评")
-            }
-            .font(Fonts.bodyRegular())
-            .foregroundColor(isLoadingAI ? Colors.textSecondary : Colors.accentTeal)
-            .frame(maxWidth: .infinity)
-            .padding(Spacing.md)
-            .background(Colors.white)
-            .cornerRadius(CornerRadius.medium)
-        }
-        .disabled(content.isEmpty || isLoadingAI)
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
     }
     
     // MARK: - Bottom Buttons
@@ -206,7 +169,6 @@ struct DirectWritingView: View {
         if let poem = existingPoem {
             title = poem.title
             content = poem.content
-            aiComment = poem.aiComment ?? ""
             currentPoem = poem
         }
     }
