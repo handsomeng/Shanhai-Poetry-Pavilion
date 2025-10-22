@@ -67,17 +67,17 @@ struct ProfileView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 6) {
             Text("诗人")
-                .font(Fonts.bodyRegular())
+                .font(Fonts.h2Small())
                 .foregroundColor(Colors.textSecondary)
             
             Text("·")
-                .font(Fonts.bodyRegular())
+                .font(Fonts.h2Small())
                 .foregroundColor(Colors.textSecondary)
             
             Text(String(poemManager.currentUserName.prefix(7)))
-                .font(Fonts.bodyRegular())
+                .font(Fonts.h2Small())
                 .foregroundColor(Colors.textInk)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
