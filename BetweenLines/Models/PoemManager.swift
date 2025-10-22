@@ -135,21 +135,45 @@ class PoemManager: ObservableObject {
     }
     
     /// 发布诗歌到广场（新逻辑）
+    /// 创建一个新的副本发布到广场，诗集和广场互不影响
     func publishToSquare(_ poem: Poem) throws {
         // 检查相似度
         if let similarPoem = try checkSimilarity(for: poem) {
             throw PoemPublishError.similarContentExists(title: similarPoem.title)
         }
         
+        // 创建广场上的新副本（新的 ID）
+        let squareId = UUID().uuidString
+        let squareCopy = Poem(
+            id: UUID().uuidString,  // 新的 ID，与诗集中的独立
+            title: poem.title,
+            content: poem.content,
+            authorName: poem.authorName,
+            createdAt: poem.createdAt,
+            updatedAt: Date(),
+            tags: poem.tags,
+            writingMode: poem.writingMode,
+            referencePoem: poem.referencePoem,
+            aiComment: poem.aiComment,
+            inMyCollection: false,   // 广场副本不在诗集中
+            inSquare: true,          // 在广场中
+            squareId: squareId,
+            squarePublishedAt: Date(),
+            squareLikeCount: 0
+        )
+        
+        // 添加广场副本
+        allPoems.append(squareCopy)
+        
+        // 更新诗集中的原诗歌，记录它的 squareId（用于关联）
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
-            var publishedPoem = allPoems[index]
-            publishedPoem.inSquare = true
-            publishedPoem.squareId = UUID().uuidString
-            publishedPoem.squarePublishedAt = Date()
-            publishedPoem.updatedAt = Date()
-            allPoems[index] = publishedPoem
-            savePoems()
+            var updatedOriginal = allPoems[index]
+            updatedOriginal.squareId = squareId  // 记录广场 ID
+            updatedOriginal.squarePublishedAt = Date()
+            allPoems[index] = updatedOriginal
         }
+        
+        savePoems()
     }
     
     /// 从广场删除

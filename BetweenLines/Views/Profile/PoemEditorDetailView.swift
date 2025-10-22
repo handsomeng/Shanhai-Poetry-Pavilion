@@ -163,7 +163,7 @@ struct PoemEditorDetailView: View {
                 .scaleButtonStyle()
                 
                 // 发布到广场按钮
-                if poem.inSquare {
+                if poem.squareId != nil {
                     // 已发布状态（不可点击）
                     HStack {
                         Image(systemName: "checkmark.circle.fill")

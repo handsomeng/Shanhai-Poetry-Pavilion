@@ -87,7 +87,7 @@ struct ShareSheet: View {
     private var bottomActions: some View {
         VStack(spacing: Spacing.xs) {
             // 分享到广场（只有未发布的才显示）
-            if !poem.inSquare {
+            if poem.squareId == nil {
                 Button(action: publishToSquare) {
                     HStack {
                         if isPublishing {
