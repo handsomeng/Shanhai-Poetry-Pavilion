@@ -165,10 +165,7 @@ struct ShareSheet: View {
         
         Task {
             do {
-                let comment = try await AIService.shared.commentOnPoem(
-                    title: poem.title,
-                    content: poem.content
-                )
+                let comment = try await AIService.shared.getPoemComment(content: poem.content)
                 await MainActor.run {
                     aiComment = comment
                     isLoadingAI = false
