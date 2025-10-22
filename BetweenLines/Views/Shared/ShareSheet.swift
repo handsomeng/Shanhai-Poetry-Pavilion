@@ -12,6 +12,7 @@ struct ShareSheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
     
     let poem: Poem
     
@@ -20,6 +21,7 @@ struct ShareSheet: View {
     @State private var aiComment = ""
     @State private var isLoadingAI = false
     @State private var isPublishing = false
+    @State private var showingSubscription = false
     
     var body: some View {
         NavigationView {
@@ -50,12 +52,15 @@ struct ShareSheet: View {
                     .foregroundColor(Colors.textSecondary)
                 }
             }
-            .sheet(isPresented: $showingImageShare) {
-                PoemImageView(poem: poem)
-            }
-            .sheet(isPresented: $showingAIComment) {
-                AICommentSheet(comment: aiComment, isLoading: isLoadingAI)
-            }
+                  .sheet(isPresented: $showingImageShare) {
+                      PoemImageView(poem: poem)
+                  }
+                  .sheet(isPresented: $showingAIComment) {
+                      AICommentSheet(comment: aiComment, isLoading: isLoadingAI)
+                  }
+                  .sheet(isPresented: $showingSubscription) {
+                      SubscriptionView()
+                  }
         }
     }
     
@@ -181,6 +186,18 @@ struct ShareSheet: View {
     private func requestAIComment() {
         guard !poem.content.isEmpty else { return }
         
+        // 检查是否有权限使用 AI 点评
+        if !subscriptionManager.canUseAIComment() {
+            let remaining = subscriptionManager.remainingAIComments()
+            toastManager.showError("今日 AI 点评次数已用完（\(remaining)/3）")
+            
+            // 延迟显示订阅页面
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                showingSubscription = true
+            }
+            return
+        }
+        
         isLoadingAI = true
         
         Task {
@@ -190,6 +207,9 @@ struct ShareSheet: View {
                     aiComment = comment
                     isLoadingAI = false
                     showingAIComment = true
+                    
+                    // 使用一次 AI 点评
+                    subscriptionManager.useAIComment()
                 }
             } catch {
                 await MainActor.run {

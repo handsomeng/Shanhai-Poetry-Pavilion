@@ -12,6 +12,7 @@ struct PoemEditorDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
     
     @State var poem: Poem
     
@@ -25,6 +26,7 @@ struct PoemEditorDetailView: View {
     @State private var showingAIComment = false
     @State private var aiComment = ""
     @State private var isLoadingAI = false
+    @State private var showingSubscription = false
     
     // 键盘状态
     @State private var isKeyboardVisible = false
@@ -87,6 +89,9 @@ struct PoemEditorDetailView: View {
         }
         .sheet(isPresented: $showingAIComment) {
             AICommentSheet(comment: aiComment, isLoading: isLoadingAI)
+        }
+        .sheet(isPresented: $showingSubscription) {
+            SubscriptionView()
         }
         .onAppear {
             setupKeyboardObservers()
@@ -252,6 +257,18 @@ struct PoemEditorDetailView: View {
     private func requestAIComment() {
         guard !poem.content.isEmpty else { return }
         
+        // 检查是否有权限使用 AI 点评
+        if !subscriptionManager.canUseAIComment() {
+            let remaining = subscriptionManager.remainingAIComments()
+            toastManager.showError("今日 AI 点评次数已用完（\(remaining)/3）")
+            
+            // 延迟显示订阅页面
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                showingSubscription = true
+            }
+            return
+        }
+        
         isLoadingAI = true
         Task {
             do {
@@ -260,6 +277,9 @@ struct PoemEditorDetailView: View {
                     aiComment = comment
                     isLoadingAI = false
                     showingAIComment = true
+                    
+                    // 使用一次 AI 点评
+                    subscriptionManager.useAIComment()
                 }
             } catch {
                 await MainActor.run {

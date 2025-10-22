@@ -10,10 +10,12 @@ import SwiftUI
 struct ProfileView: View {
     
     @StateObject private var poemManager = PoemManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
     @State private var selectedTab: ProfileTab = .collection
     @State private var poemToDelete: Poem?
     @State private var showingDeleteAlert = false
     @State private var showingSettings = false
+    @State private var showingSubscription = false
     
     enum ProfileTab: String, CaseIterable {
         case collection = "诗集"
@@ -30,6 +32,9 @@ struct ProfileView: View {
                 VStack(spacing: 0) {
                     // 头部信息
                     headerSection
+                    
+                    // 会员状态卡片
+                    membershipCard
                     
                     // 选项卡
                     tabSection
@@ -52,6 +57,9 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showingSubscription) {
+                SubscriptionView()
             }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
@@ -79,10 +87,82 @@ struct ProfileView: View {
             Text(String(poemManager.currentUserName.prefix(7)))
                 .font(Fonts.h2Small())
                 .foregroundColor(Colors.textInk)
+            
+            // 会员标识
+            if subscriptionManager.isSubscribed {
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(Colors.accentTeal)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
+    }
+    
+    // MARK: - Membership Card
+    
+    private var membershipCard: some View {
+        Button(action: {
+            showingSubscription = true
+        }) {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack(spacing: 6) {
+                        Image(systemName: subscriptionManager.isSubscribed ? "crown.fill" : "crown")
+                            .font(.system(size: 16))
+                        
+                        Text(subscriptionManager.isSubscribed ? "会员已激活" : "升级会员")
+                            .font(Fonts.bodyLarge())
+                    }
+                    .foregroundColor(subscriptionManager.isSubscribed ? Colors.accentTeal : Colors.textInk)
+                    
+                    if subscriptionManager.isSubscribed {
+                        if let subscription = subscriptionManager.currentSubscription {
+                            Text("当前订阅：\(subscription.displayName)")
+                                .font(Fonts.caption())
+                                .foregroundColor(Colors.textSecondary)
+                        }
+                    } else {
+                        Text("解锁全部高级功能")
+                            .font(Fonts.caption())
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                if !subscriptionManager.isSubscribed {
+                    Text("立即订阅")
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(.white)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Colors.accentTeal)
+                        .cornerRadius(CornerRadius.medium)
+                }
+            }
+            .padding(Spacing.md)
+            .background(
+                LinearGradient(
+                    colors: subscriptionManager.isSubscribed
+                        ? [Colors.accentTeal.opacity(0.1), Colors.accentTeal.opacity(0.05)]
+                        : [Colors.white, Colors.white],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(CornerRadius.card)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.card)
+                    .stroke(subscriptionManager.isSubscribed ? Colors.accentTeal.opacity(0.3) : Color.clear, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .scaleButtonStyle()
+        .padding(.horizontal, Spacing.lg)
+        .padding(.bottom, Spacing.md)
     }
     
     // MARK: - Stats Section
