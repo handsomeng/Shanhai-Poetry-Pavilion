@@ -16,6 +16,7 @@ struct ProfileView: View {
     @State private var showingDeleteAlert = false
     @State private var showingSettings = false
     @State private var showingSubscription = false
+    @State private var showingMembershipDetail = false
     
     enum ProfileTab: String, CaseIterable {
         case collection = "诗集"
@@ -61,6 +62,9 @@ struct ProfileView: View {
             .sheet(isPresented: $showingSubscription) {
                 SubscriptionView()
             }
+            .sheet(isPresented: $showingMembershipDetail) {
+                MembershipDetailView()
+            }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
             Button("取消", role: .cancel) {}
@@ -104,13 +108,18 @@ struct ProfileView: View {
     
     private var membershipCard: some View {
         Button(action: {
-            showingSubscription = true
+            // 已订阅显示会员详情，未订阅显示购买页面
+            if subscriptionManager.isSubscribed {
+                showingMembershipDetail = true
+            } else {
+                showingSubscription = true
+            }
         }) {
             HStack(alignment: .top, spacing: Spacing.md) {
                 // 左侧图标
                 Image(systemName: subscriptionManager.isSubscribed ? "crown.fill" : "crown")
                     .font(.system(size: subscriptionManager.isSubscribed ? 20 : 16))
-                    .foregroundColor(subscriptionManager.isSubscribed ? Colors.accentTeal : Colors.textSecondary)
+                    .foregroundColor(subscriptionManager.isSubscribed ? Color(hex: "D4AF37") : Colors.textSecondary)  // 金色皇冠
                     .frame(width: 24)
                 
                 // 中间内容
@@ -119,7 +128,7 @@ struct ProfileView: View {
                         // 已订阅：诗意文案
                         Text("山海已在你心间")
                             .font(Fonts.bodyLarge())
-                            .foregroundColor(Colors.accentTeal)
+                            .foregroundColor(Color(hex: "B8860B"))  // 深金色文字
                         
                         if let subscription = subscriptionManager.currentSubscription {
                             HStack(spacing: 4) {
@@ -170,7 +179,7 @@ struct ProfileView: View {
             .background(
                 LinearGradient(
                     colors: subscriptionManager.isSubscribed
-                        ? [Colors.accentTeal.opacity(0.1), Colors.accentTeal.opacity(0.05)]
+                        ? [Color(hex: "FFF8E7"), Color(hex: "FFFBF0")]  // 淡金色渐变
                         : [Colors.white, Colors.white],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -179,7 +188,7 @@ struct ProfileView: View {
             .cornerRadius(CornerRadius.card)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.card)
-                    .stroke(subscriptionManager.isSubscribed ? Colors.accentTeal.opacity(0.3) : Color.clear, lineWidth: 1)
+                    .stroke(subscriptionManager.isSubscribed ? Color(hex: "D4AF37").opacity(0.2) : Color.clear, lineWidth: 1.5)  // 金色边框
             )
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
