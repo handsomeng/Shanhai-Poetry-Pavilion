@@ -19,8 +19,7 @@ struct DirectWritingView: View {
     
     // UI 状态
     @State private var showingAICommentSheet = false
-    @State private var showingSaveAlert = false
-    @State private var showingPublishAlert = false
+    @State private var showingShareSheet = false
     @State private var showingCancelConfirm = false
     @State private var aiComment: String = ""
     @State private var isLoadingAI = false
@@ -81,17 +80,10 @@ struct DirectWritingView: View {
         .sheet(isPresented: $showingAICommentSheet) {
             AICommentSheet(comment: aiComment)
         }
-        .alert("保存草稿", isPresented: $showingSaveAlert) {
-            Button("确定") {}
-        } message: {
-            Text("诗歌已保存为草稿")
-        }
-        .alert("发布成功", isPresented: $showingPublishAlert) {
-            Button("确定") {
-                dismiss()
+        .sheet(isPresented: $showingShareSheet) {
+            if let poem = currentPoem {
+                ShareSheet(poem: poem)
             }
-        } message: {
-            Text("你的诗歌已发布到广场")
         }
     }
     
@@ -124,21 +116,10 @@ struct DirectWritingView: View {
     // MARK: - Bottom Buttons
     
     private var bottomButtons: some View {
-        HStack(spacing: Spacing.md) {
-            // 保存草稿
-            Button(action: saveDraft) {
-                Text("保存草稿")
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .frame(maxWidth: .infinity)
-                    .padding(Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-            }
-            
-            // 发布
-            Button(action: publishPoem) {
-                Text("发布")
+        VStack(spacing: Spacing.sm) {
+            // 保存按钮
+            Button(action: savePoem) {
+                Text("保存")
                     .font(Fonts.bodyRegular())
                     .fontWeight(.medium)
                     .foregroundColor(.white)
@@ -148,6 +129,21 @@ struct DirectWritingView: View {
                     .cornerRadius(CornerRadius.medium)
             }
             .disabled(content.isEmpty)
+            
+            // 分享按钮（仅在有保存内容时显示）
+            if currentPoem != nil {
+                Button(action: { showingShareSheet = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                        Text("分享")
+                    }
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(Colors.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(Spacing.sm)
+                }
+            }
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
@@ -174,13 +170,14 @@ struct DirectWritingView: View {
         }
     }
     
-    private func saveDraft() {
+    private func savePoem() {
         if let existing = currentPoem {
             var updated = existing
             updated.title = title
             updated.content = content
             updated.tags = []
             poemManager.savePoem(updated)
+            currentPoem = updated
         } else {
             let newPoem = poemManager.createDraft(
                 title: title,
@@ -189,28 +186,13 @@ struct DirectWritingView: View {
                 writingMode: .direct
             )
             currentPoem = newPoem
+            poemManager.savePoem(newPoem)
         }
-        showingSaveAlert = true
-    }
-    
-    private func publishPoem() {
-        if let existing = currentPoem {
-            var updated = existing
-            updated.title = title
-            updated.content = content
-            updated.tags = []
-            poemManager.savePoem(updated)
-            poemManager.publishPoem(updated)
-        } else {
-            let newPoem = poemManager.createDraft(
-                title: title,
-                content: content,
-                tags: [],
-                writingMode: .direct
-            )
-            poemManager.publishPoem(newPoem)
+        
+        // 保存成功后，自动显示分享选项
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            showingShareSheet = true
         }
-        showingPublishAlert = true
     }
     
     private func requestAIComment() {

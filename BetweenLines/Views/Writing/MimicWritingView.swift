@@ -26,7 +26,8 @@ struct MimicWritingView: View {
     // 创作内容
     @State private var title = ""
     @State private var content = ""
-    @State private var selectedTags: [String] = []
+    @State private var currentPoem: Poem?
+    @State private var showingShareSheet = false
     
     var body: some View {
         ZStack {
@@ -169,19 +170,9 @@ struct MimicWritingView: View {
     }
     
     private var bottomButtons: some View {
-        HStack(spacing: Spacing.md) {
-            Button(action: saveDraft) {
-                Text("保存草稿")
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .frame(maxWidth: .infinity)
-                    .padding(Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-            }
-            
-            Button(action: publishPoem) {
-                Text("发布")
+        VStack(spacing: Spacing.sm) {
+            Button(action: savePoem) {
+                Text("保存")
                     .font(Fonts.bodyRegular())
                     .fontWeight(.medium)
                     .foregroundColor(.white)
@@ -191,39 +182,50 @@ struct MimicWritingView: View {
                     .cornerRadius(CornerRadius.medium)
             }
             .disabled(content.isEmpty)
+            
+            if currentPoem != nil {
+                Button(action: { showingShareSheet = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                        Text("分享")
+                    }
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(Colors.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(Spacing.sm)
+                }
+            }
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.backgroundCream)
+        .sheet(isPresented: $showingShareSheet) {
+            if let poem = currentPoem {
+                ShareSheet(poem: poem)
+            }
+        }
     }
     
     // MARK: - Actions
     
-    private func saveDraft() {
-        guard let reference = selectedReference else { return }
-        
-        _ = poemManager.createDraft(
-            title: title,
-            content: content,
-            tags: ["模仿创作"],
-            writingMode: .mimic,
-            referencePoem: "《\(reference.title)》- \(reference.author)"
-        )
-        dismiss()
-    }
-    
-    private func publishPoem() {
+    private func savePoem() {
         guard let reference = selectedReference else { return }
         
         let poem = poemManager.createDraft(
             title: title,
             content: content,
-            tags: ["模仿创作"],
+            tags: [],
             writingMode: .mimic,
             referencePoem: "《\(reference.title)》- \(reference.author)"
         )
-        poemManager.publishPoem(poem)
-        dismiss()
+        currentPoem = poem
+        poemManager.savePoem(poem)
+        
+        // 保存成功后，显示分享选项
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            showingShareSheet = true
+        }
     }
 }
 

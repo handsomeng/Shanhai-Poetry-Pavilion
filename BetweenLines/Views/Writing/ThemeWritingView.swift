@@ -18,6 +18,8 @@ struct ThemeWritingView: View {
     @State private var aiSuggestion = ""
     @State private var isLoadingAI = false
     @State private var showingSuggestion = false
+    @State private var currentPoem: Poem?
+    @State private var showingShareSheet = false
     
     let themes = ["风", "雨", "窗", "梦", "城市", "孤独", "爱", "时间", "海", "夜晚"]
     
@@ -189,19 +191,9 @@ struct ThemeWritingView: View {
     }
     
     private var bottomButtons: some View {
-        HStack(spacing: Spacing.md) {
-            Button(action: saveDraft) {
-                Text("保存草稿")
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .frame(maxWidth: .infinity)
-                    .padding(Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-            }
-            
-            Button(action: publishPoem) {
-                Text("发布")
+        VStack(spacing: Spacing.sm) {
+            Button(action: savePoem) {
+                Text("保存")
                     .font(Fonts.bodyRegular())
                     .fontWeight(.medium)
                     .foregroundColor(.white)
@@ -211,10 +203,29 @@ struct ThemeWritingView: View {
                     .cornerRadius(CornerRadius.medium)
             }
             .disabled(content.isEmpty)
+            
+            if currentPoem != nil {
+                Button(action: { showingShareSheet = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                        Text("分享")
+                    }
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(Colors.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(Spacing.sm)
+                }
+            }
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.backgroundCream)
+        .sheet(isPresented: $showingShareSheet) {
+            if let poem = currentPoem {
+                ShareSheet(poem: poem)
+            }
+        }
     }
     
     // MARK: - Actions
@@ -247,29 +258,22 @@ struct ThemeWritingView: View {
         }
     }
     
-    private func saveDraft() {
-        guard let theme = selectedTheme else { return }
-        
-        _ = poemManager.createDraft(
-            title: title,
-            content: content,
-            tags: [theme],
-            writingMode: .theme
-        )
-        dismiss()
-    }
-    
-    private func publishPoem() {
+    private func savePoem() {
         guard let theme = selectedTheme else { return }
         
         let poem = poemManager.createDraft(
             title: title,
             content: content,
-            tags: [theme],
+            tags: [],
             writingMode: .theme
         )
-        poemManager.publishPoem(poem)
-        dismiss()
+        currentPoem = poem
+        poemManager.savePoem(poem)
+        
+        // 保存成功后，显示分享选项
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            showingShareSheet = true
+        }
     }
 }
 
