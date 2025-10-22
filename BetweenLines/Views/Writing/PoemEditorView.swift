@@ -100,40 +100,26 @@ struct PoemEditorView: View {
     // MARK: - Content Editor
     
     private var contentEditor: some View {
-        GeometryReader { geometry in
-            ScrollViewReader { proxy in
-                ScrollView {
-                    ZStack(alignment: .topLeading) {
-                        // 占位符
-                        if content.isEmpty {
-                            Text(placeholder)
-                                .font(Fonts.bodyPoem())
-                                .foregroundColor(Colors.textSecondary.opacity(0.5))
-                                .padding(.horizontal, Spacing.lg)
-                                .padding(.vertical, Spacing.md)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .allowsHitTesting(false)
-                        }
-                        
-                        // 文本编辑器 - 自动适应键盘
-                        TextEditor(text: $content)
-                            .font(Fonts.bodyPoem())
-                            .foregroundColor(Colors.textInk)
-                            .padding(.horizontal, Spacing.lg)
-                            .padding(.vertical, Spacing.md)
-                            .scrollContentBackground(.hidden)
-                            .frame(minHeight: geometry.size.height)
-                            .background(Colors.white)
-                            .id("editor")
-                    }
-                }
-                .onChange(of: content) {
-                    // 内容变化时，确保编辑器可见
-                    withAnimation {
-                        proxy.scrollTo("editor", anchor: .bottom)
-                    }
-                }
+        ZStack(alignment: .topLeading) {
+            // 占位符
+            if content.isEmpty {
+                Text(placeholder)
+                    .font(Fonts.bodyPoem())
+                    .foregroundColor(Colors.textSecondary.opacity(0.5))
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.md)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .allowsHitTesting(false)
             }
+            
+            // 文本编辑器 - 自动适应键盘
+            TextEditor(text: $content)
+                .font(Fonts.bodyPoem())
+                .foregroundColor(Colors.textInk)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.md)
+                .scrollContentBackground(.hidden)
+                .background(Colors.white)
         }
         .background(Colors.white)
         // 根据键盘高度调整底部 padding，确保输入区域不被遮挡
