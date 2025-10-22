@@ -215,3 +215,4 @@ private struct DraftCardView: View {
     WritingView()
 }
 
+

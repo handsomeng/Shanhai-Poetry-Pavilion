@@ -17,50 +17,50 @@ struct LandingView: View {
         ZStack {
             Colors.backgroundCream.ignoresSafeArea()
             
-            VStack(spacing: Spacing.huge) {
+            VStack(spacing: Spacing.xl) {
                 Spacer()
                 
-                // 主标题 - Dribbble 风格：超大、超细
+                // 主标题 - 优化字重和间距
                 Text("山海诗馆")
-                    .font(Fonts.displayLarge())
+                    .font(.system(size: 40, weight: .light, design: .serif))
                     .foregroundColor(Colors.textInk)
-                    .tracking(8)                   // 增大字间距
+                    .tracking(4)
                     .padding(.bottom, Spacing.xs)
                 
-                // 副标题 - 极致轻盈
+                // 副标题
                 Text("在这里开始你的诗歌之旅")
-                    .font(Fonts.caption())
+                    .font(.system(size: 14, weight: .light))
                     .foregroundColor(Colors.textTertiary)
-                    .tracking(2)
+                    .tracking(1)
                 
-                // 输入框 - 极简无边框设计
-                VStack(alignment: .leading, spacing: Spacing.lg) {
+                // 输入框
+                VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("笔名")
-                        .font(Fonts.footnote())
-                        .foregroundColor(Colors.textQuaternary)
-                        .tracking(3)
-                        .textCase(.uppercase)     // 小写变大写，更高级
+                        .font(.system(size: 11, weight: .light))
+                        .foregroundColor(Colors.textSecondary)
+                        .tracking(2)
+                        .textCase(.uppercase)
                     
                     TextField("", text: $penName, prompt: Text("给自己起个富有诗意的名字").foregroundColor(Colors.textQuaternary))
-                        .font(Fonts.titleSmall())
+                        .font(.system(size: 18, weight: .regular, design: .serif))
                         .foregroundColor(Colors.textInk)
-                        .padding(.vertical, Spacing.lg)
+                        .padding(.vertical, Spacing.md)
                         .overlay(
                             Rectangle()
-                                .frame(height: 0.3)      // 更细的线
+                                .frame(height: 0.5)
                                 .foregroundColor(Colors.border)
                             , alignment: .bottom
                         )
                 }
-                .padding(.horizontal, Spacing.xxl)   // 更大的边距
+                .padding(.horizontal, Spacing.xl)
                 
                 if showError {
                     Text(errorMessage)
-                        .font(Fonts.caption())
+                        .font(.system(size: 12, weight: .light))
                         .foregroundColor(Colors.error)
                 }
                 
-                // 按钮 - 极简边框风格
+                // 按钮
                 Button(action: {
                     let trimmed = penName.trimmingCharacters(in: .whitespacesAndNewlines)
                     if trimmed.count < ContentLimits.penNameMin {
@@ -73,20 +73,17 @@ struct LandingView: View {
                     onComplete()
                 }) {
                     Text("开始创作")
-                        .font(Fonts.bodyRegular())
-                        .tracking(4)
+                        .font(.system(size: 15, weight: .regular))
+                        .tracking(2)
                         .textCase(.uppercase)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.xl)
+                        .padding(.vertical, Spacing.md)
                         .foregroundColor(.white)
                         .background(Colors.accentTeal)
-                        .overlay(
-                            Rectangle()
-                                .stroke(Colors.accentTeal, lineWidth: 0.5)
-                        )
                 }
-                .padding(.horizontal, Spacing.xxl)
+                .padding(.horizontal, Spacing.xl)
                 
+                Spacer()
                 Spacer()
             }
         }
