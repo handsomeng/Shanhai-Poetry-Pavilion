@@ -78,17 +78,6 @@ struct PoemEditorView: View {
     
     private var contentEditor: some View {
         ZStack(alignment: .topLeading) {
-            // 占位符
-            if content.isEmpty {
-                Text(placeholder)
-                    .font(Fonts.bodyPoem())
-                    .foregroundColor(Colors.textSecondary.opacity(0.5))
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.vertical, Spacing.md)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .allowsHitTesting(false)
-            }
-            
             // 文本编辑器 - 自动适应键盘
             TextEditor(text: $content)
                 .font(Fonts.bodyPoem())
@@ -96,7 +85,22 @@ struct PoemEditorView: View {
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.md)
                 .scrollContentBackground(.hidden)
-                .background(Colors.white)
+                .background(
+                    ZStack(alignment: .topLeading) {
+                        Colors.white
+                        
+                        // 占位符（在背景层，完全不影响交互）
+                        if content.isEmpty {
+                            Text(placeholder)
+                                .font(Fonts.bodyPoem())
+                                .foregroundColor(Colors.textSecondary.opacity(0.5))
+                                .padding(.horizontal, Spacing.lg)
+                                .padding(.vertical, Spacing.md)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                )
         }
         .background(Colors.white)
     }
