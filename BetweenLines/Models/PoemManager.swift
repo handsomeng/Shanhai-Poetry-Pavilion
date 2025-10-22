@@ -8,6 +8,18 @@
 import Foundation
 import Combine
 
+/// 发布诗歌错误类型
+enum PoemPublishError: LocalizedError {
+    case similarContentExists(title: String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .similarContentExists(let title):
+            return "已发布过相似内容：《\(title)》"
+        }
+    }
+}
+
 /// 诗歌管理器（单例模式）
 class PoemManager: ObservableObject {
     
@@ -35,36 +47,44 @@ class PoemManager: ObservableObject {
         loadPublicPoems()
     }
     
-    // MARK: - 计算属性
+    // MARK: - 计算属性（新逻辑）
     
-    /// 我的已发布诗歌
-    var myPublishedPoems: [Poem] {
-        allPoems.filter { $0.isPublished && $0.authorName == currentUserName }
-            .sorted { $0.createdAt > $1.createdAt }
-    }
-    
-    /// 我的草稿
-    var myDrafts: [Poem] {
-        allPoems.filter { !$0.isPublished && $0.authorName == currentUserName }
+    /// 我的诗集（已保存到本地的诗歌）
+    var myCollection: [Poem] {
+        allPoems.filter { $0.inMyCollection && $0.authorName == currentUserName }
             .sorted { $0.updatedAt > $1.updatedAt }
     }
     
-    /// 我收藏的诗歌
-    var myFavorites: [Poem] {
-        allPoems.filter { $0.isFavorited }
-            .sorted { $0.createdAt > $1.createdAt }
+    /// 我的草稿（未保存的诗歌，兼容旧逻辑）
+    var myDrafts: [Poem] {
+        allPoems.filter { !$0.inMyCollection && !$0.inSquare && $0.authorName == currentUserName }
+            .sorted { $0.updatedAt > $1.updatedAt }
     }
     
-    /// 广场诗歌（所有已发布的诗歌）
+    /// 我发布到广场的诗歌（引用列表）
+    var myPublishedToSquare: [Poem] {
+        allPoems.filter { $0.inSquare && $0.authorName == currentUserName }
+            .sorted { $0.squarePublishedAt ?? $0.createdAt > $1.squarePublishedAt ?? $1.createdAt }
+    }
+    
+    /// 广场诗歌（所有在广场上的诗歌）
     var explorePoems: [Poem] {
-        allPoems.filter { $0.isPublished }
-            .sorted { $0.createdAt > $1.createdAt }
+        allPoems.filter { $0.inSquare }
+            .sorted { $0.squarePublishedAt ?? $0.createdAt > $1.squarePublishedAt ?? $1.createdAt }
     }
     
-    /// 热门诗歌（按点赞数排序）
+    /// 热门诗歌（按广场点赞数排序）
     var popularPoems: [Poem] {
-        allPoems.filter { $0.isPublished }
-            .sorted { $0.likeCount > $1.likeCount }
+        allPoems.filter { $0.inSquare }
+            .sorted { $0.squareLikeCount > $1.squareLikeCount }
+    }
+    
+    // MARK: - 兼容旧逻辑的计算属性（废弃）
+    
+    /// 我的已发布诗歌（废弃，改用 myCollection）
+    @available(*, deprecated, message: "Use myCollection instead")
+    var myPublishedPoems: [Poem] {
+        myCollection
     }
     
     // MARK: - CRUD 操作
@@ -78,14 +98,33 @@ class PoemManager: ObservableObject {
             tags: tags,
             writingMode: writingMode,
             referencePoem: referencePoem,
-            isPublished: false
+            inMyCollection: false,
+            inSquare: false
         )
         allPoems.append(poem)
         savePoems()
         return poem
     }
     
-    /// 保存诗歌（更新现有诗歌）
+    /// 保存诗歌到【我的诗集】
+    func saveToCollection(_ poem: Poem) {
+        if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
+            var updatedPoem = poem
+            updatedPoem.inMyCollection = true
+            updatedPoem.updatedAt = Date()
+            allPoems[index] = updatedPoem
+            savePoems()
+        } else {
+            // 新诗歌
+            var newPoem = poem
+            newPoem.inMyCollection = true
+            newPoem.updatedAt = Date()
+            allPoems.append(newPoem)
+            savePoems()
+        }
+    }
+    
+    /// 保存诗歌（通用方法，更新现有诗歌）
     func savePoem(_ poem: Poem) {
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
             var updatedPoem = poem
@@ -95,18 +134,58 @@ class PoemManager: ObservableObject {
         }
     }
     
-    /// 发布诗歌
-    func publishPoem(_ poem: Poem) {
+    /// 发布诗歌到广场（新逻辑）
+    func publishToSquare(_ poem: Poem) throws {
+        // 检查相似度
+        if let similarPoem = try checkSimilarity(for: poem) {
+            throw PoemPublishError.similarContentExists(title: similarPoem.title)
+        }
+        
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
-            var publishedPoem = poem
-            publishedPoem.isPublished = true
+            var publishedPoem = allPoems[index]
+            publishedPoem.inSquare = true
+            publishedPoem.squareId = UUID().uuidString
+            publishedPoem.squarePublishedAt = Date()
             publishedPoem.updatedAt = Date()
             allPoems[index] = publishedPoem
             savePoems()
         }
     }
     
-    /// 删除诗歌
+    /// 从广场删除
+    func removeFromSquare(_ poem: Poem) {
+        if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
+            var updatedPoem = allPoems[index]
+            updatedPoem.inSquare = false
+            updatedPoem.squareId = nil
+            
+            // 如果也不在诗集里，就彻底删除
+            if !updatedPoem.inMyCollection {
+                allPoems.remove(at: index)
+            } else {
+                allPoems[index] = updatedPoem
+            }
+            savePoems()
+        }
+    }
+    
+    /// 从诗集删除
+    func removeFromCollection(_ poem: Poem) {
+        if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
+            var updatedPoem = allPoems[index]
+            updatedPoem.inMyCollection = false
+            
+            // 如果也不在广场上，就彻底删除
+            if !updatedPoem.inSquare {
+                allPoems.remove(at: index)
+            } else {
+                allPoems[index] = updatedPoem
+            }
+            savePoems()
+        }
+    }
+    
+    /// 删除诗歌（彻底删除）
     func deletePoem(_ poem: Poem) {
         allPoems.removeAll { $0.id == poem.id }
         savePoems()
@@ -119,22 +198,12 @@ class PoemManager: ObservableObject {
         savePoems()
     }
     
-    /// 点赞/取消点赞
+    /// 点赞/取消点赞（广场诗歌）
     func toggleLike(for poem: Poem) {
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
             var updatedPoem = allPoems[index]
             updatedPoem.isLiked.toggle()
-            updatedPoem.likeCount += updatedPoem.isLiked ? 1 : -1
-            allPoems[index] = updatedPoem
-            savePoems()
-        }
-    }
-    
-    /// 收藏/取消收藏
-    func toggleFavorite(for poem: Poem) {
-        if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
-            var updatedPoem = allPoems[index]
-            updatedPoem.isFavorited.toggle()
+            updatedPoem.squareLikeCount += updatedPoem.isLiked ? 1 : -1
             allPoems[index] = updatedPoem
             savePoems()
         }
@@ -192,16 +261,16 @@ class PoemManager: ObservableObject {
     
     // MARK: - 搜索和筛选
     
-    /// 按标签搜索
+    /// 按标签搜索（广场）
     func searchByTag(_ tag: String) -> [Poem] {
-        allPoems.filter { $0.isPublished && $0.tags.contains(tag) }
+        allPoems.filter { $0.inSquare && $0.tags.contains(tag) }
     }
     
-    /// 按关键词搜索
+    /// 按关键词搜索（广场）
     func search(keyword: String) -> [Poem] {
         let lowercased = keyword.lowercased()
         return allPoems.filter { poem in
-            poem.isPublished && (
+            poem.inSquare && (
                 poem.title.lowercased().contains(lowercased) ||
                 poem.content.lowercased().contains(lowercased) ||
                 poem.authorName.lowercased().contains(lowercased)
@@ -209,19 +278,55 @@ class PoemManager: ObservableObject {
         }
     }
     
-    /// 按创作模式筛选
+    /// 按创作模式筛选（广场）
     func filterByMode(_ mode: WritingMode) -> [Poem] {
-        allPoems.filter { $0.isPublished && $0.writingMode == mode }
+        allPoems.filter { $0.inSquare && $0.writingMode == mode }
+    }
+    
+    // MARK: - 相似度检测
+    
+    /// 检查是否已发布相似内容
+    private func checkSimilarity(for poem: Poem) throws -> Poem? {
+        // 获取我已发布到广场的诗歌
+        let mySquarePoems = allPoems.filter {
+            $0.inSquare && $0.authorName == currentUserName && $0.id != poem.id
+        }
+        
+        for existingPoem in mySquarePoems {
+            // 检查标题是否相同
+            if existingPoem.title == poem.title && !poem.title.isEmpty {
+                return existingPoem
+            }
+            
+            // 检查内容相似度
+            let similarity = calculateSimilarity(existingPoem.content, poem.content)
+            if similarity > 0.7 {
+                return existingPoem
+            }
+        }
+        
+        return nil
+    }
+    
+    /// 计算两个字符串的相似度（简单实现：共同字符比例）
+    private func calculateSimilarity(_ str1: String, _ str2: String) -> Double {
+        let set1 = Set(str1)
+        let set2 = Set(str2)
+        let intersection = set1.intersection(set2)
+        let union = set1.union(set2)
+        
+        guard !union.isEmpty else { return 0 }
+        return Double(intersection.count) / Double(union.count)
     }
     
     // MARK: - 统计数据
     
-    /// 我的统计
+    /// 我的统计（新逻辑）
     var myStats: (totalPoems: Int, totalDrafts: Int, totalLikes: Int) {
-        let published = myPublishedPoems.count
+        let collection = myCollection.count
         let drafts = myDrafts.count
-        let likes = myPublishedPoems.reduce(0) { $0 + $1.likeCount }
-        return (published, drafts, likes)
+        let likes = myPublishedToSquare.reduce(0) { $0 + $1.squareLikeCount }
+        return (collection, drafts, likes)
     }
     
     // MARK: - 数据管理
