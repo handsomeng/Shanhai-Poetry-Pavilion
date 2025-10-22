@@ -84,11 +84,11 @@ struct ProfileView: View {
     
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            // 第一行：诗人 · XXX + 会员标识
+            // 第一行：称号 · 笔名 + 会员标识
             HStack(spacing: 6) {
-                Text("诗人")
+                Text(poemManager.currentPoetTitle.displayName)
                     .font(Fonts.h2Small())
-                    .foregroundColor(Colors.textSecondary)
+                    .foregroundColor(Colors.textInk)
                 
                 Text("·")
                     .font(Fonts.h2Small())
@@ -106,27 +106,14 @@ struct ProfileView: View {
                 }
             }
             
-            // 第二行：称号 + 统计（可点击）
+            // 第二行：统计信息（可点击查看称号详情）
             Button(action: {
                 showingPoetTitle = true
             }) {
-                HStack(spacing: 8) {
-                    // 称号图标
-                    Text(poemManager.currentPoetTitle.icon)
-                        .font(.system(size: 16))
+                HStack(spacing: 4) {
+                    let stats = poemManager.myStats
                     
-                    // 称号名称
-                    Text(poemManager.currentPoetTitle.displayName)
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.accentTeal)
-                    
-                    // 分隔符
-                    Text("·")
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.textSecondary.opacity(0.5))
-                    
-                    // 已写诗歌数
-                    Text("已写 \(poemManager.myCollection.count) 首")
+                    Text("已写 \(stats.totalPoems) 首诗，获得 \(stats.totalLikes) 个赞")
                         .font(Fonts.bodyRegular())
                         .foregroundColor(Colors.textSecondary)
                     
