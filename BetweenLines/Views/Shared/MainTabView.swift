@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @StateObject private var tabManager = TabManager()
+    
     @State private var selectedTab: Tab = .learning
     
     enum Tab: String, CaseIterable {
@@ -27,20 +29,27 @@ struct MainTabView: View {
             LearningView()
                 .tabItem { Label(Tab.learning.rawValue, systemImage: Tab.learning.iconName) }
                 .tag(Tab.learning)
+                .environmentObject(tabManager)
             
             WritingView()
                 .tabItem { Label(Tab.writing.rawValue, systemImage: Tab.writing.iconName) }
                 .tag(Tab.writing)
+                .environmentObject(tabManager)
             
             ExploreView()
                 .tabItem { Label(Tab.explore.rawValue, systemImage: Tab.explore.iconName) }
                 .tag(Tab.explore)
+                .environmentObject(tabManager)
             
             ProfileView()
                 .tabItem { Label(Tab.library.rawValue, systemImage: Tab.library.iconName) }
                 .tag(Tab.library)
+                .environmentObject(tabManager)
         }
         .tint(Colors.accentTeal)
+        .onChange(of: tabManager.selectedTab) { newTab in
+            selectedTab = newTab
+        }
     }
 }
 

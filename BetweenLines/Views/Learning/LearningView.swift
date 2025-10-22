@@ -254,6 +254,10 @@ struct ArticleDetailView: View {
     
     let article: LearningArticle
     
+    // MARK: - 环境对象
+    
+    @EnvironmentObject var tabManager: TabManager
+    
     // MARK: - 状态
     
     /// 是否显示"一键开始临摹"提示
@@ -330,8 +334,8 @@ struct ArticleDetailView: View {
         .alert("开始创作", isPresented: $showMimicPrompt) {
             Button("取消", role: .cancel) {}
             Button("前往写诗") {
-                // TODO: 跳转到写诗页面
-                // 可以使用 NavigationStack 的 path 或通知机制
+                // 切换到写诗 Tab
+                tabManager.switchTo(.writing)
             }
         } message: {
             Text("将跳转到【写诗】模块，开始你的第一首诗。")
