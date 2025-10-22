@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 /// 诗歌编辑器（通用组件）
 struct PoemEditorView: View {
@@ -15,6 +16,9 @@ struct PoemEditorView: View {
     
     let placeholder: String
     let showWordCount: Bool
+    
+    // 监听键盘事件
+    @State private var keyboardHeight: CGFloat = 0
     
     init(
         title: Binding<String>,
@@ -42,6 +46,26 @@ struct PoemEditorView: View {
             // 底部工具栏
             if showWordCount {
                 bottomToolbar
+            }
+        }
+        .onAppear {
+            // 监听键盘显示/隐藏事件
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillShowNotification,
+                object: nil,
+                queue: .main
+            ) { notification in
+                if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                    keyboardHeight = keyboardFrame.height
+                }
+            }
+            
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillHideNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                keyboardHeight = 0
             }
         }
     }
@@ -76,29 +100,45 @@ struct PoemEditorView: View {
     // MARK: - Content Editor
     
     private var contentEditor: some View {
-        ZStack(alignment: .topLeading) {
-            // 占位符
-            if content.isEmpty {
-                Text(placeholder)
-                    .font(Fonts.bodyPoem())
-                    .foregroundColor(Colors.textSecondary.opacity(0.5))
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.vertical, Spacing.md)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .allowsHitTesting(false)
+        GeometryReader { geometry in
+            ScrollViewReader { proxy in
+                ScrollView {
+                    ZStack(alignment: .topLeading) {
+                        // 占位符
+                        if content.isEmpty {
+                            Text(placeholder)
+                                .font(Fonts.bodyPoem())
+                                .foregroundColor(Colors.textSecondary.opacity(0.5))
+                                .padding(.horizontal, Spacing.lg)
+                                .padding(.vertical, Spacing.md)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .allowsHitTesting(false)
+                        }
+                        
+                        // 文本编辑器 - 自动适应键盘
+                        TextEditor(text: $content)
+                            .font(Fonts.bodyPoem())
+                            .foregroundColor(Colors.textInk)
+                            .padding(.horizontal, Spacing.lg)
+                            .padding(.vertical, Spacing.md)
+                            .scrollContentBackground(.hidden)
+                            .frame(minHeight: geometry.size.height)
+                            .background(Colors.white)
+                            .id("editor")
+                    }
+                }
+                .onChange(of: content) { _ in
+                    // 内容变化时，确保编辑器可见
+                    withAnimation {
+                        proxy.scrollTo("editor", anchor: .bottom)
+                    }
+                }
             }
-            
-            // 文本编辑器 - 自动适应键盘
-            TextEditor(text: $content)
-                .font(Fonts.bodyPoem())
-                .foregroundColor(Colors.textInk)
-                .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.md)
-                .scrollContentBackground(.hidden)
-                .background(Colors.white)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Colors.white)
+        // 根据键盘高度调整底部 padding，确保输入区域不被遮挡
+        .padding(.bottom, keyboardHeight > 0 ? max(0, keyboardHeight - 200) : 0)
+        .animation(.easeOut(duration: 0.3), value: keyboardHeight)
     }
     
     // MARK: - Bottom Toolbar
