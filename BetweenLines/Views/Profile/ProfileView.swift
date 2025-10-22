@@ -107,75 +107,101 @@ struct ProfileView: View {
     // MARK: - Membership Card
     
     private var membershipCard: some View {
-        Button(action: {
-            // 已订阅显示会员详情，未订阅显示购买页面
+        Group {
             if subscriptionManager.isSubscribed {
-                showingMembershipDetail = true
-            } else {
-                showingSubscription = true
-            }
-        }) {
-            HStack(alignment: .top, spacing: Spacing.md) {
-                // 左侧图标
-                Image(systemName: subscriptionManager.isSubscribed ? "crown.fill" : "crown")
-                    .font(.system(size: subscriptionManager.isSubscribed ? 20 : 16))
-                    .foregroundColor(subscriptionManager.isSubscribed ? Color(hex: "D4AF37") : Colors.textSecondary)  // 金色皇冠
-                    .frame(width: 24)
-                
-                // 中间内容
-                VStack(alignment: .leading, spacing: 6) {
-                    if subscriptionManager.isSubscribed {
-                        // 已订阅：诗意文案
-                        Text("山海已在你心间")
-                            .font(Fonts.bodyLarge())
-                            .foregroundColor(Color(hex: "B8860B"))  // 深金色文字
+                // ===== 已订阅：可点击查看详情 =====
+                Button(action: {
+                    showingMembershipDetail = true
+                }) {
+                    HStack(alignment: .center, spacing: Spacing.md) {
+                        // 左侧金色皇冠
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(Color(hex: "D4AF37"))
                         
-                        if let subscription = subscriptionManager.currentSubscription {
-                            HStack(spacing: 4) {
-                                Text("\(subscription.displayName)订阅")
-                                    .font(Fonts.caption())
-                                    .foregroundColor(Colors.textSecondary)
-                                
-                                Text("·")
-                                    .font(Fonts.caption())
-                                    .foregroundColor(Colors.textSecondary.opacity(0.5))
-                                
-                                Text("到期 \(subscriptionManager.expirationDateString)")
-                                    .font(Fonts.caption())
-                                    .foregroundColor(Colors.textSecondary)
+                        // 中间文案
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("山海已在你心间")
+                                .font(Fonts.bodyLarge())
+                                .foregroundColor(Color(hex: "B8860B"))
+                            
+                            if let subscription = subscriptionManager.currentSubscription {
+                                HStack(spacing: 4) {
+                                    Text("\(subscription.displayName)订阅")
+                                        .font(Fonts.caption())
+                                        .foregroundColor(Colors.textSecondary)
+                                    
+                                    Text("·")
+                                        .font(Fonts.caption())
+                                        .foregroundColor(Colors.textSecondary.opacity(0.5))
+                                    
+                                    Text("到期 \(subscriptionManager.expirationDateString)")
+                                        .font(Fonts.caption())
+                                        .foregroundColor(Colors.textSecondary)
+                                }
                             }
                         }
-                    } else {
-                        // 未订阅：引导文案
-                        Text("升级会员")
-                            .font(Fonts.bodyLarge())
-                            .foregroundColor(Colors.textInk)
                         
-                        Text("解锁全部高级功能")
-                            .font(Fonts.caption())
-                            .foregroundColor(Colors.textSecondary)
+                        Spacer()
+                        
+                        // 右侧箭头
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: "D4AF37").opacity(0.4))
                     }
+                    .padding(Spacing.lg)
                 }
+                .buttonStyle(PlainButtonStyle())
                 
-                Spacer()
-                
-                // 右侧按钮
-                if !subscriptionManager.isSubscribed {
-                    Text("立即订阅")
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(.white)
-                        .padding(.horizontal, Spacing.md)
-                        .padding(.vertical, Spacing.sm)
-                        .background(Colors.accentTeal)
-                        .cornerRadius(CornerRadius.medium)
-                } else {
-                    // 已订阅显示小图标
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundColor(Colors.textSecondary.opacity(0.5))
+            } else {
+                // ===== 未订阅：分区布局 =====
+                VStack(spacing: 0) {
+                    // 顶部内容区
+                    HStack(spacing: Spacing.md) {
+                        // 左侧皇冠
+                        Image(systemName: "crown")
+                            .font(.system(size: 20))
+                            .foregroundColor(Colors.textSecondary)
+                        
+                        // 中间文案
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("升级会员")
+                                .font(Fonts.bodyLarge())
+                                .foregroundColor(Colors.textInk)
+                            
+                            Text("解锁全部高级功能")
+                                .font(Fonts.caption())
+                                .foregroundColor(Colors.textSecondary)
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.top, Spacing.lg)
+                    .padding(.bottom, Spacing.md)
+                    
+                    // 分割线
+                    Divider()
+                        .padding(.horizontal, Spacing.lg)
+                    
+                    // 底部按钮区
+                    Button(action: {
+                        showingSubscription = true
+                    }) {
+                        HStack {
+                            Spacer()
+                            Text("立即订阅")
+                                .font(Fonts.bodyRegular())
+                                .foregroundColor(Colors.accentTeal)
+                            Spacer()
+                        }
+                        .padding(.vertical, Spacing.md)
+                    }
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.bottom, Spacing.xs)
                 }
             }
-            .padding(Spacing.md)
+        }
             .background(
                 LinearGradient(
                     colors: subscriptionManager.isSubscribed
@@ -191,11 +217,9 @@ struct ProfileView: View {
                     .stroke(subscriptionManager.isSubscribed ? Color(hex: "D4AF37").opacity(0.2) : Color.clear, lineWidth: 1.5)  // 金色边框
             )
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .scaleButtonStyle()
-        .padding(.horizontal, Spacing.lg)
-        .padding(.bottom, Spacing.md)
+            .scaleButtonStyle()
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.md)
     }
     
     // MARK: - Stats Section
