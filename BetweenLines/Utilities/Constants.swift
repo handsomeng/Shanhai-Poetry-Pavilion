@@ -15,13 +15,13 @@ enum AppConstants {
     static let version = "1.0.0"
     static let cloudKitContainerID = "iCloud.com.yourcompany.BetweenLines"
     
-    // OpenAI 配置
+    // DeepSeek AI 配置
     static let openAIAPIKey = "sk-5f25856393a34aabaea722efa1d3531d"
-    static let openAIModel = "gpt-4o-mini"
+    static let openAIModel = "deepseek-chat"
     static let openAIMaxTokens = 800
     static let openAITimeout: TimeInterval = 15.0
     static let openAIMaxRetries = 3
-    static let openAIBaseURL = "https://api.openai.com/v1/chat/completions"
+    static let openAIBaseURL = "https://api.deepseek.com/v1/chat/completions"
 }
 
 // MARK: - 设计系统：颜色（基于 Lovart 设计规范）
