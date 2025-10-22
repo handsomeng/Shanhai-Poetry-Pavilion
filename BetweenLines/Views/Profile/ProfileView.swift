@@ -225,8 +225,8 @@ struct ProfileView: View {
                 // 已发布的诗歌跳转到广场详情页
                 PoemDetailView(poem: poem)
             } else {
-                // 诗集和草稿都可以编辑
-                DirectWritingView(existingPoem: poem)
+                // 诗集和草稿跳转到新的编辑详情页
+                PoemEditorDetailView(poem: poem)
             }
         }
     }
