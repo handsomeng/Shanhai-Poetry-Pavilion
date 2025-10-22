@@ -60,26 +60,31 @@ struct PoemEditorView: View {
     // MARK: - Content Editor
     
     private var contentEditor: some View {
-        ZStack(alignment: .topLeading) {
-            // 占位符
-            if content.isEmpty {
-                Text(placeholder)
+        ScrollView {
+            ZStack(alignment: .topLeading) {
+                // 占位符
+                if content.isEmpty {
+                    Text(placeholder)
+                        .font(Fonts.bodyPoem())
+                        .foregroundColor(Colors.textSecondary.opacity(0.5))
+                        .padding(.horizontal, Spacing.lg)
+                        .padding(.vertical, Spacing.md)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .allowsHitTesting(false)
+                }
+                
+                // 文本编辑器 - 使用 TextEditor 并设置最小高度
+                TextEditor(text: $content)
                     .font(Fonts.bodyPoem())
-                    .foregroundColor(Colors.textSecondary.opacity(0.5))
-                    .padding(.horizontal, Spacing.lg + 5)
-                    .padding(.vertical, Spacing.md + 8)
-                    .allowsHitTesting(false)
+                    .foregroundColor(Colors.textInk)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.md)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 400, alignment: .topLeading)
+                    .background(Colors.white)
             }
-            
-            // 文本编辑器
-            TextEditor(text: $content)
-                .font(Fonts.bodyPoem())
-                .foregroundColor(Colors.textInk)
-                .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.md)
-                .scrollContentBackground(.hidden)
-                .background(Colors.white)
         }
+        .background(Colors.white)
     }
     
     // MARK: - Bottom Toolbar

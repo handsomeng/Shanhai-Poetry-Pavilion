@@ -141,23 +141,6 @@ private struct PoemCardView: View {
                 .lineSpacing(6)
                 .lineLimit(6)
             
-            // 标签
-            if !poem.tags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.sm) {
-                        ForEach(poem.tags, id: \.self) { tag in
-                            Text(tag)
-                                .font(Fonts.footnote())
-                                .foregroundColor(Colors.accentTeal)
-                                .padding(.horizontal, Spacing.sm)
-                                .padding(.vertical, 4)
-                                .background(Colors.accentTeal.opacity(0.1))
-                                .cornerRadius(8)
-                        }
-                    }
-                }
-            }
-            
             // 底部信息
             HStack {
                 HStack(spacing: 4) {

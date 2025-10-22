@@ -15,11 +15,9 @@ struct DirectWritingView: View {
     // 编辑状态
     @State private var title: String = ""
     @State private var content: String = ""
-    @State private var selectedTags: [String] = []
     @State private var currentPoem: Poem?
     
     // UI 状态
-    @State private var showingTagPicker = false
     @State private var showingAICommentSheet = false
     @State private var showingSaveAlert = false
     @State private var showingPublishAlert = false
@@ -45,9 +43,6 @@ struct DirectWritingView: View {
                     content: $content
                 )
                 
-                // 标签选择
-                tagSection
-                
                 // AI 点评按钮
                 aiCommentButton
                 
@@ -68,9 +63,6 @@ struct DirectWritingView: View {
         .onAppear {
             loadExistingPoem()
         }
-        .sheet(isPresented: $showingTagPicker) {
-            TagPickerSheet(selectedTags: $selectedTags)
-        }
         .sheet(isPresented: $showingAICommentSheet) {
             AICommentSheet(comment: aiComment)
         }
@@ -86,44 +78,6 @@ struct DirectWritingView: View {
         } message: {
             Text("你的诗歌已发布到广场")
         }
-    }
-    
-    // MARK: - Tag Section
-    
-    private var tagSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                Text("标签")
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.textSecondary)
-                
-                Spacer()
-                
-                Button(action: { showingTagPicker = true }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "plus.circle")
-                        Text("添加标签")
-                    }
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.accentTeal)
-                }
-            }
-            
-            if !selectedTags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.sm) {
-                        ForEach(selectedTags, id: \.self) { tag in
-                            TagChip(tag: tag) {
-                                selectedTags.removeAll { $0 == tag }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
-        .background(Colors.white)
     }
     
     // MARK: - AI Comment Button
@@ -191,7 +145,6 @@ struct DirectWritingView: View {
         if let poem = existingPoem {
             title = poem.title
             content = poem.content
-            selectedTags = poem.tags
             aiComment = poem.aiComment ?? ""
             currentPoem = poem
         }
@@ -202,13 +155,13 @@ struct DirectWritingView: View {
             var updated = existing
             updated.title = title
             updated.content = content
-            updated.tags = selectedTags
+            updated.tags = []
             poemManager.savePoem(updated)
         } else {
             let newPoem = poemManager.createDraft(
                 title: title,
                 content: content,
-                tags: selectedTags,
+                tags: [],
                 writingMode: .direct
             )
             currentPoem = newPoem
@@ -221,14 +174,14 @@ struct DirectWritingView: View {
             var updated = existing
             updated.title = title
             updated.content = content
-            updated.tags = selectedTags
+            updated.tags = []
             poemManager.savePoem(updated)
             poemManager.publishPoem(updated)
         } else {
             let newPoem = poemManager.createDraft(
                 title: title,
                 content: content,
-                tags: selectedTags,
+                tags: [],
                 writingMode: .direct
             )
             poemManager.publishPoem(newPoem)
@@ -261,84 +214,6 @@ struct DirectWritingView: View {
                     showingAICommentSheet = true
                 }
             }
-        }
-    }
-}
-
-// MARK: - Tag Chip
-
-private struct TagChip: View {
-    let tag: String
-    let onRemove: () -> Void
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(tag)
-                .font(Fonts.footnote())
-            
-            Button(action: onRemove) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
-            }
-        }
-        .foregroundColor(Colors.accentTeal)
-        .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, 4)
-        .background(Colors.accentTeal.opacity(0.1))
-        .cornerRadius(12)
-    }
-}
-
-// MARK: - Tag Picker Sheet
-
-private struct TagPickerSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Binding var selectedTags: [String]
-    
-    let availableTags = ["风", "雨", "窗", "梦", "城市", "孤独", "爱", "时间", "海", "夜晚", "思念", "离别", "春天", "秋天", "回忆", "远方"]
-    
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Colors.backgroundCream
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: Spacing.md) {
-                        ForEach(availableTags, id: \.self) { tag in
-                            Button(action: {
-                                toggleTag(tag)
-                            }) {
-                                Text(tag)
-                                    .font(Fonts.bodyRegular())
-                                    .foregroundColor(selectedTags.contains(tag) ? .white : Colors.textInk)
-                                    .padding(.horizontal, Spacing.md)
-                                    .padding(.vertical, Spacing.sm)
-                                    .background(selectedTags.contains(tag) ? Colors.accentTeal : Colors.white)
-                                    .cornerRadius(CornerRadius.medium)
-                            }
-                        }
-                    }
-                    .padding(Spacing.lg)
-                }
-            }
-            .navigationTitle("选择标签")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-    
-    private func toggleTag(_ tag: String) {
-        if selectedTags.contains(tag) {
-            selectedTags.removeAll { $0 == tag }
-        } else {
-            selectedTags.append(tag)
         }
     }
 }

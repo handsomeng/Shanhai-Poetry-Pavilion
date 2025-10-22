@@ -25,11 +25,6 @@ struct PoemDetailView: View {
                     // 诗歌内容
                     contentSection
                     
-                    // 标签
-                    if !poem.tags.isEmpty {
-                        tagsSection
-                    }
-                    
                     // AI 点评
                     if let aiComment = poem.aiComment {
                         aiCommentSection(comment: aiComment)
@@ -82,24 +77,6 @@ struct PoemDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Colors.white)
             .cornerRadius(CornerRadius.card)
-    }
-    
-    // MARK: - Tags Section
-    
-    private var tagsSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.sm) {
-                ForEach(poem.tags, id: \.self) { tag in
-                    Text(tag)
-                        .font(Fonts.footnote())
-                        .foregroundColor(Colors.accentTeal)
-                        .padding(.horizontal, Spacing.md)
-                        .padding(.vertical, Spacing.sm)
-                        .background(Colors.accentTeal.opacity(0.1))
-                        .cornerRadius(12)
-                }
-            }
-        }
     }
     
     // MARK: - AI Comment Section
