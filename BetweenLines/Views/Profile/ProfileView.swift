@@ -502,7 +502,7 @@ private struct MyPoemCard: View {
                         Image(systemName: "heart")
                             .foregroundColor(Colors.textSecondary)
                     }
-                    Text("\(poem.likeCount)")
+                    Text("\(poem.squareLikeCount)")
                         .font(Fonts.footnote())
                 }
                 .foregroundColor(Colors.textSecondary)

@@ -176,7 +176,7 @@ private struct PoemCardView: View {
                 HStack(spacing: 4) {
                     Image(systemName: poem.isLiked ? "heart.fill" : "heart")
                         .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
-                    Text("\(poem.likeCount)")
+                    Text("\(poem.squareLikeCount)")
                         .font(Fonts.footnote())
                 }
                 
