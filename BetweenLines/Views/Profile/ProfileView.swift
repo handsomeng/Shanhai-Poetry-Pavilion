@@ -9,8 +9,15 @@ import SwiftUI
 
 struct ProfileView: View {
     
+    // 后端服务
+    @StateObject private var authService = AuthService.shared
+    @StateObject private var poemService = PoemService.shared
+    @StateObject private var toastManager = ToastManager.shared
+    
+    // 保留本地管理器（用于兼容）
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var subscriptionManager = SubscriptionManager.shared
+    
     @State private var selectedTab: ProfileTab = .collection
     @State private var poemToDelete: Poem?
     @State private var showingDeleteAlert = false
@@ -18,6 +25,7 @@ struct ProfileView: View {
     @State private var showingSubscription = false
     @State private var showingMembershipDetail = false
     @State private var showingPoetTitle = false
+    @State private var showingAuth = false
     
     enum ProfileTab: String, CaseIterable {
         case collection = "诗集"
@@ -69,14 +77,75 @@ struct ProfileView: View {
             .sheet(isPresented: $showingPoetTitle) {
                 PoetTitleView()
             }
+            .sheet(isPresented: $showingAuth) {
+                AuthView()
+            }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
             Button("取消", role: .cancel) {}
             Button("删除", role: .destructive) {
-                poemManager.deletePoem(poem)
+                deletePoem(poem)
             }
         } message: { poem in
             Text("确定要删除《\(poem.title)》吗？")
+        }
+        .onAppear {
+            // 检查登录状态
+            if !authService.isAuthenticated {
+                showingAuth = true
+            } else {
+                // 加载用户诗歌
+                Task {
+                    await loadUserPoems()
+                }
+            }
+        }
+        .onChange(of: selectedTab) { _, _ in
+            // Tab 切换时重新加载数据
+            if authService.isAuthenticated {
+                Task {
+                    await loadUserPoems()
+                }
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    
+    private func loadUserPoems() async {
+        do {
+            // 根据选中的 tab 加载不同的诗歌
+            switch selectedTab {
+            case .collection:
+                // 诗集从本地加载（保留本地功能）
+                break
+            case .drafts:
+                try await poemService.fetchMyDrafts()
+            case .published:
+                try await poemService.fetchMyPoems()
+            }
+        } catch {
+            toastManager.showError("加载失败：\(error.localizedDescription)")
+        }
+    }
+    
+    private func deletePoem(_ poem: Poem) {
+        Task {
+            do {
+                if let uuid = UUID(uuidString: poem.id) {
+                    // 从后端删除
+                    try await poemService.deletePoem(poemId: uuid)
+                    toastManager.showSuccess("删除成功")
+                    
+                    // 重新加载列表
+                    await loadUserPoems()
+                }
+                
+                // 同时从本地删除（兼容）
+                poemManager.deletePoem(poem)
+            } catch {
+                toastManager.showError("删除失败：\(error.localizedDescription)")
+            }
         }
     }
     
@@ -86,7 +155,11 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             // 第一行：称号 · 笔名 + 会员标识
             HStack(spacing: 6) {
-                Text(poemManager.currentPoetTitle.displayName)
+                // 优先使用远程用户资料，否则使用本地
+                let poetTitle = authService.currentProfile?.poetTitle ?? poemManager.currentPoetTitle.displayName
+                let username = authService.currentProfile?.effectiveDisplayName ?? poemManager.currentUserName
+                
+                Text(poetTitle)
                     .font(Fonts.h2Small())
                     .foregroundColor(Colors.textInk)
                 
@@ -94,7 +167,7 @@ struct ProfileView: View {
                     .font(Fonts.h2Small())
                     .foregroundColor(Colors.textSecondary)
                 
-                Text(String(poemManager.currentUserName.prefix(7)))
+                Text(String(username.prefix(7)))
                     .font(Fonts.h2Small())
                     .foregroundColor(Colors.textInk)
                 
@@ -362,11 +435,22 @@ struct ProfileView: View {
     private var currentPoems: [Poem] {
         switch selectedTab {
         case .collection:
+            // 诗集从本地加载（保留本地功能）
             return poemManager.myCollection
         case .drafts:
-            return poemManager.myDrafts
+            // 草稿从后端加载
+            if authService.isAuthenticated {
+                return poemService.myDrafts.map { $0.toLocalPoem() }
+            } else {
+                return poemManager.myDrafts
+            }
         case .published:
-            return poemManager.myPublishedToSquare
+            // 已发布从后端加载
+            if authService.isAuthenticated {
+                return poemService.myPoems.map { $0.toLocalPoem() }
+            } else {
+                return poemManager.myPublishedToSquare
+            }
         }
     }
     

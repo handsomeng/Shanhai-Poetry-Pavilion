@@ -9,8 +9,14 @@ import SwiftUI
 
 struct ExploreView: View {
     
-    @StateObject private var poemManager = PoemManager.shared
+    // 使用后端服务
+    @StateObject private var poemService = PoemService.shared
+    @StateObject private var authService = AuthService.shared
+    @StateObject private var toastManager = ToastManager.shared
+    
     @State private var selectedFilter: FilterType = .latest
+    @State private var isRefreshing = false
+    @State private var showingAuth = false
     
     enum FilterType: String, CaseIterable {
         case latest = "最新"
@@ -36,6 +42,22 @@ struct ExploreView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .refreshable {
+                await loadPoems()
+            }
+            .onAppear {
+                Task {
+                    await loadPoems()
+                }
+            }
+            .onChange(of: selectedFilter) { _, _ in
+                Task {
+                    await loadPoems()
+                }
+            }
+            .sheet(isPresented: $showingAuth) {
+                AuthView()
+            }
         }
     }
     
@@ -131,13 +153,24 @@ struct ExploreView: View {
     // MARK: - Computed Properties
     
     private var filteredPoems: [Poem] {
-        switch selectedFilter {
-        case .latest:
-            return poemManager.explorePoems
-        case .popular:
-            return poemManager.popularPoems
-        case .random:
-            return poemManager.explorePoems.shuffled()
+        // 将 RemotePoem 转换为 Poem（兼容现有UI）
+        poemService.squarePoems.map { $0.toLocalPoem() }
+    }
+    
+    // MARK: - Actions
+    
+    private func loadPoems() async {
+        do {
+            switch selectedFilter {
+            case .latest:
+                try await poemService.fetchSquarePoems(limit: 50)
+            case .popular:
+                try await poemService.fetchPopularPoems(limit: 50)
+            case .random:
+                try await poemService.fetchRandomPoems(limit: 50)
+            }
+        } catch {
+            toastManager.showError("加载失败：\(error.localizedDescription)")
         }
     }
 }
