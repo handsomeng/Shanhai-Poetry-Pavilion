@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 class TabManager: ObservableObject {
     @Published var selectedTab: MainTabView.Tab = .learning

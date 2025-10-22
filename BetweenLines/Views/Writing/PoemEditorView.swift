@@ -127,7 +127,7 @@ struct PoemEditorView: View {
                             .id("editor")
                     }
                 }
-                .onChange(of: content) { _ in
+                .onChange(of: content) {
                     // 内容变化时，确保编辑器可见
                     withAnimation {
                         proxy.scrollTo("editor", anchor: .bottom)
