@@ -58,12 +58,26 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingSettings = true
-                    }) {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: 18, weight: .ultraLight))
-                            .foregroundColor(Colors.textSecondary)
+                    HStack(spacing: Spacing.md) {
+                        // 设置按钮
+                        Button(action: {
+                            showingSettings = true
+                        }) {
+                            Image(systemName: "gearshape")
+                                .font(.system(size: 18, weight: .ultraLight))
+                                .foregroundColor(Colors.textSecondary)
+                        }
+                        
+                        // 登出按钮（仅已登录时显示）
+                        if authService.isAuthenticated {
+                            Button(action: {
+                                authService.signOut()
+                            }) {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    .font(.system(size: 18, weight: .ultraLight))
+                                    .foregroundColor(Colors.error)
+                            }
+                        }
                     }
                 }
             }
