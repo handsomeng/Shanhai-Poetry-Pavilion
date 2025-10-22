@@ -21,16 +21,18 @@ struct PoemImageView: View {
                 Colors.backgroundCream
                     .ignoresSafeArea()
                 
-                VStack(spacing: Spacing.xl) {
-                    // 预览区域
-                    poemTemplate
-                        .padding(.top, Spacing.xl)
+                VStack(spacing: 0) {
+                    // 预览区域（可滚动）
+                    ScrollView {
+                        poemTemplate
+                            .padding(.vertical, Spacing.xl)
+                            .padding(.bottom, Spacing.lg) // 为底部按钮留空间
+                    }
                     
-                    Spacer()
-                    
-                    // 操作按钮
+                    // 操作按钮（固定在底部）
                     actionButtons
-                        .padding(.bottom, Spacing.xl)
+                        .background(Colors.backgroundCream)
+                        .padding(.bottom, Spacing.md)
                 }
             }
             .navigationTitle("生成图片")
