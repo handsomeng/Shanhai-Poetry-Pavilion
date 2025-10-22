@@ -23,6 +23,7 @@ struct DirectWritingView: View {
     @State private var showingCancelConfirm = false
     @State private var aiComment: String = ""
     @State private var isLoadingAI = false
+    @State private var isKeyboardVisible = false
     
     // 初始化（可选：编辑现有诗歌）
     let existingPoem: Poem?
@@ -40,14 +41,41 @@ struct DirectWritingView: View {
                 // 诗歌编辑器
                 PoemEditorView(
                     title: $title,
-                    content: $content
+                    content: $content,
+                    showWordCount: !isKeyboardVisible
                 )
                 
-                // AI 点评按钮
-                aiCommentButton
+                // AI 点评按钮（键盘弹起时隐藏）
+                if !isKeyboardVisible {
+                    aiCommentButton
+                }
                 
-                // 底部操作按钮
-                bottomButtons
+                // 底部操作按钮（键盘弹起时隐藏）
+                if !isKeyboardVisible {
+                    bottomButtons
+                }
+            }
+        }
+        .onAppear {
+            // 监听键盘显示/隐藏
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillShowNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                withAnimation(.easeOut(duration: 0.25)) {
+                    isKeyboardVisible = true
+                }
+            }
+            
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillHideNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                withAnimation(.easeOut(duration: 0.25)) {
+                    isKeyboardVisible = false
+                }
             }
         }
         .navigationTitle("直接写诗")

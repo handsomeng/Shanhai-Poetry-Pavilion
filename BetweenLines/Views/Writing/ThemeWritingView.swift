@@ -20,6 +20,7 @@ struct ThemeWritingView: View {
     @State private var showingSuggestion = false
     @State private var currentPoem: Poem?
     @State private var showingShareSheet = false
+    @State private var isKeyboardVisible = false
     
     let themes = ["风", "雨", "窗", "梦", "城市", "孤独", "爱", "时间", "海", "夜晚"]
     
@@ -103,39 +104,66 @@ struct ThemeWritingView: View {
             PoemEditorView(
                 title: $title,
                 content: $content,
-                placeholder: "围绕「\(selectedTheme ?? "")」展开创作..."
+                placeholder: "围绕「\(selectedTheme ?? "")」展开创作...",
+                showWordCount: !isKeyboardVisible
             )
             
-            // AI 建议按钮
-            if !aiSuggestion.isEmpty {
-                suggestionSection
-            } else if !isLoadingAI {
-                Button(action: getAISuggestion) {
-                    HStack {
-                        Image(systemName: "lightbulb")
-                        Text("获取创作灵感")
+            // AI 建议按钮（键盘弹起时隐藏）
+            if !isKeyboardVisible {
+                if !aiSuggestion.isEmpty {
+                    suggestionSection
+                } else if !isLoadingAI {
+                    Button(action: getAISuggestion) {
+                        HStack {
+                            Image(systemName: "lightbulb")
+                            Text("获取创作灵感")
+                        }
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.accentTeal)
+                        .frame(maxWidth: .infinity)
+                        .padding(Spacing.md)
+                        .background(Colors.white)
+                        .cornerRadius(CornerRadius.medium)
                     }
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.accentTeal)
-                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.sm)
+                } else {
+                    HStack {
+                        ProgressView()
+                        Text("AI 正在生成创作建议...")
+                            .font(Fonts.caption())
+                            .foregroundColor(Colors.textSecondary)
+                    }
                     .padding(Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
                 }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.sm)
-            } else {
-                HStack {
-                    ProgressView()
-                    Text("AI 正在生成创作建议...")
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
-                }
-                .padding(Spacing.md)
             }
             
-            // 底部按钮
-            bottomButtons
+            // 底部按钮（键盘弹起时隐藏）
+            if !isKeyboardVisible {
+                bottomButtons
+            }
+        }
+        .onAppear {
+            // 监听键盘显示/隐藏
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillShowNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                withAnimation(.easeOut(duration: 0.25)) {
+                    isKeyboardVisible = true
+                }
+            }
+            
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillHideNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                withAnimation(.easeOut(duration: 0.25)) {
+                    isKeyboardVisible = false
+                }
+            }
         }
     }
     

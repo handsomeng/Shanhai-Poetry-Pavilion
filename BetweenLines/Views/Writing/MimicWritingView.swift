@@ -28,6 +28,7 @@ struct MimicWritingView: View {
     @State private var content = ""
     @State private var currentPoem: Poem?
     @State private var showingShareSheet = false
+    @State private var isKeyboardVisible = false
     
     var body: some View {
         ZStack {
@@ -106,8 +107,32 @@ struct MimicWritingView: View {
             // 下半部分：创作区
             creationSection
             
-            // 底部按钮
-            bottomButtons
+            // 底部按钮（键盘弹起时隐藏）
+            if !isKeyboardVisible {
+                bottomButtons
+            }
+        }
+        .onAppear {
+            // 监听键盘显示/隐藏
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillShowNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                withAnimation(.easeOut(duration: 0.25)) {
+                    isKeyboardVisible = true
+                }
+            }
+            
+            NotificationCenter.default.addObserver(
+                forName: UIResponder.keyboardWillHideNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                withAnimation(.easeOut(duration: 0.25)) {
+                    isKeyboardVisible = false
+                }
+            }
         }
     }
     
@@ -163,7 +188,8 @@ struct MimicWritingView: View {
             PoemEditorView(
                 title: $title,
                 content: $content,
-                placeholder: "参考上面的诗歌，写下你的创作..."
+                placeholder: "参考上面的诗歌，写下你的创作...",
+                showWordCount: !isKeyboardVisible
             )
         }
         .frame(maxHeight: .infinity)
