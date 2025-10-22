@@ -50,73 +50,64 @@ struct PoemImageView: View {
     // MARK: - Poem Template
     
     private var poemTemplate: some View {
-        // 这个 View 会被转换成图片
-        ZStack {
-            Color.white
+        // 这个 View 会被转换成图片（长图，动态高度）
+        VStack(alignment: .leading, spacing: 32) {
+            // 标题（如果有）
+            if !poem.title.isEmpty {
+                Text(poem.title)
+                    .font(.system(size: 32, weight: .thin, design: .serif))
+                    .foregroundColor(Color(hex: "0A0A0A"))
+                    .tracking(3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             
-            VStack(spacing: 0) {
-                Spacer()
+            // 正文 - 修复行距
+            Text(poem.content)
+                .font(.system(size: 20, weight: .light, design: .serif))
+                .foregroundColor(Color(hex: "4A4A4A"))
+                .lineSpacing(18) // 增加行距
+                .tracking(1.5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true) // 允许垂直扩展
+            
+            Spacer()
+                .frame(height: 32)
+            
+            // 底部信息
+            VStack(alignment: .leading, spacing: 16) {
+                Rectangle()
+                    .frame(height: 0.5)
+                    .foregroundColor(Color(hex: "E5E5E5"))
                 
-                // 诗歌内容
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    // 标题（如果有）
-                    if !poem.title.isEmpty {
-                        Text(poem.title)
-                            .font(.system(size: 28, weight: .thin, design: .serif))
-                            .foregroundColor(Color(hex: "0A0A0A"))
-                            .tracking(2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                HStack {
+                    Text(poem.authorName)
+                        .font(.system(size: 14, weight: .ultraLight))
+                        .foregroundColor(Color(hex: "ABABAB"))
                     
-                    // 正文
-                    Text(poem.content)
-                        .font(.system(size: 18, weight: .light, design: .serif))
-                        .foregroundColor(Color(hex: "4A4A4A"))
-                        .lineSpacing(12)
-                        .tracking(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
                     
-                    // 底部信息
-                    VStack(alignment: .leading, spacing: 8) {
-                        Rectangle()
-                            .frame(height: 0.5)
-                            .foregroundColor(Color(hex: "E5E5E5"))
-                            .padding(.vertical, Spacing.md)
-                        
-                        HStack {
-                            Text(poem.authorName)
-                                .font(.system(size: 12, weight: .ultraLight))
-                                .foregroundColor(Color(hex: "ABABAB"))
-                            
-                            Spacer()
-                            
-                            Text("山海诗馆")
-                                .font(.system(size: 11, weight: .ultraLight, design: .serif))
-                                .foregroundColor(Color(hex: "ABABAB"))
-                                .tracking(2)
-                        }
-                    }
+                    Text("山海诗馆")
+                        .font(.system(size: 13, weight: .ultraLight, design: .serif))
+                        .foregroundColor(Color(hex: "ABABAB"))
+                        .tracking(2)
                 }
-                .padding(.horizontal, 48)
-                .padding(.vertical, 64)
-                
-                Spacer()
             }
         }
-        .frame(width: 350, height: 500)
-        .cornerRadius(8)
-        .shadow(color: Colors.textInk.opacity(0.08), radius: 20, x: 0, y: 8)
+        .padding(.horizontal, 56)
+        .padding(.vertical, 72)
+        .frame(width: 400) // 固定宽度，高度自适应
+        .background(Color.white)
     }
     
     // MARK: - Action Buttons
     
     private var actionButtons: some View {
-        VStack(spacing: Spacing.md) {
+        HStack(spacing: Spacing.sm) {
             // 保存到相册
             Button(action: saveToPhotos) {
                 HStack {
                     Image(systemName: "square.and.arrow.down")
-                        .font(.system(size: 16, weight: .light))
+                        .font(.system(size: 14, weight: .light))
                     Text("保存到相册")
                         .font(Fonts.bodyRegular())
                 }
@@ -132,8 +123,8 @@ struct PoemImageView: View {
             Button(action: shareImage) {
                 HStack {
                     Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 16, weight: .light))
-                    Text("分享图片")
+                        .font(.system(size: 14, weight: .light))
+                    Text("分享")
                         .font(Fonts.bodyRegular())
                 }
                 .foregroundColor(Colors.textInk)
@@ -150,60 +141,78 @@ struct PoemImageView: View {
     // MARK: - Actions
     
     private func saveToPhotos() {
-        guard let image = renderPoemAsImage() else {
-            toastManager.showError("图片生成失败，请重试")
-            return
-        }
-        
-        // 保存到相册
-        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-        
-        toastManager.showSuccess("图片已保存到相册")
-        
-        // 延迟关闭
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            dismiss()
+        Task {
+            guard let image = await renderPoemAsImage() else {
+                await MainActor.run {
+                    toastManager.showError("图片生成失败，请重试")
+                }
+                return
+            }
+            
+            // 在主线程保存到相册
+            await MainActor.run {
+                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                toastManager.showSuccess("图片已保存到相册")
+                
+                // 延迟关闭
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    dismiss()
+                }
+            }
         }
     }
     
     private func shareImage() {
-        guard let image = renderPoemAsImage() else {
-            toastManager.showError("图片生成失败，请重试")
-            return
-        }
-        
-        // 使用系统分享
-        let activityVC = UIActivityViewController(
-            activityItems: [image],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            
-            // 查找最顶层的 VC
-            var topVC = rootVC
-            while let presentedVC = topVC.presentedViewController {
-                topVC = presentedVC
+        Task {
+            guard let image = await renderPoemAsImage() else {
+                await MainActor.run {
+                    toastManager.showError("图片生成失败，请重试")
+                }
+                return
             }
             
-            // iPad 需要设置 popover
-            if let popover = activityVC.popoverPresentationController {
-                popover.sourceView = topVC.view
-                popover.sourceRect = CGRect(x: topVC.view.bounds.midX, y: topVC.view.bounds.midY, width: 0, height: 0)
-                popover.permittedArrowDirections = []
+            // 在主线程使用系统分享
+            await MainActor.run {
+                let activityVC = UIActivityViewController(
+                    activityItems: [image],
+                    applicationActivities: nil
+                )
+                
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootVC = windowScene.windows.first?.rootViewController {
+                    
+                    // 查找最顶层的 VC
+                    var topVC = rootVC
+                    while let presentedVC = topVC.presentedViewController {
+                        topVC = presentedVC
+                    }
+                    
+                    // iPad 需要设置 popover
+                    if let popover = activityVC.popoverPresentationController {
+                        popover.sourceView = topVC.view
+                        popover.sourceRect = CGRect(x: topVC.view.bounds.midX, y: topVC.view.bounds.midY, width: 0, height: 0)
+                        popover.permittedArrowDirections = []
+                    }
+                    
+                    topVC.present(activityVC, animated: true)
+                }
             }
-            
-            topVC.present(activityVC, animated: true)
         }
     }
     
-    private func renderPoemAsImage() -> UIImage? {
+    @MainActor
+    private func renderPoemAsImage() async -> UIImage? {
         // 创建渲染器
         let renderer = ImageRenderer(content: poemTemplate)
         renderer.scale = 3.0 // 3x 分辨率，确保清晰
         
-        return renderer.uiImage
+        // 异步渲染，避免卡住
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let image = renderer.uiImage
+                continuation.resume(returning: image)
+            }
+        }
     }
 }
 

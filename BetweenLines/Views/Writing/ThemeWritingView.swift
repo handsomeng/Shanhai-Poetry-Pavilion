@@ -219,33 +219,17 @@ struct ThemeWritingView: View {
     }
     
     private var bottomButtons: some View {
-        VStack(spacing: Spacing.sm) {
-            Button(action: savePoem) {
-                Text("保存")
-                    .font(Fonts.bodyRegular())
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(Spacing.md)
-                    .background(Colors.accentTeal)
-                    .cornerRadius(CornerRadius.medium)
-            }
-            .disabled(content.isEmpty)
-            
-            if currentPoem != nil {
-                Button(action: { showingShareSheet = true }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 14))
-                        Text("分享")
-                    }
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(Spacing.sm)
-                }
-            }
+        Button(action: savePoem) {
+            Text("保存")
+                .font(Fonts.bodyRegular())
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.md)
+                .background(Colors.accentTeal)
+                .cornerRadius(CornerRadius.medium)
         }
+        .disabled(content.isEmpty)
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.backgroundCream)
