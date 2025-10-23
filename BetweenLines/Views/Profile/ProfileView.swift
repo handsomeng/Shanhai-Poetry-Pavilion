@@ -56,10 +56,10 @@ struct ProfileView: View {
     // 用户序号（真实注册序号）
     private var userNumber: String {
         if authService.isAuthenticated, let number = authService.currentProfile?.userNumber {
-            // 格式化为至少 6 位数字
-            return String(format: "%06d", number)
+            // 直接显示数字，不补零
+            return String(number)
         }
-        return "000001"
+        return "1"
     }
     
     var body: some View {
