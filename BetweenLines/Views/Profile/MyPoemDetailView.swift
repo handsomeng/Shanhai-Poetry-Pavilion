@@ -166,14 +166,14 @@ struct MyPoemDetailView: View {
                             Text("编辑")
                         }
                         .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.textPrimary)
+                        .foregroundColor(Colors.textInk)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Spacing.md)
-                        .background(Colors.backgroundPaper)
+                        .background(Colors.white)
                         .cornerRadius(CornerRadius.medium)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Colors.borderLight, lineWidth: 1)
+                                .stroke(Colors.textSecondary.opacity(0.2), lineWidth: 1)
                         )
                     }
                     
@@ -192,11 +192,11 @@ struct MyPoemDetailView: View {
                         .foregroundColor(poem.inSquare ? Colors.textSecondary : .white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Spacing.md)
-                        .background(poem.inSquare ? Colors.backgroundPaper : Colors.accentTeal)
+                        .background(poem.inSquare ? Colors.white : Colors.accentTeal)
                         .cornerRadius(CornerRadius.medium)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(poem.inSquare ? Colors.borderLight : Color.clear, lineWidth: 1)
+                                .stroke(poem.inSquare ? Colors.border : Color.clear, lineWidth: 1)
                         )
                     }
                     .disabled(poem.inSquare || isPublishing)
@@ -214,7 +214,7 @@ struct MyPoemDetailView: View {
                     .foregroundColor(.red)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.md)
-                    .background(Colors.backgroundPaper)
+                    .background(Colors.white)
                     .cornerRadius(CornerRadius.medium)
                     .overlay(
                         RoundedRectangle(cornerRadius: CornerRadius.medium)
