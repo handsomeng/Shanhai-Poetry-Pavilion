@@ -202,17 +202,16 @@ private struct TitleRow: View {
                 Text(achievement.title.displayName)
                     .font(Fonts.bodyLarge())
                     .foregroundColor(achievement.isUnlocked ? Colors.textInk : Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
                 
                 Text(achievement.title.description)
                     .font(Fonts.caption())
                     .foregroundColor(Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(2)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer()
-            
-            // 状态
+            // 状态（不会被挤压）
             if achievement.isUnlocked {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark.circle.fill")
@@ -223,10 +222,13 @@ private struct TitleRow: View {
                         .font(Fonts.caption())
                         .foregroundColor(Colors.accentTeal)
                 }
+                .fixedSize()
             } else {
                 Text("需 \(achievement.title.requiredCount) 首")
                     .font(Fonts.caption())
                     .foregroundColor(Colors.textSecondary)
+                    .lineLimit(1)
+                    .fixedSize()
                     .padding(.horizontal, Spacing.sm)
                     .padding(.vertical, 4)
                     .background(Colors.backgroundCream)
