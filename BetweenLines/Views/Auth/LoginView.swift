@@ -40,6 +40,7 @@ struct LoginView: View {
     @StateObject private var errorHandler = ErrorHandler.shared
     
     @State private var isLoading = false
+    @State private var isPreparingNetwork = true
     
     @Environment(\.dismiss) private var dismiss
     
@@ -75,21 +76,43 @@ struct LoginView: View {
                         // Logo 和标题
                         header
                         
-                        // Apple 登录
-                        appleSignInSection
-                        
-                        // 提示文字
-                        Text("使用 Apple ID 快速登录，安全且保护隐私")
-                            .font(Fonts.caption())
-                            .foregroundColor(Colors.textSecondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, Spacing.xl)
+                        if isPreparingNetwork {
+                            // 网络准备中
+                            VStack(spacing: Spacing.md) {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: Colors.accentTeal))
+                                
+                                Text("正在准备网络连接...")
+                                    .font(Fonts.caption())
+                                    .foregroundColor(Colors.textSecondary)
+                            }
+                            .frame(height: 100)
+                        } else {
+                            // Apple 登录
+                            appleSignInSection
+                            
+                            // 提示文字
+                            Text("使用 Apple ID 快速登录，安全且保护隐私")
+                                .font(Fonts.caption())
+                                .foregroundColor(Colors.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, Spacing.xl)
+                        }
                     }
                     .padding(Spacing.xl)
-                }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // 界面加载时预先触发网络权限
+            print("🌐 [LoginView] 开始网络预检...")
+            _ = await SupabaseHTTPClient.ensureNetworkPermission()
+            await MainActor.run {
+                isPreparingNetwork = false
+                print("🌐 [LoginView] 网络预检完成")
+            }
+        }
+        .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("关闭") {
                         dismiss()

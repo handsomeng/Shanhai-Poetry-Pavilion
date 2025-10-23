@@ -93,16 +93,25 @@ struct LandingView: View {
         }
         .alert("登录云端账号", isPresented: $showLoginInvitation) {
             Button("立即登录", role: nil) {
-                // 给一个小延迟，确保 UI 准备好
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    showLoginSheet = true
+                // 先触发网络权限请求，再显示登录界面
+                Task {
+                    print("🌐 [Onboarding] 开始网络预检...")
+                    _ = await SupabaseHTTPClient.ensureNetworkPermission()
+                    
+                    // 给一个小延迟，确保权限弹窗处理完毕
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
+                    
+                    await MainActor.run {
+                        print("🌐 [Onboarding] 网络预检完成，显示登录界面")
+                        showLoginSheet = true
+                    }
                 }
             }
             Button("稍后再说", role: .cancel) {
                 completeOnboarding()
             }
         } message: {
-            Text("登录后可以将作品发布到广场，与其他诗友交流，还能云端保存你的创作\n\n提示：请确保网络连接正常")
+            Text("登录后可以将作品发布到广场，与其他诗友交流，还能云端保存你的创作")
         }
         .sheet(isPresented: $showLoginSheet) {
             LoginView()
