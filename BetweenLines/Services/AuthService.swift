@@ -142,22 +142,32 @@ class AuthService: ObservableObject {
             let username: String
             let displayName: String?
             
-            if let fullName = credential.fullName {
-                // 使用 Apple 提供的姓名
+            // 1. 优先使用 Onboarding 输入的笔名
+            if let penName = UserDefaults.standard.string(forKey: "penName"), !penName.isEmpty {
+                username = penName
+                displayName = nil
+                print("✅ [DEBUG] 使用 Onboarding 笔名: \(penName)")
+            }
+            // 2. 其次使用 Apple 提供的真实姓名
+            else if let fullName = credential.fullName {
                 let givenName = fullName.givenName ?? ""
                 let familyName = fullName.familyName ?? ""
                 
                 if !givenName.isEmpty || !familyName.isEmpty {
                     username = "诗人\(String(userId.prefix(6)))"
                     displayName = (familyName + givenName)
+                    print("✅ [DEBUG] 使用 Apple 姓名: \(familyName + givenName)")
                 } else {
                     username = "诗人\(String(userId.prefix(6)))"
                     displayName = nil
+                    print("✅ [DEBUG] 使用默认用户名: \(username)")
                 }
-            } else {
-                // 使用默认用户名
+            }
+            // 3. 最后使用默认格式
+            else {
                 username = "诗人\(String(userId.prefix(6)))"
                 displayName = nil
+                print("✅ [DEBUG] 使用默认用户名: \(username)")
             }
             
             let profileRequest = CreateProfileRequest(
