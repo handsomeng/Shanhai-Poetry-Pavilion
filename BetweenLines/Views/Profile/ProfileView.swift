@@ -241,7 +241,7 @@ struct ProfileView: View {
                 TagView(text: authService.currentProfile?.poetTitle ?? poemManager.currentPoetTitle.displayName)
                 
                 // 序号标签
-                TagView(text: "第 \(userNumber) 位诗人")
+                TagView(text: "第 \(userNumber) 位山海诗人")
             }
             
             // 第三行：统计信息（可点击查看称号详情）
@@ -683,12 +683,12 @@ struct TagView: View {
     
     var body: some View {
         Text(text)
-            .font(.system(size: 13, weight: .regular))
+            .font(.system(size: 14, weight: .regular))
             .foregroundColor(Colors.textSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
             .background(Colors.textSecondary.opacity(0.08))
-            .cornerRadius(4)
+            .cornerRadius(5)
     }
 }
 
