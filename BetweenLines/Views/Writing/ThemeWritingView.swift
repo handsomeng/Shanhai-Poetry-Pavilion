@@ -25,11 +25,11 @@ struct ThemeWritingView: View {
     @State private var title = ""
     @State private var content = ""
     @State private var currentPoem: Poem?
-    @State private var showingShareSheet = false
     @State private var isKeyboardVisible = false
     @State private var showingSubscription = false
-    @State private var isPublishing = false
-    @State private var showLoginSheet = false
+    @State private var showSuccessView = false
+    @State private var generatedImage: UIImage?
+    @State private var showingCancelConfirm = false
     
     var body: some View {
         ZStack {
@@ -53,8 +53,7 @@ struct ThemeWritingView: View {
                     if content.isEmpty && title.isEmpty {
                         dismiss()
                     } else {
-                        // 有内容时，显示保存草稿确认
-                        showSaveAlert()
+                        showingCancelConfirm = true
                     }
                 }
             }
@@ -68,10 +67,29 @@ struct ThemeWritingView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingShareSheet) {
-            if let poem = currentPoem {
-                ShareSheet(poem: poem)
+        .fullScreenCover(isPresented: $showSuccessView) {
+            if let poem = currentPoem, let image = generatedImage {
+                PoemSuccessView(poem: poem, poemImage: image)
             }
+        }
+        .alert("确认取消", isPresented: $showingCancelConfirm) {
+            Button("放弃", role: .destructive) {
+                dismiss()
+            }
+            Button("自动保存草稿") {
+                let draft = poemManager.createDraft(
+                    title: title,
+                    content: content,
+                    tags: [],
+                    writingMode: .theme
+                )
+                poemManager.savePoem(draft)
+                ToastManager.shared.showSuccess("已自动保存到草稿")
+                dismiss()
+            }
+            Button("继续编辑", role: .cancel) {}
+        } message: {
+            Text("诗歌尚未保存，是否保存为草稿？")
         }
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
@@ -214,68 +232,20 @@ struct ThemeWritingView: View {
     // MARK: - Bottom Buttons
     
     private var bottomButtons: some View {
-        HStack(spacing: Spacing.md) {
-            // 保存草稿
-            Button(action: saveDraft) {
-                VStack(spacing: 4) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 20))
-                    Text("草稿")
-                        .font(Fonts.caption())
-                }
-                .foregroundColor(Colors.textSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Spacing.sm)
-            }
-            .disabled(content.isEmpty)
-            
-            // 保存到诗集
-            Button(action: saveToCollection) {
-                VStack(spacing: 4) {
-                    Image(systemName: "book.closed")
-                        .font(.system(size: 20))
-                    Text("诗集")
-                        .font(Fonts.caption())
-                }
-                .foregroundColor(Colors.textSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Spacing.sm)
-            }
-            .disabled(content.isEmpty)
-            
-            // 发布到广场
-            Button(action: {
-                if authService.isAuthenticated {
-                    publishToSquare()
-                } else {
-                    showLoginSheet = true
-                }
-            }) {
-                HStack(spacing: 6) {
-                    if isPublishing {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "paperplane.fill")
-                    }
-                    Text("发布")
-                        .fontWeight(.medium)
-                }
-                .font(Fonts.bodyRegular())
+        Button(action: saveToCollection) {
+            Text("保存到诗集")
+                .font(Fonts.bodyLarge())
+                .fontWeight(.medium)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.md)
                 .background(Colors.accentTeal)
                 .cornerRadius(CornerRadius.medium)
-            }
-            .disabled(content.isEmpty || isPublishing)
         }
+        .disabled(content.isEmpty)
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.white)
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
     }
     
     // MARK: - Actions
@@ -314,49 +284,8 @@ struct ThemeWritingView: View {
     // MARK: - Save Actions
     
     /// 保存为草稿
-    private func saveDraft() {
-        guard !content.isEmpty else {
-            toastManager.showError("诗歌内容不能为空")
-            return
-        }
-        
-        if authService.isAuthenticated {
-            Task {
-                do {
-                    guard let userId = authService.currentUser?.id else { return }
-                    _ = try await poemService.saveDraft(
-                        authorId: userId,
-                        title: title.isEmpty ? "无标题" : title,
-                        content: content,
-                        style: "modern"
-                    )
-                    await MainActor.run {
-                        dismiss()
-                    }
-                } catch {
-                    print("保存草稿失败: \(error)")
-                }
-            }
-        } else {
-            let newPoem = poemManager.createDraft(
-                title: title,
-                content: content,
-                tags: [],
-                writingMode: .theme
-            )
-            poemManager.savePoem(newPoem)
-            dismiss()
-        }
-    }
-    
-    /// 保存到诗集
     private func saveToCollection() {
-        guard !content.isEmpty else {
-            toastManager.showError("诗歌内容不能为空")
-            return
-        }
-        
-        let poem = Poem(
+        let newPoem = Poem(
             title: title.isEmpty ? "无标题" : title,
             content: content,
             authorName: poemManager.currentUserName,
@@ -365,54 +294,19 @@ struct ThemeWritingView: View {
             inMyCollection: true,
             inSquare: false
         )
-        currentPoem = poem
-        poemManager.saveToCollection(poem)
+        poemManager.saveToCollection(newPoem)
+        currentPoem = newPoem
         
+        // 生成分享图片
+        generatedImage = PoemImageGenerator.generate(poem: newPoem)
+        
+        // Toast 提示
+        ToastManager.shared.showSuccess("已保存到你的诗集")
+        
+        // 显示成功页面
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            showingShareSheet = true
+            showSuccessView = true
         }
-    }
-    
-    /// 发布到广场
-    private func publishToSquare() {
-        guard authService.isAuthenticated,
-              let userId = authService.currentUser?.id else {
-            showLoginSheet = true
-            return
-        }
-        
-        guard !content.isEmpty else {
-            toastManager.showError("诗歌内容不能为空")
-            return
-        }
-        
-        isPublishing = true
-        
-        Task {
-            do {
-                _ = try await poemService.publishPoem(
-                    authorId: userId,
-                    title: title.isEmpty ? "无标题" : title,
-                    content: content,
-                    style: "modern"
-                )
-                
-                await MainActor.run {
-                    isPublishing = false
-                    dismiss()
-                }
-            } catch {
-                await MainActor.run {
-                    isPublishing = false
-                    print("发布失败: \(error)")
-                }
-            }
-        }
-    }
-    
-    private func showSaveAlert() {
-        // TODO: 实现保存草稿确认弹窗
-        dismiss()
     }
 }
 

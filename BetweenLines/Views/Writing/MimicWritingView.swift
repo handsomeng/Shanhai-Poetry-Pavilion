@@ -29,6 +29,7 @@ struct MimicWritingView: View {
     @State private var showingSubscription = false
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
+    @State private var showingCancelConfirm = false
     
     var body: some View {
         ZStack {
@@ -52,8 +53,7 @@ struct MimicWritingView: View {
                     if content.isEmpty && title.isEmpty {
                         dismiss()
                     } else {
-                        // 有内容时，显示保存草稿确认
-                        showSaveAlert()
+                        showingCancelConfirm = true
                     }
                 }
             }
@@ -67,10 +67,29 @@ struct MimicWritingView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingShareSheet) {
-            if let poem = currentPoem {
-                ShareSheet(poem: poem)
+        .fullScreenCover(isPresented: $showSuccessView) {
+            if let poem = currentPoem, let image = generatedImage {
+                PoemSuccessView(poem: poem, poemImage: image)
             }
+        }
+        .alert("确认取消", isPresented: $showingCancelConfirm) {
+            Button("放弃", role: .destructive) {
+                dismiss()
+            }
+            Button("自动保存草稿") {
+                let draft = poemManager.createDraft(
+                    title: title,
+                    content: content,
+                    tags: [],
+                    writingMode: .mimic
+                )
+                poemManager.savePoem(draft)
+                ToastManager.shared.showSuccess("已自动保存到草稿")
+                dismiss()
+            }
+            Button("继续编辑", role: .cancel) {}
+        } message: {
+            Text("诗歌尚未保存，是否保存为草稿？")
         }
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
@@ -306,12 +325,7 @@ struct MimicWritingView: View {
     
     /// 保存到诗集
     private func saveToCollection() {
-        guard !content.isEmpty else {
-            toastManager.showError("诗歌内容不能为空")
-            return
-        }
-        
-        let poem = Poem(
+        let newPoem = Poem(
             title: title.isEmpty ? "无标题" : title,
             content: content,
             authorName: poemManager.currentUserName,
@@ -321,54 +335,19 @@ struct MimicWritingView: View {
             inMyCollection: true,
             inSquare: false
         )
-        currentPoem = poem
-        poemManager.saveToCollection(poem)
+        poemManager.saveToCollection(newPoem)
+        currentPoem = newPoem
         
+        // 生成分享图片
+        generatedImage = PoemImageGenerator.generate(poem: newPoem)
+        
+        // Toast 提示
+        ToastManager.shared.showSuccess("已保存到你的诗集")
+        
+        // 显示成功页面
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            showingShareSheet = true
+            showSuccessView = true
         }
-    }
-    
-    /// 发布到广场
-    private func publishToSquare() {
-        guard authService.isAuthenticated,
-              let userId = authService.currentUser?.id else {
-            showLoginSheet = true
-            return
-        }
-        
-        guard !content.isEmpty else {
-            toastManager.showError("诗歌内容不能为空")
-            return
-        }
-        
-        isPublishing = true
-        
-        Task {
-            do {
-                _ = try await poemService.publishPoem(
-                    authorId: userId,
-                    title: title.isEmpty ? "无标题" : title,
-                    content: content,
-                    style: "modern"
-                )
-                
-                await MainActor.run {
-                    isPublishing = false
-                    dismiss()
-                }
-            } catch {
-                await MainActor.run {
-                    isPublishing = false
-                    print("发布失败: \(error)")
-                }
-            }
-        }
-    }
-    
-    private func showSaveAlert() {
-        // TODO: 实现保存草稿确认弹窗
-        dismiss()
     }
 }
 
