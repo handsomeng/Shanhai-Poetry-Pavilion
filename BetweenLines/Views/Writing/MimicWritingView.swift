@@ -25,11 +25,10 @@ struct MimicWritingView: View {
     @State private var title = ""
     @State private var content = ""
     @State private var currentPoem: Poem?
-    @State private var showingShareSheet = false
     @State private var isKeyboardVisible = false
     @State private var showingSubscription = false
-    @State private var isPublishing = false
-    @State private var showLoginSheet = false
+    @State private var showSuccessView = false
+    @State private var generatedImage: UIImage?
     
     var body: some View {
         ZStack {
@@ -219,68 +218,20 @@ struct MimicWritingView: View {
     // MARK: - Bottom Buttons
     
     private var bottomButtons: some View {
-        HStack(spacing: Spacing.md) {
-            // 保存草稿
-            Button(action: saveDraft) {
-                VStack(spacing: 4) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 20))
-                    Text("草稿")
-                        .font(Fonts.caption())
-                }
-                .foregroundColor(Colors.textSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Spacing.sm)
-            }
-            .disabled(content.isEmpty)
-            
-            // 保存到诗集
-            Button(action: saveToCollection) {
-                VStack(spacing: 4) {
-                    Image(systemName: "book.closed")
-                        .font(.system(size: 20))
-                    Text("诗集")
-                        .font(Fonts.caption())
-                }
-                .foregroundColor(Colors.textSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Spacing.sm)
-            }
-            .disabled(content.isEmpty)
-            
-            // 发布到广场
-            Button(action: {
-                if authService.isAuthenticated {
-                    publishToSquare()
-                } else {
-                    showLoginSheet = true
-                }
-            }) {
-                HStack(spacing: 6) {
-                    if isPublishing {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "paperplane.fill")
-                    }
-                    Text("发布")
-                        .fontWeight(.medium)
-                }
-                .font(Fonts.bodyRegular())
+        Button(action: saveToCollection) {
+            Text("保存到诗集")
+                .font(Fonts.bodyLarge())
+                .fontWeight(.medium)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.md)
                 .background(Colors.accentTeal)
                 .cornerRadius(CornerRadius.medium)
-            }
-            .disabled(content.isEmpty || isPublishing)
         }
+        .disabled(content.isEmpty)
         .padding(.horizontal, Spacing.lg)
         .padding(.vertical, Spacing.md)
         .background(Colors.white)
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
     }
     
     // MARK: - Actions
