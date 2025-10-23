@@ -252,17 +252,7 @@ struct ProfileView: View {
             }) {
                 HStack(spacing: 4) {
                     // V1版本：统一使用本地计算（因为广场已关闭，后端数据不准确）
-                    let stats = poemManager.myStats
-                    let likeCount: Int
-                    if authService.isAuthenticated, let profile = authService.currentProfile {
-                        // 已登录：使用后端的点赞数
-                        likeCount = profile.totalLikes
-                    } else {
-                        // 未登录：使用本地的点赞数
-                        likeCount = stats.totalLikes
-                    }
-                    
-                    Text("已写 \(stats.totalPoems) 首诗，获得 \(likeCount) 个赞")
+                    Text(statsText)
                         .font(Fonts.bodyRegular())
                         .foregroundColor(Colors.textSecondary)
                     
@@ -587,6 +577,20 @@ struct ProfileView: View {
         }
         // 客户端计算称号（与 PoetTitle.swift 保持一致）
         return PoetTitle.title(forPoemCount: poemCount).displayName
+    }
+    
+    /// 统计文本（V1版本：诗歌数量使用本地计算）
+    private var statsText: String {
+        let stats = poemManager.myStats
+        let likeCount: Int
+        if authService.isAuthenticated, let profile = authService.currentProfile {
+            // 已登录：使用后端的点赞数
+            likeCount = profile.totalLikes
+        } else {
+            // 未登录：使用本地的点赞数
+            likeCount = stats.totalLikes
+        }
+        return "已写 \(stats.totalPoems) 首诗，获得 \(likeCount) 个赞"
     }
 }
 
