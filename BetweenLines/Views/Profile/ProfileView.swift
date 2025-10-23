@@ -53,6 +53,19 @@ struct ProfileView: View {
         }
     }
     
+    // 用户序号（基于用户ID后6位）
+    private var userNumber: String {
+        if authService.isAuthenticated, let userId = authService.currentUser?.id {
+            // 从 UUID 中提取数字
+            let numbers = userId.filter { $0.isNumber }
+            if numbers.count >= 6 {
+                let lastSix = String(numbers.suffix(6))
+                return lastSix
+            }
+        }
+        return "000001"
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -195,47 +208,25 @@ struct ProfileView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            // 第一行：称号 · 笔名 + 会员标识（或登录按钮）
-            HStack(spacing: 6) {
-                if authService.isAuthenticated {
-                    // 已登录：显示用户信息
-                    Text(authService.currentProfile?.poetTitle ?? poemManager.currentPoetTitle.displayName)
-                        .font(Fonts.h2Small())
-                        .foregroundColor(Colors.textInk)
-                    
-                    Text("·")
-                        .font(Fonts.h2Small())
-                        .foregroundColor(Colors.textSecondary)
-                    
-                    // 优先显示本地笔名，如果没有或是默认格式才显示云端用户名
-                    Text(String(displayUsername.prefix(7)))
-                        .font(Fonts.h2Small())
-                        .foregroundColor(Colors.textInk)
-                    
-                    // 会员标识
-                    if subscriptionManager.isSubscribed {
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "D4AF37"))
-                    }
-                } else {
-                    // 未登录：显示本地称号
-                    Text(poemManager.currentPoetTitle.displayName)
-                        .font(Fonts.h2Small())
-                        .foregroundColor(Colors.textInk)
-                    
-                    Text("·")
-                        .font(Fonts.h2Small())
-                        .foregroundColor(Colors.textSecondary)
-                    
-                    Text(String(poemManager.currentUserName.prefix(7)))
-                        .font(Fonts.h2Small())
-                        .foregroundColor(Colors.textInk)
-                    
-                    Spacer()
-                    
-                    // 登录按钮
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            // 第一行：笔名 + 会员/登录按钮
+            HStack(alignment: .center, spacing: Spacing.sm) {
+                // 大字笔名
+                Text(displayUsername)
+                    .font(.system(size: 28, weight: .medium, design: .serif))
+                    .foregroundColor(Colors.textInk)
+                
+                // 会员标识
+                if authService.isAuthenticated && subscriptionManager.isSubscribed {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(hex: "D4AF37"))
+                }
+                
+                Spacer()
+                
+                // 登录按钮（仅未登录时显示）
+                if !authService.isAuthenticated {
                     Button("登录") {
                         showingLogin = true
                     }
@@ -244,7 +235,16 @@ struct ProfileView: View {
                 }
             }
             
-            // 第二行：统计信息（可点击查看称号详情）
+            // 第二行：标签（称号 · 序号）
+            HStack(spacing: Spacing.sm) {
+                // 称号标签
+                TagView(text: authService.currentProfile?.poetTitle ?? poemManager.currentPoetTitle.displayName)
+                
+                // 序号标签
+                TagView(text: "第 \(userNumber) 位诗人")
+            }
+            
+            // 第三行：统计信息（可点击查看称号详情）
             Button(action: {
                 if authService.isAuthenticated {
                     // 已登录：显示称号详情
@@ -672,6 +672,23 @@ private struct MyPoemCard: View {
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+}
+
+// MARK: - Tag View
+
+/// 淡淡的标签视图
+struct TagView: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: 13, weight: .regular))
+            .foregroundColor(Colors.textSecondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Colors.textSecondary.opacity(0.08))
+            .cornerRadius(4)
     }
 }
 
