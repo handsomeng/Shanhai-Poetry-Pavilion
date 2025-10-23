@@ -272,7 +272,7 @@ struct MyPoemDetailView: View {
         var updatedPoem = poem
         updatedPoem.title = editedTitle
         updatedPoem.content = editedContent
-        updatedPoem.updateTimestamp = Date()
+        updatedPoem.updatedAt = Date()
         
         // 如果已发布，需要重新审核
         if poem.inSquare {
@@ -301,7 +301,6 @@ struct MyPoemDetailView: View {
     private func saveToCollection() {
         var updatedPoem = poem
         updatedPoem.inMyCollection = true
-        updatedPoem.isDraft = false
         poemManager.savePoem(updatedPoem)
         
         // 生成图片
