@@ -9,10 +9,6 @@ import SwiftUI
 
 struct ExploreView: View {
     
-    // Toast 状态
-    @State private var showToast = false
-    @State private var toastMessage = ""
-    
     // 统计用户反馈
     @AppStorage("wantSquareFeature") private var wantSquareFeature = false
     @State private var showThanksAnimation = false
@@ -68,8 +64,7 @@ struct ExploreView: View {
                         Button(action: {
                             wantSquareFeature = true
                             showThanksAnimation = true
-                            toastMessage = "感谢反馈！我们会加快开发进度 ✨"
-                            showToast = true
+                            ToastManager.shared.showSuccess("感谢反馈！我们会加快开发进度 ✨")
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 showThanksAnimation = false
@@ -132,7 +127,7 @@ struct ExploreView: View {
                 }
             }
         }
-        .withToast(message: toastMessage, isShowing: $showToast)
+        .withToast()
     }
     
     // MARK: - 功能行
