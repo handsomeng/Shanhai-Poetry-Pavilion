@@ -19,8 +19,9 @@ struct RemotePoem: Codable, Identifiable {
     let isPublished: Bool     // 修改：匹配数据库字段 is_published
     var isDraft: Bool         // 新增：匹配数据库字段 is_draft
     var tags: [String]?
-    var likeCount: Int
-    var commentCount: Int
+    var likeCount: Int?       // 改为可选：统计字段可能不存在
+    var commentCount: Int?    // 改为可选：统计字段可能不存在
+    var viewCount: Int?       // 新增：观看次数
     var createdAt: String
     var updatedAt: String
     
@@ -35,6 +36,7 @@ struct RemotePoem: Codable, Identifiable {
         case tags
         case likeCount = "like_count"
         case commentCount = "comment_count"
+        case viewCount = "view_count"      // 新增
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
