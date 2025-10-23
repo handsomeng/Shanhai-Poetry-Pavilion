@@ -315,8 +315,14 @@ struct MyPoemDetailView: View {
         }
     }
     
-    /// 发布到广场
+    /// 发布到广场（暂时关闭）
     private func publishToSquare() {
+        // V1 版本：广场功能建设中
+        ToastManager.shared.showInfo("诗歌广场正在建设中，敬请期待 ✨")
+        print("📊 [MyPoemDetailView] 用户尝试发布到广场")
+        
+        // TODO: V2 版本再开启真实发布功能
+        /*
         guard authService.isAuthenticated else {
             showLoginSheet = true
             return
@@ -364,6 +370,7 @@ struct MyPoemDetailView: View {
                 }
             }
         }
+        */
     }
     
     /// 删除诗歌

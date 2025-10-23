@@ -2,27 +2,20 @@
 //  ExploreView.swift
 //  山海诗馆
 //
-//  赏诗主视图：浏览广场诗歌
+//  赏诗主视图：广场建设中
 //
 
 import SwiftUI
 
 struct ExploreView: View {
     
-    // 后端服务
-    @StateObject private var authService = AuthService.shared
-    @StateObject private var poemService = PoemService.shared
-    @StateObject private var interactionService = InteractionService.shared
+    // Toast 状态
+    @State private var showToast = false
+    @State private var toastMessage = ""
     
-    // UI 状态
-    @State private var selectedFilter: FilterType = .latest
-    @State private var showLoginSheet = false
-    
-    enum FilterType: String, CaseIterable {
-        case latest = "最新"
-        case popular = "热门"
-        case random = "随机"
-    }
+    // 统计用户反馈
+    @AppStorage("wantSquareFeature") private var wantSquareFeature = false
+    @State private var showThanksAnimation = false
     
     var body: some View {
         NavigationStack {
@@ -30,228 +23,148 @@ struct ExploreView: View {
                 Colors.backgroundCream
                     .ignoresSafeArea()
                 
-                VStack(spacing: 0) {
-                    // 头部
-                    headerSection
+                VStack(spacing: 32) {
+                    Spacer()
                     
-                    // 筛选条件
-                    filterSection
+                    // 图标
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 80))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Colors.primaryGreen, Colors.accentBlue],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .scaleEffect(showThanksAnimation ? 1.2 : 1.0)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.5), value: showThanksAnimation)
                     
-                    // 诗歌列表
-                    poemsListSection
+                    VStack(spacing: 16) {
+                        // 标题
+                        Text("诗歌广场")
+                            .font(Fonts.title())
+                            .foregroundColor(Colors.textPrimary)
+                        
+                        // 副标题
+                        Text("建设中...")
+                            .font(Fonts.headline())
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                    
+                    // 说明文字
+                    VStack(spacing: 12) {
+                        Text("诗歌广场正在精心筹备中")
+                            .font(Fonts.body())
+                            .foregroundColor(Colors.textSecondary)
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            featureRow(icon: "doc.text", text: "分享你的诗歌作品")
+                            featureRow(icon: "heart", text: "欣赏他人的创作")
+                            featureRow(icon: "bubble.left.and.bubble.right", text: "与诗友交流互动")
+                            featureRow(icon: "star", text: "发现优秀诗歌")
+                        }
+                        .padding(.top, 8)
+                    }
+                    .padding(.horizontal, 40)
+                    
+                    Spacer()
+                    
+                    // 我想要按钮
+                    if !wantSquareFeature {
+                        Button(action: {
+                            wantSquareFeature = true
+                            showThanksAnimation = true
+                            toastMessage = "感谢反馈！我们会加快开发进度 ✨"
+                            showToast = true
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                showThanksAnimation = false
+                            }
+                            
+                            // TODO: 可以在这里记录到后端
+                            print("📊 用户想要广场功能")
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "hand.raised.fill")
+                                    .font(.system(size: 18))
+                                Text("我想要这个功能")
+                                    .font(Fonts.button())
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(
+                                LinearGradient(
+                                    colors: [Colors.primaryGreen, Colors.accentBlue],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(16)
+                            .shadow(color: Colors.primaryGreen.opacity(0.3), radius: 8, y: 4)
+                        }
+                        .padding(.horizontal, 32)
+                    } else {
+                        // 已反馈
+                        HStack(spacing: 12) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(Colors.primaryGreen)
+                            Text("感谢您的反馈")
+                                .font(Fonts.button())
+                                .foregroundColor(Colors.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Colors.cardBackground)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Colors.primaryGreen.opacity(0.3), lineWidth: 2)
+                        )
+                        .padding(.horizontal, 32)
+                    }
+                    
+                    // 提示文字
+                    Text("暂时您可以通过分享功能\n将诗歌分享给朋友")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textTertiary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 8)
+                    
+                    Spacer()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    if authService.isAuthenticated {
-                        // 已登录，显示用户名
-                        Text(authService.currentProfile?.username ?? "")
-                            .font(Fonts.caption())
-                            .foregroundColor(Colors.textSecondary)
-                    } else {
-                        // 未登录，显示登录按钮
-                        Button("登录") {
-                            showLoginSheet = true
-                        }
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.accentTeal)
-                    }
+                ToolbarItem(placement: .principal) {
+                    Text("赏诗")
+                        .font(Fonts.headline())
+                        .foregroundColor(Colors.textPrimary)
                 }
             }
-            .sheet(isPresented: $showLoginSheet) {
-                LoginView()
-            }
-            .task {
-                // 加载广场诗歌
-                await loadPoems()
-            }
-            .refreshable {
-                // 下拉刷新
-                await loadPoems()
-            }
         }
+        .withToast(message: toastMessage, isShowing: $showToast)
     }
     
-    // MARK: - Load Poems
+    // MARK: - 功能行
     
-    private func loadPoems() async {
-        do {
-            switch selectedFilter {
-            case .latest:
-                try await poemService.fetchSquarePoems(limit: 50)
-            case .popular:
-                try await poemService.fetchPopularPoems(limit: 50)
-            case .random:
-                try await poemService.fetchSquarePoems(limit: 50)
-            }
-        } catch {
-            print("加载诗歌失败: \(error)")
-        }
-    }
-    
-    // MARK: - Header Section
-    
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("赏诗")
-                .font(Fonts.titleLarge())
-                .foregroundColor(Colors.textInk)
+    private func featureRow(icon: String, text: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(Colors.primaryGreen)
+                .frame(width: 20)
             
-            Text("欣赏他人的诗歌创作")
-                .font(Fonts.caption())
+            Text(text)
+                .font(Fonts.body())
                 .foregroundColor(Colors.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
-    }
-    
-    // MARK: - Filter Section
-    
-    private var filterSection: some View {
-        HStack(spacing: Spacing.sm) {
-            ForEach(FilterType.allCases, id: \.self) { filter in
-                Button(action: {
-                    selectedFilter = filter
-                    Task {
-                        await loadPoems()
-                    }
-                }) {
-                    Text(filter.rawValue)
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(selectedFilter == filter ? .white : Colors.textInk)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.sm)
-                        .background(selectedFilter == filter ? Colors.accentTeal : Colors.white)
-                        .cornerRadius(CornerRadius.medium)
-                }
-            }
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
-        .background(Colors.backgroundCream)
-    }
-    
-    // MARK: - Poems List
-    
-    private var poemsListSection: some View {
-        ScrollView {
-            if filteredPoems.isEmpty {
-                // 空状态视图
-                emptyStateView
-            } else {
-                    LazyVStack(spacing: Spacing.lg) {
-                        ForEach(filteredPoems) { poem in
-                            NavigationLink(destination: PoemDetailView(poem: poem)) {
-                                PoemCardView(poem: poem)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .cardButtonStyle()
-                        }
-                    }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.md)
-            }
-        }
-    }
-    
-    // MARK: - Empty State
-    
-    private var emptyStateView: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            Image(systemName: "book.closed")
-                .font(.system(size: 64, weight: .thin))
-                .foregroundColor(Colors.textQuaternary)
-            
-            VStack(spacing: Spacing.sm) {
-                Text("还没有诗歌")
-                    .font(Fonts.titleLarge())
-                    .foregroundColor(Colors.textInk)
-                
-                Text("成为第一个创作者吧")
-                    .font(Fonts.body())
-                    .foregroundColor(Colors.textSecondary)
-            }
             
             Spacer()
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, Spacing.xxxl)
-    }
-    
-    // MARK: - Computed Properties
-    
-    private var filteredPoems: [Poem] {
-        let poems = poemService.squarePoems.map { $0.toLocalPoem() }
-        
-        switch selectedFilter {
-        case .latest, .popular:
-            return poems
-        case .random:
-            return poems.shuffled()
         }
     }
 }
 
-// MARK: - Poem Card View
-
-private struct PoemCardView: View {
-    let poem: Poem
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            // 标题和作者
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(poem.title)
-                        .font(Fonts.titleMedium())
-                        .foregroundColor(Colors.textInk)
-                    
-                    Text(poem.authorName)
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
-                }
-                
-                Spacer()
-            }
-            
-            // 诗歌内容
-            Text(poem.content)
-                .font(Fonts.bodyPoem())
-                .foregroundColor(Colors.textInk)
-                .lineSpacing(6)
-                .lineLimit(6)
-            
-            // 底部信息
-            HStack {
-                HStack(spacing: 4) {
-                    Image(systemName: poem.isLiked ? "heart.fill" : "heart")
-                        .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
-                    Text("\(poem.squareLikeCount)")
-                        .font(Fonts.footnote())
-                }
-                
-                Spacer()
-                
-                Text(poem.shortDate)
-                    .font(Fonts.footnote())
-                    .foregroundColor(Colors.textSecondary)
-            }
-            .foregroundColor(Colors.textSecondary)
-        }
-        .padding(Spacing.lg)
-        .background(Colors.white)
-        .cornerRadius(CornerRadius.card)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-}
-
-// MARK: - Preview
-
-#Preview("赏诗主页") {
+#Preview {
     ExploreView()
 }
-

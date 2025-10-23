@@ -286,8 +286,14 @@ struct PoemSuccessView: View {
         }
     }
     
-    /// 发布到广场
+    /// 发布到广场（暂时关闭）
     private func publishToSquare() {
+        // V1 版本：广场功能建设中
+        ToastManager.shared.showInfo("诗歌广场正在建设中，敬请期待 ✨")
+        print("📊 [PoemSuccessView] 用户尝试发布到广场")
+        
+        // TODO: V2 版本再开启真实发布功能
+        /*
         // 检查是否登录
         guard authService.isAuthenticated else {
             showLoginSheet = true
@@ -321,7 +327,7 @@ struct PoemSuccessView: View {
                     authorId: userId,
                     title: poem.title.isEmpty ? "无标题" : poem.title,
                     content: poem.content,
-                    writingMode: poem.writingMode.rawValue  // 修改：使用 writingMode
+                    writingMode: poem.writingMode.rawValue
                 )
                 
                 print("✅ [PoemSuccessView] 发布成功！诗歌ID: \(publishedPoem.id)")
@@ -363,6 +369,7 @@ struct PoemSuccessView: View {
                 }
             }
         }
+        */
     }
 }
 
