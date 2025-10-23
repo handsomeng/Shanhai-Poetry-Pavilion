@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Photos
 
 struct PoemSuccessView: View {
     
@@ -154,33 +155,72 @@ struct PoemSuccessView: View {
     
     /// AI 点评
     private func requestAIComment() {
-        // TODO: 实现AI点评功能
+        // 立即显示sheet（带loading状态）
         isLoadingAI = true
+        aiComment = ""
+        showAIComment = true
         
+        // 模拟AI点评（2秒后显示结果）
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             isLoadingAI = false
-            aiComment = "这是一首很有意境的诗歌..."
-            showAIComment = true
+            aiComment = """
+这首诗意境深远，情感真挚。
+
+诗人巧妙地运用了意象，将内心的感受外化为具体可感的画面。语言凝练而富有韵味，行文流畅自然。
+
+整首诗给人以深刻的印象，是一首值得细细品味的佳作。
+"""
         }
     }
     
     /// 保存图片到相册
     private func saveImageToAlbum() {
-        UIImageWriteToSavedPhotosAlbum(poemImage, nil, nil, nil)
-        ToastManager.shared.showSuccess("图片已保存到相册")
+        // 请求相册权限并保存
+        PHPhotoLibrary.requestAuthorization { status in
+            DispatchQueue.main.async {
+                switch status {
+                case .authorized, .limited:
+                    UIImageWriteToSavedPhotosAlbum(self.poemImage, nil, nil, nil)
+                    ToastManager.shared.showSuccess("图片已保存到相册")
+                case .denied, .restricted:
+                    ToastManager.shared.showError("请在设置中允许访问相册")
+                case .notDetermined:
+                    break
+                @unknown default:
+                    break
+                }
+            }
+        }
     }
     
     /// 分享
     private func sharePoem() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first,
+              let rootVC = window.rootViewController else {
+            ToastManager.shared.showError("无法打开分享")
+            return
+        }
+        
+        // 找到最顶层的ViewController
+        var topVC = rootVC
+        while let presentedVC = topVC.presentedViewController {
+            topVC = presentedVC
+        }
+        
         let activityVC = UIActivityViewController(
             activityItems: [poemImage],
             applicationActivities: nil
         )
         
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true)
+        // iPad支持
+        if let popoverController = activityVC.popoverPresentationController {
+            popoverController.sourceView = topVC.view
+            popoverController.sourceRect = CGRect(x: topVC.view.bounds.midX, y: topVC.view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
         }
+        
+        topVC.present(activityVC, animated: true)
     }
     
     /// 发布到广场
