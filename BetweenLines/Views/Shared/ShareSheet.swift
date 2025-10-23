@@ -268,13 +268,16 @@ struct AICommentSheet: View {
                     }
                     
                     if isLoading {
-                        HStack {
+                        VStack(spacing: Spacing.md) {
                             ProgressView()
+                                .scaleEffect(1.2)
+                                .tint(Colors.accentTeal)
                             Text("AI 正在点评...")
-                                .font(Fonts.body())
+                                .font(Fonts.bodyRegular())
                                 .foregroundColor(Colors.textSecondary)
                         }
-                        .padding(.vertical, Spacing.xl)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.xxl)
                     } else {
                         Text(comment)
                             .font(Fonts.bodyRegular())

@@ -41,21 +41,23 @@ struct PoemSuccessView: View {
                     .padding(.top, Spacing.md)
                 }
                 
-                ScrollView {
+                // 可滚动内容区域
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.xl) {
-                        // 诗歌图片
+                        // 诗歌图片（完整显示）
                         Image(uiImage: poemImage)
                             .resizable()
-                            .scaledToFit()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
                             .cornerRadius(CornerRadius.large)
                             .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
-                            .padding(.horizontal, Spacing.xl)
-                            .padding(.top, Spacing.lg)
+                            .padding(.horizontal, Spacing.lg)
+                            .padding(.top, Spacing.md)
                         
                         // 操作按钮
                         actionButtons
+                            .padding(.bottom, Spacing.xl)
                     }
-                    .padding(.bottom, Spacing.xxl)
                 }
             }
         }
@@ -155,21 +157,27 @@ struct PoemSuccessView: View {
     
     /// AI 点评
     private func requestAIComment() {
+        guard !poem.content.isEmpty else { return }
+        
         // 立即显示sheet（带loading状态）
         isLoadingAI = true
         aiComment = ""
         showAIComment = true
         
-        // 模拟AI点评（2秒后显示结果）
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isLoadingAI = false
-            aiComment = """
-这首诗意境深远，情感真挚。
-
-诗人巧妙地运用了意象，将内心的感受外化为具体可感的画面。语言凝练而富有韵味，行文流畅自然。
-
-整首诗给人以深刻的印象，是一首值得细细品味的佳作。
-"""
+        // 调用DeepSeek API进行真实的AI点评
+        Task {
+            do {
+                let comment = try await AIService.shared.getPoemComment(content: poem.content)
+                await MainActor.run {
+                    aiComment = comment
+                    isLoadingAI = false
+                }
+            } catch {
+                await MainActor.run {
+                    aiComment = "AI 点评暂时无法生成，请稍后重试。\n\n错误信息：\(error.localizedDescription)"
+                    isLoadingAI = false
+                }
+            }
         }
     }
     
@@ -225,24 +233,43 @@ struct PoemSuccessView: View {
     
     /// 发布到广场
     private func publishToSquare() {
+        // 检查是否登录
         guard authService.isAuthenticated else {
             showLoginSheet = true
             return
         }
         
+        // 检查userId
+        guard let userId = authService.currentUser?.id else {
+            ToastManager.shared.showError("用户信息异常，请重新登录")
+            return
+        }
+        
+        // 检查内容
+        guard !poem.content.isEmpty else {
+            ToastManager.shared.showError("诗歌内容不能为空")
+            return
+        }
+        
         isPublishing = true
+        ToastManager.shared.show("正在提交审核...", type: .info)
         
         Task {
             do {
-                guard let userId = authService.currentUser?.id else { return }
+                print("🚀 [PoemSuccessView] 开始发布到广场...")
+                print("📝 [PoemSuccessView] 作者ID: \(userId)")
+                print("📝 [PoemSuccessView] 标题: \(poem.title.isEmpty ? "无标题" : poem.title)")
+                print("📝 [PoemSuccessView] 内容长度: \(poem.content.count)")
                 
                 // 发布到云端
-                _ = try await poemService.publishPoem(
+                let publishedPoem = try await poemService.publishPoem(
                     authorId: userId,
                     title: poem.title.isEmpty ? "无标题" : poem.title,
                     content: poem.content,
                     style: "modern"
                 )
+                
+                print("✅ [PoemSuccessView] 发布成功！诗歌ID: \(publishedPoem.id)")
                 
                 await MainActor.run {
                     isPublishing = false
@@ -256,13 +283,28 @@ struct PoemSuccessView: View {
                     // 提示用户
                     ToastManager.shared.showSuccess("已提交审核，请耐心等待")
                     
-                    // 关闭成功页面
-                    dismiss()
+                    // 延迟关闭，让用户看到提示
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        dismiss()
+                    }
                 }
             } catch {
+                print("❌ [PoemSuccessView] 发布失败：\(error)")
+                
                 await MainActor.run {
                     isPublishing = false
-                    ToastManager.shared.showError("发布失败：\(error.localizedDescription)")
+                    
+                    // 更详细的错误信息
+                    let errorMessage: String
+                    if error.localizedDescription.contains("Network") || error.localizedDescription.contains("network") {
+                        errorMessage = "网络连接失败，请检查网络后重试"
+                    } else if error.localizedDescription.contains("401") || error.localizedDescription.contains("403") {
+                        errorMessage = "登录已过期，请重新登录"
+                    } else {
+                        errorMessage = "发布失败：\(error.localizedDescription)"
+                    }
+                    
+                    ToastManager.shared.showError(errorMessage)
                 }
             }
         }
