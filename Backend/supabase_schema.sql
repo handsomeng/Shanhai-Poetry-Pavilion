@@ -365,6 +365,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
 -- 函数：更新诗人称号（根据诗歌数）
+-- 与客户端 PoetTitle.swift 保持一致
 -- ============================================
 
 CREATE OR REPLACE FUNCTION public.update_poet_title()
@@ -372,23 +373,25 @@ RETURNS TRIGGER AS $$
 DECLARE
   new_title TEXT;
 BEGIN
-  -- 根据诗歌总数确定称号
-  IF NEW.total_poems >= 100 THEN
-    new_title := '观海诗人';
-  ELSIF NEW.total_poems >= 50 THEN
-    new_title := '望山诗人';
-  ELSIF NEW.total_poems >= 30 THEN
-    new_title := '踏雪诗人';
-  ELSIF NEW.total_poems >= 20 THEN
-    new_title := '听风诗人';
-  ELSIF NEW.total_poems >= 10 THEN
-    new_title := '寻山诗人';
-  ELSIF NEW.total_poems >= 5 THEN
-    new_title := '拾字诗人';
+  -- 根据诗歌总数确定称号（与客户端 PoetTitle.swift 保持一致）
+  IF NEW.total_poems >= 500 THEN
+    new_title := '谪仙诗人';  -- 500+首
+  ELSIF NEW.total_poems >= 201 THEN
+    new_title := '山河诗人';  -- 201-500首
+  ELSIF NEW.total_poems >= 101 THEN
+    new_title := '登高诗人';  -- 101-200首
+  ELSIF NEW.total_poems >= 51 THEN
+    new_title := '望月诗人';  -- 51-100首
+  ELSIF NEW.total_poems >= 21 THEN
+    new_title := '寻梅诗人';  -- 21-50首
+  ELSIF NEW.total_poems >= 11 THEN
+    new_title := '听雨诗人';  -- 11-20首
+  ELSIF NEW.total_poems >= 6 THEN
+    new_title := '寻山诗人';  -- 6-10首
   ELSIF NEW.total_poems >= 1 THEN
-    new_title := '初见诗人';
+    new_title := '初见诗人';  -- 1-5首
   ELSE
-    new_title := '初见诗人';
+    new_title := '初见诗人';  -- 默认
   END IF;
   
   NEW.poet_title := new_title;
