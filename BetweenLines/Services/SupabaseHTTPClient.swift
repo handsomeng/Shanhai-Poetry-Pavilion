@@ -27,6 +27,37 @@ class SupabaseHTTPClient {
     /// 当前用户的 access token
     var accessToken: String?
     
+    // MARK: - Network Permission Check
+    
+    /// 测试网络连接并触发权限请求
+    /// 在登录前调用，确保网络权限已授予
+    static func ensureNetworkPermission() async -> Bool {
+        do {
+            // 发送一个简单的 HEAD 请求到 Supabase
+            guard let url = URL(string: SupabaseConfig.projectURL) else {
+                return false
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "HEAD"
+            request.timeoutInterval = 5
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("✅ [网络检测] 网络连接正常，状态码: \(httpResponse.statusCode)")
+                return true
+            }
+            
+            return false
+        } catch {
+            print("⚠️ [网络检测] 网络请求失败: \(error.localizedDescription)")
+            // 即使失败也返回 true，因为这可能是正常的网络问题
+            // 重点是触发了权限请求
+            return true
+        }
+    }
+    
     private init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
