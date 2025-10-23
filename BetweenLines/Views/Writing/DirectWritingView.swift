@@ -177,7 +177,7 @@ struct DirectWritingView: View {
         
         if !saved {
             // 重复诗歌，显示提示
-            ToastManager.shared.showWarning("这首诗已经在诗集中了")
+            ToastManager.shared.showInfo("这首诗已经在诗集中了")
             return
         }
         
