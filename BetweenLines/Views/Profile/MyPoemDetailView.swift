@@ -280,7 +280,7 @@ struct MyPoemDetailView: View {
             updatedPoem.hasUnpublishedChanges = true
         }
         
-        poemManager.updatePoem(updatedPoem)
+        poemManager.savePoem(updatedPoem)
         
         // 生成图片
         generatedImage = PoemImageGenerator.generate(poem: updatedPoem)
@@ -302,7 +302,7 @@ struct MyPoemDetailView: View {
         var updatedPoem = poem
         updatedPoem.inMyCollection = true
         updatedPoem.isDraft = false
-        poemManager.updatePoem(updatedPoem)
+        poemManager.savePoem(updatedPoem)
         
         // 生成图片
         generatedImage = PoemImageGenerator.generate(poem: updatedPoem)
@@ -351,7 +351,7 @@ struct MyPoemDetailView: View {
                     var updatedPoem = poem
                     updatedPoem.auditStatus = .pending
                     updatedPoem.inSquare = false // 审核中不算在广场
-                    poemManager.updatePoem(updatedPoem)
+                    poemManager.savePoem(updatedPoem)
                     
                     ToastManager.shared.showSuccess("已提交审核，请耐心等待")
                     

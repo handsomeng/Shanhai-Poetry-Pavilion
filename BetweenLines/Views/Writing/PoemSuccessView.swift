@@ -211,7 +211,7 @@ struct PoemSuccessView: View {
                     var updatedPoem = poem
                     updatedPoem.auditStatus = .pending
                     updatedPoem.inSquare = false
-                    PoemManager.shared.updatePoem(updatedPoem)
+                    PoemManager.shared.savePoem(updatedPoem)
                     
                     // 提示用户
                     ToastManager.shared.showSuccess("已提交审核，请耐心等待")
