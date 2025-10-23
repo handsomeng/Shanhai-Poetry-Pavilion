@@ -333,54 +333,42 @@ struct ProfileView: View {
                 .buttonStyle(PlainButtonStyle())
                 
             } else {
-                // ===== 未订阅：分区布局 =====
-                VStack(spacing: 0) {
-                    // 顶部内容区
+                // ===== 未订阅：紧凑布局 =====
+                Button(action: {
+                    showingSubscription = true
+                }) {
                     HStack(spacing: Spacing.md) {
                         // 左侧皇冠
                         Image(systemName: "crown")
-                            .font(.system(size: 20))
+                            .font(.system(size: 18))
                             .foregroundColor(Colors.textSecondary)
                         
                         // 中间文案
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 2) {
                             Text("升级会员")
-                                .font(Fonts.bodyLarge())
+                                .font(Fonts.bodyRegular())
                                 .foregroundColor(Colors.textInk)
-                                .fixedSize(horizontal: true, vertical: false)
                             
                             Text("解锁全部高级功能")
-                                .font(Fonts.caption())
+                                .font(.system(size: 12))
                                 .foregroundColor(Colors.textSecondary)
-                                .fixedSize(horizontal: true, vertical: false)
                         }
                         
                         Spacer()
+                        
+                        // 右侧按钮文字
+                        Text("立即订阅")
+                            .font(Fonts.bodyRegular())
+                            .foregroundColor(Colors.accentTeal)
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Colors.accentTeal.opacity(0.6))
                     }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.top, Spacing.lg)
-                    .padding(.bottom, Spacing.md)
-                    
-                    // 分割线
-                    Divider()
-                        .padding(.horizontal, Spacing.lg)
-                    
-                    // 底部按钮区
-                    Button(action: {
-                        showingSubscription = true
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("立即订阅")
-                                .font(Fonts.bodyRegular())
-                                .foregroundColor(Colors.accentTeal)
-                            Spacer()
-                        }
-                        .padding(.vertical, Spacing.md)
-                    }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.bottom, Spacing.xs)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.md)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
             .background(
