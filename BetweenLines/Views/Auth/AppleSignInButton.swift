@@ -12,6 +12,8 @@ struct CustomAppleSignInButton: View {
     let onRequest: (ASAuthorizationAppleIDRequest) -> Void
     let onCompletion: (Result<ASAuthorization, Error>) -> Void
     
+    @State private var coordinator: AppleSignInCoordinator?
+    
     var body: some View {
         Button {
             performAppleSignIn()
@@ -45,9 +47,15 @@ struct CustomAppleSignInButton: View {
         onRequest(request)
         print("✅ [DEBUG] requestedScopes: \(String(describing: request.requestedScopes))")
         
+        // 创建 coordinator 并保持引用
+        let newCoordinator = AppleSignInCoordinator(onCompletion: onCompletion)
+        self.coordinator = newCoordinator
+        print("✅ [DEBUG] 创建 Coordinator")
+        
         let controller = ASAuthorizationController(authorizationRequests: [request])
-        controller.delegate = AppleSignInCoordinator(onCompletion: onCompletion)
-        print("✅ [DEBUG] 创建 ASAuthorizationController")
+        controller.delegate = newCoordinator
+        controller.presentationContextProvider = newCoordinator
+        print("✅ [DEBUG] 创建 ASAuthorizationController 并设置 delegate 和 presentationContextProvider")
         
         print("🚀 [DEBUG] 调用 performRequests()...")
         controller.performRequests()
@@ -68,12 +76,16 @@ struct AppleSignInButtonStyle: ButtonStyle {
 
 // MARK: - Coordinator
 
-class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate {
+class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     let onCompletion: (Result<ASAuthorization, Error>) -> Void
     
     init(onCompletion: @escaping (Result<ASAuthorization, Error>) -> Void) {
         self.onCompletion = onCompletion
+        super.init()
+        print("✅ [DEBUG] Coordinator 初始化完成")
     }
+    
+    // MARK: - ASAuthorizationControllerDelegate
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         print("✅ [DEBUG] Coordinator: 收到授权成功回调")
@@ -86,6 +98,20 @@ class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate {
         print("❌ [DEBUG] Coordinator: Error domain: \(nsError.domain)")
         print("❌ [DEBUG] Coordinator: Error code: \(nsError.code)")
         onCompletion(.failure(error))
+    }
+    
+    // MARK: - ASAuthorizationControllerPresentationContextProviding
+    
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        print("✅ [DEBUG] Coordinator: 提供 presentationAnchor")
+        // 获取当前活动的窗口
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            print("⚠️ [DEBUG] Coordinator: 无法获取窗口，使用第一个窗口")
+            return UIApplication.shared.windows.first!
+        }
+        print("✅ [DEBUG] Coordinator: 成功获取窗口")
+        return window
     }
 }
 
