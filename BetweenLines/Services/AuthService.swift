@@ -67,7 +67,7 @@ class AuthService: ObservableObject {
         let profileRequest = CreateProfileRequest(
             id: response.user.id,
             username: username,
-            email: email
+            displayName: nil  // 邮箱注册不提供显示名称
         )
         
         let profile: UserProfile = try await client.request(
@@ -260,9 +260,11 @@ class AuthService: ObservableObject {
                 
                 if let profile = profiles.first {
                     currentProfile = profile
+                    // 注意：email 存储在 auth.users 表中，这里我们只需要恢复基本状态
+                    // 实际的 user 信息会在需要时通过 API 获取
                     currentUser = AuthUser(
                         id: userId,
-                        email: profile.email,
+                        email: "",  // Session 恢复时不需要 email
                         createdAt: profile.createdAt
                     )
                     isAuthenticated = true
