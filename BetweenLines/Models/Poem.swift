@@ -34,6 +34,11 @@ struct Poem: Identifiable, Equatable {
     var isLiked: Bool                  // 当前用户是否点赞
     var isPublished: Bool              // 是否发布（废弃，改用 inSquare）
     
+    // 审核和更新状态（新增）
+    var auditStatus: AuditStatus       // 审核状态
+    var hasUnpublishedChanges: Bool    // 是否有未发布到广场的本地修改
+    var rejectionReason: String?       // 审核驳回原因
+    
     // 初始化方法
     init(
         id: String = UUID().uuidString,
@@ -53,7 +58,10 @@ struct Poem: Identifiable, Equatable {
         squareLikeCount: Int = 0,
         likeCount: Int = 0,
         isLiked: Bool = false,
-        isPublished: Bool = false
+        isPublished: Bool = false,
+        auditStatus: AuditStatus = .notPublished,
+        hasUnpublishedChanges: Bool = false,
+        rejectionReason: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -73,6 +81,9 @@ struct Poem: Identifiable, Equatable {
         self.likeCount = likeCount
         self.isLiked = isLiked
         self.isPublished = isPublished
+        self.auditStatus = auditStatus
+        self.hasUnpublishedChanges = hasUnpublishedChanges
+        self.rejectionReason = rejectionReason
     }
     
     /// 字数统计
@@ -109,6 +120,31 @@ extension Poem: Codable {
         case tags, writingMode, referencePoem, aiComment
         case inMyCollection, inSquare, squareId, squarePublishedAt, squareLikeCount
         case likeCount, isLiked, isPublished
+        case auditStatus, hasUnpublishedChanges, rejectionReason
+    }
+}
+
+// MARK: - 审核状态
+
+/// 诗歌审核状态
+enum AuditStatus: String, Codable {
+    case notPublished    // 未发布
+    case published       // 已发布（审核通过）
+    case pending         // 审核中
+    case rejected        // 审核驳回
+    
+    /// 状态描述
+    var description: String {
+        switch self {
+        case .notPublished:
+            return "未发布"
+        case .published:
+            return "已发布"
+        case .pending:
+            return "审核中"
+        case .rejected:
+            return "审核未通过"
+        }
     }
 }
 
