@@ -38,9 +38,9 @@ extension RemotePoem {
             authorName: authorName,
             createdAt: ISO8601DateFormatter().date(from: createdAt) ?? Date(),
             tags: tags ?? [],
-            inSquare: isPublic,
+            inSquare: isPublished,       // 修改：使用 isPublished 代替 isPublic
             squareLikeCount: likeCount,
-            isPublished: isPublic
+            isPublished: isPublished     // 修改：使用 isPublished 代替 isPublic
         )
     }
 }

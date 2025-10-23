@@ -145,7 +145,8 @@ class PoemService: ObservableObject {
             title: title,
             content: content,
             style: style,
-            isPublic: true,
+            isPublished: true,  // 修改：使用 isPublished 代替 isPublic
+            isDraft: false,     // 新增：发布时不是草稿
             tags: tags
         )
         
@@ -176,7 +177,8 @@ class PoemService: ObservableObject {
             title: title,
             content: content,
             style: style,
-            isPublic: false,
+            isPublished: false,  // 修改：使用 isPublished 代替 isPublic
+            isDraft: true,       // 新增：草稿
             tags: tags
         )
         

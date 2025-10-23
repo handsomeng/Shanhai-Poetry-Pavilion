@@ -183,18 +183,30 @@ struct PoemSuccessView: View {
     
     /// 保存图片到相册
     private func saveImageToAlbum() {
-        // 请求相册权限并保存
-        PHPhotoLibrary.requestAuthorization { status in
+        print("🖼️ [PoemSuccessView] 开始保存图片到相册...")
+        
+        // 使用iOS 14+的新API，支持.add权限
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
             DispatchQueue.main.async {
+                print("📸 [PoemSuccessView] 相册权限状态: \(status.rawValue)")
+                
                 switch status {
                 case .authorized, .limited:
+                    print("✅ [PoemSuccessView] 权限已授权，正在保存图片...")
                     UIImageWriteToSavedPhotosAlbum(self.poemImage, nil, nil, nil)
                     ToastManager.shared.showSuccess("图片已保存到相册")
+                    print("✅ [PoemSuccessView] Toast已显示")
+                    
                 case .denied, .restricted:
+                    print("❌ [PoemSuccessView] 权限被拒绝")
                     ToastManager.shared.showError("请在设置中允许访问相册")
+                    
                 case .notDetermined:
-                    break
+                    print("⚠️ [PoemSuccessView] 权限未确定")
+                    ToastManager.shared.showError("请授予相册访问权限")
+                    
                 @unknown default:
+                    print("⚠️ [PoemSuccessView] 未知权限状态")
                     break
                 }
             }
@@ -203,9 +215,22 @@ struct PoemSuccessView: View {
     
     /// 分享
     private func sharePoem() {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first,
-              let rootVC = window.rootViewController else {
+        print("📤 [PoemSuccessView] 开始分享图片...")
+        
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            print("❌ [PoemSuccessView] 无法获取windowScene")
+            ToastManager.shared.showError("无法打开分享")
+            return
+        }
+        
+        guard let window = windowScene.windows.first else {
+            print("❌ [PoemSuccessView] 无法获取window")
+            ToastManager.shared.showError("无法打开分享")
+            return
+        }
+        
+        guard let rootVC = window.rootViewController else {
+            print("❌ [PoemSuccessView] 无法获取rootViewController")
             ToastManager.shared.showError("无法打开分享")
             return
         }
@@ -216,19 +241,48 @@ struct PoemSuccessView: View {
             topVC = presentedVC
         }
         
+        print("✅ [PoemSuccessView] 找到topViewController: \(type(of: topVC))")
+        
+        // 创建分享面板
         let activityVC = UIActivityViewController(
             activityItems: [poemImage],
             applicationActivities: nil
         )
         
+        // 完成回调（调试用）
+        activityVC.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+            if let error = error {
+                print("❌ [PoemSuccessView] 分享失败: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    ToastManager.shared.showError("分享失败：\(error.localizedDescription)")
+                }
+            } else if completed {
+                print("✅ [PoemSuccessView] 分享成功: \(activityType?.rawValue ?? "unknown")")
+                DispatchQueue.main.async {
+                    ToastManager.shared.showSuccess("分享成功")
+                }
+            } else {
+                print("⚠️ [PoemSuccessView] 用户取消分享")
+            }
+        }
+        
         // iPad支持
         if let popoverController = activityVC.popoverPresentationController {
             popoverController.sourceView = topVC.view
-            popoverController.sourceRect = CGRect(x: topVC.view.bounds.midX, y: topVC.view.bounds.midY, width: 0, height: 0)
+            popoverController.sourceRect = CGRect(
+                x: topVC.view.bounds.midX, 
+                y: topVC.view.bounds.midY, 
+                width: 0, 
+                height: 0
+            )
             popoverController.permittedArrowDirections = []
+            print("✅ [PoemSuccessView] 已配置iPad popover")
         }
         
-        topVC.present(activityVC, animated: true)
+        print("🚀 [PoemSuccessView] 正在显示分享面板...")
+        topVC.present(activityVC, animated: true) {
+            print("✅ [PoemSuccessView] 分享面板已显示")
+        }
     }
     
     /// 发布到广场

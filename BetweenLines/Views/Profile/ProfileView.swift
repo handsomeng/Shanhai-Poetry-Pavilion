@@ -175,8 +175,8 @@ struct ProfileView: View {
             
             // 分类为草稿和已发布
             let allPoems = poemService.myPoems
-            myDraftPoems = allPoems.filter { !$0.isPublic }.map { $0.toLocalPoem(authorName: authService.currentProfile?.username ?? "我") }
-            myPublishedPoems = allPoems.filter { $0.isPublic }.map { $0.toLocalPoem(authorName: authService.currentProfile?.username ?? "我") }
+            myDraftPoems = allPoems.filter { $0.isDraft }.map { $0.toLocalPoem(authorName: authService.currentProfile?.username ?? "我") }
+            myPublishedPoems = allPoems.filter { $0.isPublished }.map { $0.toLocalPoem(authorName: authService.currentProfile?.username ?? "我") }
         } catch {
             print("加载用户诗歌失败: \(error)")
         }

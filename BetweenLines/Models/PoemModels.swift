@@ -16,7 +16,8 @@ struct RemotePoem: Codable, Identifiable {
     let title: String
     let content: String
     let style: String
-    let isPublic: Bool
+    let isPublished: Bool  // 修改：匹配数据库字段 is_published
+    var isDraft: Bool      // 新增：匹配数据库字段 is_draft
     var tags: [String]?
     var likeCount: Int
     var commentCount: Int
@@ -29,7 +30,8 @@ struct RemotePoem: Codable, Identifiable {
         case title
         case content
         case style
-        case isPublic = "is_public"
+        case isPublished = "is_published"  // 修改：从 is_public 改为 is_published
+        case isDraft = "is_draft"          // 新增
         case tags
         case likeCount = "like_count"
         case commentCount = "comment_count"
@@ -75,7 +77,8 @@ struct CreatePoemRequest: Codable {
     let title: String
     let content: String
     let style: String
-    let isPublic: Bool
+    let isPublished: Bool  // 修改：匹配数据库字段 is_published
+    let isDraft: Bool      // 新增：匹配数据库字段 is_draft
     var tags: [String]?
     
     enum CodingKeys: String, CodingKey {
@@ -83,7 +86,8 @@ struct CreatePoemRequest: Codable {
         case title
         case content
         case style
-        case isPublic = "is_public"
+        case isPublished = "is_published"  // 修改：从 is_public 改为 is_published
+        case isDraft = "is_draft"          // 新增
         case tags
     }
 }
@@ -93,14 +97,16 @@ struct UpdatePoemRequest: Codable {
     var title: String?
     var content: String?
     var style: String?
-    var isPublic: Bool?
+    var isPublished: Bool?  // 修改：匹配数据库字段 is_published
+    var isDraft: Bool?      // 新增：匹配数据库字段 is_draft
     var tags: [String]?
     
     enum CodingKeys: String, CodingKey {
         case title
         case content
         case style
-        case isPublic = "is_public"
+        case isPublished = "is_published"  // 修改：从 is_public 改为 is_published
+        case isDraft = "is_draft"          // 新增
         case tags
     }
 }
