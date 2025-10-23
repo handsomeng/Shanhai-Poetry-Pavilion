@@ -30,6 +30,7 @@ struct ThemeWritingView: View {
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
     @State private var showingCancelConfirm = false
+    @State private var hasSaved = false  // 跟踪是否已保存
     
     var body: some View {
         ZStack {
@@ -50,7 +51,10 @@ struct ThemeWritingView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("取消") {
-                    if content.isEmpty && title.isEmpty {
+                    // 如果已保存，直接关闭
+                    if hasSaved {
+                        dismiss()
+                    } else if content.isEmpty && title.isEmpty {
                         dismiss()
                     } else {
                         showingCancelConfirm = true
@@ -283,7 +287,7 @@ struct ThemeWritingView: View {
     
     // MARK: - Save Actions
     
-    /// 保存为草稿
+    /// 保存到诗集
     private func saveToCollection() {
         let newPoem = Poem(
             title: title.isEmpty ? "无标题" : title,
@@ -294,8 +298,18 @@ struct ThemeWritingView: View {
             inMyCollection: true,
             inSquare: false
         )
-        poemManager.saveToCollection(newPoem)
+        
+        // 检查重复并保存
+        let saved = poemManager.saveToCollection(newPoem)
+        
+        if !saved {
+            // 重复诗歌，显示提示
+            ToastManager.shared.showWarning("这首诗已经在诗集中了")
+            return
+        }
+        
         currentPoem = newPoem
+        hasSaved = true  // 标记已保存
         
         // 生成分享图片
         generatedImage = PoemImageGenerator.generate(poem: newPoem)

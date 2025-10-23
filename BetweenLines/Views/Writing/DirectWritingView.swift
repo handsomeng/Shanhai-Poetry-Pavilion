@@ -24,6 +24,7 @@ struct DirectWritingView: View {
     @State private var isKeyboardVisible = false
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
+    @State private var hasSaved = false  // 跟踪是否已保存
     
     // 初始化（可选：编辑现有诗歌）
     let existingPoem: Poem?
@@ -135,6 +136,12 @@ struct DirectWritingView: View {
     // MARK: - Actions
     
     private func handleCancel() {
+        // 如果已保存，直接关闭
+        if hasSaved {
+            dismiss()
+            return
+        }
+        
         // 如果有内容未保存，显示确认弹窗
         if !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             showingCancelConfirm = true
@@ -164,8 +171,18 @@ struct DirectWritingView: View {
             inMyCollection: true,
             inSquare: false
         )
-        poemManager.saveToCollection(newPoem)
+        
+        // 检查重复并保存
+        let saved = poemManager.saveToCollection(newPoem)
+        
+        if !saved {
+            // 重复诗歌，显示提示
+            ToastManager.shared.showWarning("这首诗已经在诗集中了")
+            return
+        }
+        
         currentPoem = newPoem
+        hasSaved = true  // 标记已保存
         
         // 生成分享图片
         generatedImage = PoemImageGenerator.generate(poem: newPoem)

@@ -107,7 +107,22 @@ class PoemManager: ObservableObject {
     }
     
     /// 保存诗歌到【我的诗集】
-    func saveToCollection(_ poem: Poem) {
+    /// - Returns: 是否成功保存（false表示重复）
+    @discardableResult
+    func saveToCollection(_ poem: Poem) -> Bool {
+        // 检查是否已存在相同内容的诗歌（防止重复保存）
+        let isDuplicate = allPoems.contains { existingPoem in
+            existingPoem.id != poem.id && // 不是同一首诗
+            existingPoem.title == poem.title && // 标题相同
+            existingPoem.content == poem.content && // 内容相同
+            existingPoem.inMyCollection // 已在诗集中
+        }
+        
+        if isDuplicate {
+            print("⚠️ [PoemManager] 检测到重复诗歌，已跳过保存")
+            return false
+        }
+        
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
             var updatedPoem = poem
             updatedPoem.inMyCollection = true
@@ -122,6 +137,7 @@ class PoemManager: ObservableObject {
             allPoems.append(newPoem)
             savePoems()
         }
+        return true
     }
     
     /// 保存诗歌（通用方法，更新现有诗歌）

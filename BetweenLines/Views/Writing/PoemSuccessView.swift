@@ -150,6 +150,14 @@ struct PoemSuccessView: View {
                 .cornerRadius(CornerRadius.medium)
             }
             .disabled(isPublishing)
+            
+            // 再写一首提示
+            Button(action: { dismiss() }) {
+                Text("再写一首")
+                    .font(Fonts.caption())
+                    .foregroundColor(Colors.textTertiary)
+                    .padding(.top, 8)
+            }
         }
         .padding(.horizontal, Spacing.xl)
     }

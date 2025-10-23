@@ -266,7 +266,8 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.sm)  // 缩小底部间距
     }
     
     // MARK: - Membership Card
@@ -316,7 +317,8 @@ struct ProfileView: View {
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(hex: "D4AF37").opacity(0.4))
                     }
-                    .padding(Spacing.lg)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)  // 缩小垂直间距
                 }
                 .buttonStyle(PlainButtonStyle())
                 
@@ -354,7 +356,7 @@ struct ProfileView: View {
                             .foregroundColor(Colors.accentTeal.opacity(0.6))
                     }
                     .padding(.horizontal, Spacing.md)
-                    .padding(.vertical, Spacing.md)
+                    .padding(.vertical, Spacing.sm)  // 缩小垂直间距
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -376,7 +378,7 @@ struct ProfileView: View {
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
             .scaleButtonStyle()
             .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.md)
+            .padding(.bottom, Spacing.sm)  // 缩小底部间距
     }
     
     // MARK: - Stats Section
@@ -567,14 +569,8 @@ struct ProfileView: View {
     
     /// 当前诗人称号（始终使用客户端本地计算，不依赖数据库）
     private var currentPoetTitle: String {
-        let poemCount: Int
-        if authService.isAuthenticated, let profile = authService.currentProfile {
-            // 已登录：使用后端的诗歌总数
-            poemCount = profile.totalPoems
-        } else {
-            // 未登录：使用本地诗歌总数
-            poemCount = poemManager.myStats.totalPoems
-        }
+        // V1版本：统一使用本地计算（因为广场已关闭，后端数据不准确）
+        let poemCount = poemManager.myStats.totalPoems
         // 客户端计算称号（与 PoetTitle.swift 保持一致）
         return PoetTitle.title(forPoemCount: poemCount).displayName
     }
@@ -723,21 +719,8 @@ private struct MyPoemCard: View {
                 .lineSpacing(4)
                 .lineLimit(4)
             
-            // 底部信息
+            // 底部信息：只显示日期（自己的诗集不需要点赞）
             HStack {
-                HStack(spacing: 4) {
-                    if poem.isLiked {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(.red)
-                    } else {
-                        Image(systemName: "heart")
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                    Text("\(poem.squareLikeCount)")
-                        .font(Fonts.footnote())
-                }
-                .foregroundColor(Colors.textSecondary)
-                
                 Spacer()
                 
                 Text(poem.shortDate)
