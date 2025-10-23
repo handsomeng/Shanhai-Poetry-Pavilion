@@ -34,13 +34,24 @@ struct CustomAppleSignInButton: View {
     }
     
     private func performAppleSignIn() {
+        print("🍎 [DEBUG] ===== 准备开始 Apple Sign In =====")
+        
         let provider = ASAuthorizationAppleIDProvider()
+        print("✅ [DEBUG] 创建 ASAuthorizationAppleIDProvider")
+        
         let request = provider.createRequest()
+        print("✅ [DEBUG] 创建 request")
+        
         onRequest(request)
+        print("✅ [DEBUG] requestedScopes: \(String(describing: request.requestedScopes))")
         
         let controller = ASAuthorizationController(authorizationRequests: [request])
         controller.delegate = AppleSignInCoordinator(onCompletion: onCompletion)
+        print("✅ [DEBUG] 创建 ASAuthorizationController")
+        
+        print("🚀 [DEBUG] 调用 performRequests()...")
         controller.performRequests()
+        print("✅ [DEBUG] performRequests() 已调用")
     }
 }
 
