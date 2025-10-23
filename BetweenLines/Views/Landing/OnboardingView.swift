@@ -110,30 +110,41 @@ struct WelcomeSplashView: View {
         VStack(spacing: 0) {
             Spacer()
             
-            VStack(spacing: Spacing.lg) {
-                // "欢迎来到"
-                Text("欢迎来到")
-                    .font(.system(size: 18, weight: .light))
-                    .foregroundColor(Colors.textSecondary)
-                    .tracking(3)
-                    .opacity(animateWelcome ? 1 : 0)
-                    .offset(y: animateWelcome ? 0 : 30)
-                
-                // "山海诗馆"
-                Text("山海诗馆")
-                    .font(.system(size: 52, weight: .light, design: .serif))
+            VStack(spacing: Spacing.xl) {
+                // Logo
+                Image("AppLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
                     .foregroundColor(Colors.textInk)
-                    .tracking(8)
-                    .opacity(animateTitle ? 1 : 0)
-                    .scaleEffect(animateTitle ? 1 : 0.8)
+                    .opacity(animateWelcome ? 1 : 0)
+                    .scaleEffect(animateWelcome ? 1 : 0.8)
                 
-                // 副标题
-                Text("在这里开始你的诗歌之旅")
-                    .font(.system(size: 15, weight: .light))
-                    .foregroundColor(Colors.textTertiary)
-                    .tracking(1.5)
-                    .opacity(animateSubtitle ? 1 : 0)
-                    .offset(y: animateSubtitle ? 0 : 20)
+                VStack(spacing: Spacing.md) {
+                    // "欢迎来到"
+                    Text("欢迎来到")
+                        .font(.system(size: 18, weight: .light))
+                        .foregroundColor(Colors.textSecondary)
+                        .tracking(3)
+                        .opacity(animateWelcome ? 1 : 0)
+                        .offset(y: animateWelcome ? 0 : 30)
+                    
+                    // "山海诗馆"
+                    Text("山海诗馆")
+                        .font(.system(size: 52, weight: .light, design: .serif))
+                        .foregroundColor(Colors.textInk)
+                        .tracking(8)
+                        .opacity(animateTitle ? 1 : 0)
+                        .scaleEffect(animateTitle ? 1 : 0.8)
+                    
+                    // 副标题
+                    Text("在这里开始你的诗歌之旅")
+                        .font(.system(size: 15, weight: .light))
+                        .foregroundColor(Colors.textTertiary)
+                        .tracking(1.5)
+                        .opacity(animateSubtitle ? 1 : 0)
+                        .offset(y: animateSubtitle ? 0 : 20)
+                }
             }
             
             Spacer()

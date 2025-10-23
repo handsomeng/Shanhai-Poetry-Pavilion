@@ -145,8 +145,11 @@ struct LoginView: View {
     
     private var header: some View {
         VStack(spacing: Spacing.md) {
-            Text("🏮")
-                .font(.system(size: 80))
+            Image("AppLogo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 120, height: 120)
+                .foregroundColor(Colors.textInk)
             
             Text("欢迎来到山海诗馆")
                 .font(Fonts.titleLarge())

@@ -24,16 +24,12 @@ struct AboutView: View {
             VStack(spacing: Spacing.xxl) {
                 // Logo 和标题
                 VStack(spacing: Spacing.lg) {
-                    // App Icon（使用系统图标占位，实际应该用真实 App Icon）
-                    ZStack {
-                        Circle()
-                            .fill(Colors.accentTeal.opacity(0.1))
-                            .frame(width: 100, height: 100)
-                        
-                        Image(systemName: "book.fill")
-                            .font(.system(size: 50, weight: .light))
-                            .foregroundColor(Colors.accentTeal)
-                    }
+                    // App Logo
+                    Image("AppLogo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(Colors.textInk)
                     
                     Text("山海诗馆")
                         .font(.system(size: 32, weight: .light, design: .serif))
