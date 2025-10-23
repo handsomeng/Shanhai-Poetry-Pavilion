@@ -50,8 +50,9 @@ struct SquarePoem: Codable, Identifiable {
     let content: String
     let writingMode: String?  // 修改：匹配数据库字段 writing_mode
     var tags: [String]?
-    var likeCount: Int
-    var commentCount: Int
+    var likeCount: Int?       // 改为可选：统计字段可能不存在
+    var commentCount: Int?    // 改为可选：统计字段可能不存在
+    var viewCount: Int?       // 新增：观看次数
     var createdAt: String
     
     enum CodingKeys: String, CodingKey {
@@ -65,6 +66,7 @@ struct SquarePoem: Codable, Identifiable {
         case tags
         case likeCount = "like_count"
         case commentCount = "comment_count"
+        case viewCount = "view_count"      // 新增
         case createdAt = "created_at"
     }
 }
