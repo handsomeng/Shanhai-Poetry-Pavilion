@@ -12,6 +12,8 @@ struct LandingView: View {
     @State private var penName: String = ""
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
+    @State private var showLoginInvitation = false
+    @State private var showLoginSheet = false
     
     var body: some View {
         ZStack {
@@ -68,26 +70,51 @@ struct LandingView: View {
                         showError = true
                         return
                     }
-                    UserDefaults.standard.set(true, forKey: UserDefaultsKeys.hasCompletedOnboarding)
+                    // 保存笔名
                     UserDefaults.standard.set(trimmed, forKey: "penName")
-                    onComplete()
+                    // 显示登录邀请
+                    showLoginInvitation = true
                 }) {
-                Text("开始创作")
-                    .font(.system(size: 15, weight: .regular))
-                    .tracking(2)
-                    .textCase(.uppercase)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .foregroundColor(.white)
-                    .background(Colors.accentTeal)
-            }
-            .scaleButtonStyle()
-            .padding(.horizontal, Spacing.xl)
+                    Text("开始创作")
+                        .font(.system(size: 15, weight: .regular))
+                        .tracking(2)
+                        .textCase(.uppercase)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.md)
+                        .foregroundColor(.white)
+                        .background(Colors.accentTeal)
+                }
+                .scaleButtonStyle()
+                .padding(.horizontal, Spacing.xl)
                 
                 Spacer()
                 Spacer()
             }
         }
+        .alert("登录云端账号", isPresented: $showLoginInvitation) {
+            Button("立即登录", role: nil) {
+                showLoginSheet = true
+            }
+            Button("稍后再说", role: .cancel) {
+                completeOnboarding()
+            }
+        } message: {
+            Text("登录后可以将作品发布到广场，与其他诗友交流，还能云端保存你的创作")
+        }
+        .sheet(isPresented: $showLoginSheet) {
+            LoginView()
+        }
+        .onChange(of: showLoginSheet) { oldValue, newValue in
+            // 当登录界面关闭时，完成 onboarding
+            if oldValue == true && newValue == false {
+                completeOnboarding()
+            }
+        }
+    }
+    
+    private func completeOnboarding() {
+        UserDefaults.standard.set(true, forKey: UserDefaultsKeys.hasCompletedOnboarding)
+        onComplete()
     }
 }
 

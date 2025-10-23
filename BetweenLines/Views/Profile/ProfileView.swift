@@ -26,6 +26,7 @@ struct ProfileView: View {
     @State private var showingMembershipDetail = false
     @State private var showingPoetTitle = false
     @State private var showingLogin = false
+    @State private var showingLogoutConfirm = false
     @State private var myPublishedPoems: [Poem] = []
     @State private var myDraftPoems: [Poem] = []
     
@@ -71,7 +72,7 @@ struct ProfileView: View {
                         // 登出按钮（仅已登录时显示）
                         if authService.isAuthenticated {
                             Button(action: {
-                                authService.signOut()
+                                showingLogoutConfirm = true
                             }) {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .font(.system(size: 18, weight: .ultraLight))
@@ -95,6 +96,14 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $showingLogin) {
                 LoginView()
+            }
+            .alert("确认退出登录", isPresented: $showingLogoutConfirm) {
+                Button("取消", role: .cancel) { }
+                Button("退出", role: .destructive) {
+                    authService.signOut()
+                }
+            } message: {
+                Text("退出后将无法发布诗歌和使用互动功能")
             }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
