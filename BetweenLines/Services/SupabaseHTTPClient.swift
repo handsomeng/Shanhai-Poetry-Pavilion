@@ -97,6 +97,11 @@ class SupabaseHTTPClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         
+        // POST/PATCH 请求需要返回创建/更新的数据
+        if method == .post || method == .patch {
+            request.setValue("return=representation", forHTTPHeaderField: "Prefer")
+        }
+        
         // 如果有 access token，添加认证头
         if let accessToken = accessToken {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
