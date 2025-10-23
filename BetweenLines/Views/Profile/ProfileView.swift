@@ -468,6 +468,16 @@ struct ProfileView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        if selectedTab != .published {
+                            Button(role: .destructive) {
+                                poemToDelete = poem
+                                showingDeleteAlert = true
+                            } label: {
+                                Label("删除", systemImage: "trash")
+                            }
+                        }
+                    }
                 }
                 
                 if currentPoems.isEmpty {
@@ -531,7 +541,7 @@ struct ProfileView: View {
                 PoemDetailView(poem: poem)
             } else {
                 // 诗集和草稿跳转到新的编辑详情页
-                PoemEditorDetailView(poem: poem)
+                MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)
             }
         }
     }
