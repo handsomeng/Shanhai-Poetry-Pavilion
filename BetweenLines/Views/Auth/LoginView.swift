@@ -41,6 +41,8 @@ struct LoginView: View {
     
     @State private var isLoading = false
     @State private var isPreparingNetwork = true
+    @State private var showPrivacyPolicy = false
+    @State private var showTermsOfService = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -97,7 +99,13 @@ struct LoginView: View {
                                 .foregroundColor(Colors.textSecondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, Spacing.xl)
+                            
+                            // 协议链接
+                            agreementSection
                         }
+                        
+                        Spacer()
+                            .frame(height: Spacing.xl)
                     }
                     .padding(Spacing.xl)
             }
@@ -118,6 +126,16 @@ struct LoginView: View {
                         dismiss()
                     }
                     .foregroundColor(Colors.textInk)
+                }
+            }
+            .sheet(isPresented: $showPrivacyPolicy) {
+                NavigationStack {
+                    PrivacyPolicyView()
+                }
+            }
+            .sheet(isPresented: $showTermsOfService) {
+                NavigationStack {
+                    TermsOfServiceView()
                 }
             }
         }
@@ -236,6 +254,41 @@ struct LoginView: View {
                 print("ℹ️ [DEBUG] 用户取消了登录（Code 1001），不显示错误")
             }
         }
+    }
+    
+    // MARK: - Agreement Section
+    
+    private var agreementSection: some View {
+        VStack(spacing: Spacing.sm) {
+            Text("登录即表示同意")
+                .font(.system(size: 11, weight: .light))
+                .foregroundColor(Colors.textTertiary)
+            
+            HStack(spacing: 4) {
+                Button(action: {
+                    showTermsOfService = true
+                }) {
+                    Text("《用户协议》")
+                        .font(.system(size: 11, weight: .light))
+                        .foregroundColor(Colors.accentTeal)
+                        .underline()
+                }
+                
+                Text("和")
+                    .font(.system(size: 11, weight: .light))
+                    .foregroundColor(Colors.textTertiary)
+                
+                Button(action: {
+                    showPrivacyPolicy = true
+                }) {
+                    Text("《隐私政策》")
+                        .font(.system(size: 11, weight: .light))
+                        .foregroundColor(Colors.accentTeal)
+                        .underline()
+                }
+            }
+        }
+        .padding(.top, Spacing.md)
     }
 }
 
