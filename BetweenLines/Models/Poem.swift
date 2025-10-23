@@ -13,6 +13,7 @@ struct Poem: Identifiable, Equatable {
     var title: String                  // 诗歌标题
     var content: String                // 诗歌内容
     var authorName: String             // 作者笔名
+    var userId: String?                // 所属用户ID（用于数据隔离）
     var createdAt: Date                // 创建时间
     var updatedAt: Date                // 更新时间
     
@@ -45,6 +46,7 @@ struct Poem: Identifiable, Equatable {
         title: String,
         content: String,
         authorName: String,
+        userId: String? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         tags: [String] = [],
@@ -67,6 +69,7 @@ struct Poem: Identifiable, Equatable {
         self.title = title
         self.content = content
         self.authorName = authorName
+        self.userId = userId
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.tags = tags
@@ -116,7 +119,7 @@ struct Poem: Identifiable, Equatable {
 
 extension Poem: Codable {
     enum CodingKeys: String, CodingKey {
-        case id, title, content, authorName, createdAt, updatedAt
+        case id, title, content, authorName, userId, createdAt, updatedAt
         case tags, writingMode, referencePoem, aiComment
         case inMyCollection, inSquare, squareId, squarePublishedAt, squareLikeCount
         case likeCount, isLiked, isPublished

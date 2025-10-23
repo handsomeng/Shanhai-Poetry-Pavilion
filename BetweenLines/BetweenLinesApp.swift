@@ -18,7 +18,7 @@ struct BetweenLinesApp: App {
                     .preferredColorScheme(.light)
                     .withToast()
             } else {
-                LandingView(onComplete: {
+                OnboardingView(onComplete: {
                     hasCompletedOnboarding = true
                 })
                 .preferredColorScheme(.light)

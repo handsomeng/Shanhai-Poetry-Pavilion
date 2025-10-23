@@ -80,35 +80,26 @@ struct PoemEditorView: View {
     
     private var contentEditor: some View {
         ZStack(alignment: .topLeading) {
-            // 文本编辑器 - 自动适应键盘
+            // 占位符（在背景层，完全不影响交互）
+            if content.isEmpty {
+                Text(placeholder)
+                    .font(Fonts.bodyPoem())
+                    .foregroundColor(Colors.textSecondary.opacity(0.5))
+                    .padding(.horizontal, Spacing.lg + 4) // TextEditor 内部有额外的 padding
+                    .padding(.vertical, Spacing.md + 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .allowsHitTesting(false) // 不拦截点击
+            }
+            
+            // 文本编辑器 - 可滚动，可点击任意位置
             TextEditor(text: $content)
                 .font(Fonts.bodyPoem())
                 .foregroundColor(Colors.textInk)
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.md)
                 .scrollContentBackground(.hidden)
-                .focused($isContentFocused) // 绑定焦点
-                .background(
-                    ZStack(alignment: .topLeading) {
-                        Colors.white
-                        
-                        // 占位符（在背景层，完全不影响交互）
-                        if content.isEmpty {
-                            Text(placeholder)
-                                .font(Fonts.bodyPoem())
-                                .foregroundColor(Colors.textSecondary.opacity(0.5))
-                                .padding(.horizontal, Spacing.lg)
-                                .padding(.vertical, Spacing.md)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .allowsHitTesting(false)
-                        }
-                    }
-                )
-                // 添加点击手势，点击整个编辑区域都能唤醒键盘
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    isContentFocused = true
-                }
+                .focused($isContentFocused)
+                .scrollDismissesKeyboard(.interactively) // iOS 16+ 支持手势关闭键盘
         }
         .background(Colors.white)
     }
