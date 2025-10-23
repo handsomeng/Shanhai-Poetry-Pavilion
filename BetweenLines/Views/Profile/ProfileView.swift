@@ -251,18 +251,20 @@ struct ProfileView: View {
                 }
             }) {
                 HStack(spacing: 4) {
+                    // V1版本：统一使用本地计算（因为广场已关闭，后端数据不准确）
+                    let stats = poemManager.myStats
+                    let likeCount: Int
                     if authService.isAuthenticated, let profile = authService.currentProfile {
-                        // 后端数据
-                        Text("已写 \(profile.totalPoems) 首诗，获得 \(profile.totalLikes) 个赞")
-                            .font(Fonts.bodyRegular())
-                            .foregroundColor(Colors.textSecondary)
+                        // 已登录：使用后端的点赞数
+                        likeCount = profile.totalLikes
                     } else {
-                        // 本地数据
-                        let stats = poemManager.myStats
-                        Text("已写 \(stats.totalPoems) 首诗，获得 \(stats.totalLikes) 个赞")
-                            .font(Fonts.bodyRegular())
-                            .foregroundColor(Colors.textSecondary)
+                        // 未登录：使用本地的点赞数
+                        likeCount = stats.totalLikes
                     }
+                    
+                    Text("已写 \(stats.totalPoems) 首诗，获得 \(likeCount) 个赞")
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.textSecondary)
                     
                     // 箭头指示可点击
                     Image(systemName: "chevron.right")
@@ -461,13 +463,7 @@ struct ProfileView: View {
                     LazyVStack(spacing: Spacing.md) {
                         ForEach(currentPoems) { poem in
                             NavigationLink(destination: destinationView(for: poem)) {
-                                MyPoemCard(
-                                    poem: poem,
-                                    onDelete: {
-                                        poemToDelete = poem
-                                        showingDeleteAlert = true
-                                    }
-                                )
+                                MyPoemCard(poem: poem)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -702,30 +698,18 @@ private struct PublishedPoemCard: View {
 
 private struct MyPoemCard: View {
     let poem: Poem
-    let onDelete: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             // 标题和作者
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(poem.title.isEmpty ? "无标题" : poem.title)
-                        .font(Fonts.bodyLarge())
-                        .foregroundColor(Colors.textInk)
-                    
-                    Text(poem.authorName)
-                        .font(Fonts.captionSmall())
-                        .foregroundColor(Colors.textSecondary)
-                }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(poem.title.isEmpty ? "无标题" : poem.title)
+                    .font(Fonts.bodyLarge())
+                    .foregroundColor(Colors.textInk)
                 
-                Spacer()
-                
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 16))
-                        .foregroundColor(Colors.error)
-                }
-                .buttonStyle(PlainButtonStyle())
+                Text(poem.authorName)
+                    .font(Fonts.captionSmall())
+                    .foregroundColor(Colors.textSecondary)
             }
             
             // 诗歌内容
