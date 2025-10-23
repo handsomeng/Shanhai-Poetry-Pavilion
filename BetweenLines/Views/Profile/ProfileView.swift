@@ -575,31 +575,79 @@ private struct PublishedPoemCard: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(poem.title.isEmpty ? "无标题" : poem.title)
-                    .font(Fonts.bodyLarge())
-                    .foregroundColor(Colors.textInk)
-                    .lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(poem.title.isEmpty ? "无标题" : poem.title)
+                        .font(Fonts.bodyLarge())
+                        .foregroundColor(Colors.textInk)
+                        .lineLimit(1)
+                    
+                    // 审核状态角标
+                    if poem.auditStatus != .published {
+                        auditStatusBadge
+                    }
+                }
                 
                 Text(poem.shortDate)
                     .font(Fonts.captionSmall())
                     .foregroundColor(Colors.textSecondary)
+                
+                // 被驳回时显示原因
+                if poem.auditStatus == .rejected, let reason = poem.rejectionReason {
+                    Text("驳回原因：\(reason)")
+                        .font(Fonts.captionSmall())
+                        .foregroundColor(.red)
+                        .lineLimit(2)
+                }
             }
             
             Spacer()
             
-            HStack(spacing: 4) {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(.red)
-                Text("\(poem.squareLikeCount)")
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textSecondary)
+            // 仅已通过时显示点赞数
+            if poem.auditStatus == .published {
+                HStack(spacing: 4) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.red)
+                    Text("\(poem.squareLikeCount)")
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.textSecondary)
+                }
             }
         }
         .padding(Spacing.lg)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    @ViewBuilder
+    private var auditStatusBadge: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(statusColor)
+                .frame(width: 6, height: 6)
+            
+            Text(poem.auditStatus.description)
+                .font(Fonts.captionSmall())
+                .foregroundColor(statusColor)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(statusColor.opacity(0.1))
+        .cornerRadius(CornerRadius.small)
+    }
+    
+    private var statusColor: Color {
+        switch poem.auditStatus {
+        case .notPublished:
+            return Colors.textSecondary
+        case .published:
+            return .green
+        case .pending:
+            return .orange
+        case .rejected:
+            return .red
+        }
     }
 }
 
