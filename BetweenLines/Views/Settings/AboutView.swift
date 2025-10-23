@@ -87,11 +87,11 @@ struct AboutView: View {
                         .foregroundColor(Colors.textInk)
                     
                     Button(action: {
-                        if let url = URL(string: "mailto:support@shanhaishiguan.com") {
+                        if let url = URL(string: "mailto:martinwm2011@hotmail.com") {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        Text("support@shanhaishiguan.com")
+                        Text("martinwm2011@hotmail.com")
                             .font(.system(size: 13, weight: .light))
                             .foregroundColor(Colors.accentTeal)
                     }

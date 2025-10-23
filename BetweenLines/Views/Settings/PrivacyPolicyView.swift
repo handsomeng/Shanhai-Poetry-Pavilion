@@ -19,7 +19,7 @@ struct PrivacyPolicyView: View {
                     .foregroundColor(Colors.textInk)
                     .padding(.bottom, Spacing.sm)
                 
-                Text("最后更新日期：2024年10月")
+                Text("最后更新日期：2025年10月")
                     .font(.system(size: 12, weight: .light))
                     .foregroundColor(Colors.textSecondary)
                     .padding(.bottom, Spacing.xl)
@@ -105,7 +105,7 @@ struct PrivacyPolicyView: View {
                         content: """
                         如有任何关于隐私的问题，请联系我们：
                         
-                        邮箱：privacy@shanhaishiguan.com
+                        邮箱：martinwm2011@hotmail.com
                         """
                     )
                 }
