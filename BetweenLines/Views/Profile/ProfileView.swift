@@ -233,8 +233,8 @@ struct ProfileView: View {
             
             // 第二行：标签（称号 · 序号）
             HStack(spacing: Spacing.sm) {
-                // 称号标签
-                TagView(text: authService.currentProfile?.poetTitle ?? poemManager.currentPoetTitle.displayName)
+                // 称号标签（始终使用客户端计算，不依赖数据库）
+                TagView(text: currentPoetTitle)
                 
                 // 序号标签
                 TagView(text: "第 \(userNumber) 位山海诗人")
@@ -577,6 +577,20 @@ struct ProfileView: View {
                 MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)
             }
         }
+    }
+    
+    /// 当前诗人称号（始终使用客户端本地计算，不依赖数据库）
+    private var currentPoetTitle: String {
+        let poemCount: Int
+        if authService.isAuthenticated, let profile = authService.currentProfile {
+            // 已登录：使用后端的诗歌总数
+            poemCount = profile.totalPoems
+        } else {
+            // 未登录：使用本地诗歌总数
+            poemCount = poemManager.myStats.totalPoems
+        }
+        // 客户端计算称号（与 PoetTitle.swift 保持一致）
+        return PoetTitle.title(forPoemCount: poemCount).displayName
     }
 }
 
