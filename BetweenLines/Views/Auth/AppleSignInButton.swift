@@ -65,10 +65,15 @@ class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate {
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        print("✅ [DEBUG] Coordinator: 收到授权成功回调")
         onCompletion(.success(authorization))
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        print("❌ [DEBUG] Coordinator: 收到授权失败回调")
+        let nsError = error as NSError
+        print("❌ [DEBUG] Coordinator: Error domain: \(nsError.domain)")
+        print("❌ [DEBUG] Coordinator: Error code: \(nsError.code)")
         onCompletion(.failure(error))
     }
 }

@@ -110,20 +110,31 @@ struct LoginView: View {
     // MARK: - Handle Apple Sign In
     
     private func handleAppleSignIn(_ result: Result<ASAuthorization, Error>) {
+        print("🍎 [DEBUG] ===== Apple Sign In 回调触发 =====")
+        
         switch result {
         case .success(let authorization):
+            print("✅ [DEBUG] ASAuthorization 成功")
+            
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+                print("❌ [DEBUG] 无法转换为 ASAuthorizationAppleIDCredential")
                 errorHandler.handle(SupabaseError.unknown("无法获取 Apple 登录凭证"))
                 return
             }
+            
+            print("✅ [DEBUG] 获取到 credential")
+            print("🆔 [DEBUG] user: \(credential.user)")
+            print("📧 [DEBUG] email: \(String(describing: credential.email))")
+            print("👤 [DEBUG] fullName: \(String(describing: credential.fullName))")
+            print("🔑 [DEBUG] identityToken: \(credential.identityToken != nil ? "存在" : "不存在")")
             
             isLoading = true
             
             Task {
                 do {
-                    print("🍎 开始 Apple 登录...")
+                    print("🍎 [DEBUG] 开始调用 authService.signInWithApple...")
                     try await authService.signInWithApple(credential: credential)
-                    print("✅ Apple 登录成功！用户：\(authService.currentProfile?.username ?? "未知")")
+                    print("✅ [DEBUG] Apple 登录成功！用户：\(authService.currentProfile?.username ?? "未知")")
                     
                     // 延迟一点点，让用户看到"登录中"的反馈
                     try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
@@ -143,12 +154,19 @@ struct LoginView: View {
             }
             
         case .failure(let error):
+            print("❌ [DEBUG] ===== Apple Sign In 失败 =====")
+            let nsError = error as NSError
+            print("❌ [DEBUG] Error domain: \(nsError.domain)")
+            print("❌ [DEBUG] Error code: \(nsError.code)")
+            print("❌ [DEBUG] Error description: \(error.localizedDescription)")
+            print("❌ [DEBUG] Error userInfo: \(nsError.userInfo)")
+            
             // 用户取消登录不显示错误
-            if (error as NSError).code != 1001 {
-                print("❌ Apple 授权失败：\(error.localizedDescription)")
+            if nsError.code != 1001 {
+                print("❌ [DEBUG] 显示错误给用户")
                 errorHandler.handle(error)
             } else {
-                print("ℹ️ 用户取消了 Apple 登录")
+                print("ℹ️ [DEBUG] 用户取消了登录（Code 1001），不显示错误")
             }
         }
     }
