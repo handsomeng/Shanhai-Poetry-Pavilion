@@ -105,7 +105,8 @@ class SupabaseHTTPClient {
                 }
                 
                 let decoder = JSONDecoder()
-                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                // 不使用 convertFromSnakeCase，因为我们在模型中手动定义了 CodingKeys
+                // decoder.keyDecodingStrategy = .convertFromSnakeCase
                 return try decoder.decode(T.self, from: data)
             } catch {
                 print("❌ [DEBUG] 解码失败: \(error)")
