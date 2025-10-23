@@ -29,25 +29,19 @@ struct ExploreView: View {
                     // 图标
                     Image(systemName: "sparkles")
                         .font(.system(size: 80))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Colors.primaryGreen, Colors.accentBlue],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundColor(Colors.textInk)
                         .scaleEffect(showThanksAnimation ? 1.2 : 1.0)
                         .animation(.spring(response: 0.6, dampingFraction: 0.5), value: showThanksAnimation)
                     
                     VStack(spacing: 16) {
                         // 标题
                         Text("诗歌广场")
-                            .font(Fonts.title())
-                            .foregroundColor(Colors.textPrimary)
+                            .font(Fonts.h1())
+                            .foregroundColor(Colors.textInk)
                         
                         // 副标题
                         Text("建设中...")
-                            .font(Fonts.headline())
+                            .font(Fonts.h2Small())
                             .foregroundColor(Colors.textSecondary)
                     }
                     
@@ -88,20 +82,14 @@ struct ExploreView: View {
                                 Image(systemName: "hand.raised.fill")
                                     .font(.system(size: 18))
                                 Text("我想要这个功能")
-                                    .font(Fonts.button())
+                                    .font(Fonts.body())
                             }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(
-                                LinearGradient(
-                                    colors: [Colors.primaryGreen, Colors.accentBlue],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .background(Colors.textInk)
                             .cornerRadius(16)
-                            .shadow(color: Colors.primaryGreen.opacity(0.3), radius: 8, y: 4)
+                            .shadow(color: Colors.textInk.opacity(0.3), radius: 8, y: 4)
                         }
                         .padding(.horizontal, 32)
                     } else {
@@ -109,9 +97,9 @@ struct ExploreView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 18))
-                                .foregroundColor(Colors.primaryGreen)
+                                .foregroundColor(Colors.textInk)
                             Text("感谢您的反馈")
-                                .font(Fonts.button())
+                                .font(Fonts.body())
                                 .foregroundColor(Colors.textSecondary)
                         }
                         .frame(maxWidth: .infinity)
@@ -120,7 +108,7 @@ struct ExploreView: View {
                         .cornerRadius(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(Colors.primaryGreen.opacity(0.3), lineWidth: 2)
+                                .stroke(Colors.textSecondary.opacity(0.3), lineWidth: 2)
                         )
                         .padding(.horizontal, 32)
                     }
@@ -139,8 +127,8 @@ struct ExploreView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("赏诗")
-                        .font(Fonts.headline())
-                        .foregroundColor(Colors.textPrimary)
+                        .font(Fonts.h2Small())
+                        .foregroundColor(Colors.textInk)
                 }
             }
         }
@@ -153,7 +141,7 @@ struct ExploreView: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 16))
-                .foregroundColor(Colors.primaryGreen)
+                .foregroundColor(Colors.textInk)
                 .frame(width: 20)
             
             Text(text)
