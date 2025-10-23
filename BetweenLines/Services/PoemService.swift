@@ -136,7 +136,7 @@ class PoemService: ObservableObject {
         authorId: String,
         title: String,
         content: String,
-        style: String,
+        writingMode: String? = nil,  // 修改：使用 writingMode 代替 style
         tags: [String]? = nil
     ) async throws -> RemotePoem {
         
@@ -144,9 +144,9 @@ class PoemService: ObservableObject {
             authorId: authorId,
             title: title,
             content: content,
-            style: style,
-            isPublished: true,  // 修改：使用 isPublished 代替 isPublic
-            isDraft: false,     // 新增：发布时不是草稿
+            writingMode: writingMode,   // 修改：使用 writingMode 代替 style
+            isPublished: true,           // 修改：使用 isPublished 代替 isPublic
+            isDraft: false,              // 新增：发布时不是草稿
             tags: tags
         )
         
@@ -168,7 +168,7 @@ class PoemService: ObservableObject {
         authorId: String,
         title: String,
         content: String,
-        style: String,
+        writingMode: String? = nil,  // 修改：使用 writingMode 代替 style
         tags: [String]? = nil
     ) async throws -> RemotePoem {
         
@@ -176,9 +176,9 @@ class PoemService: ObservableObject {
             authorId: authorId,
             title: title,
             content: content,
-            style: style,
-            isPublished: false,  // 修改：使用 isPublished 代替 isPublic
-            isDraft: true,       // 新增：草稿
+            writingMode: writingMode,   // 修改：使用 writingMode 代替 style
+            isPublished: false,          // 修改：使用 isPublished 代替 isPublic
+            isDraft: true,               // 新增：草稿
             tags: tags
         )
         

@@ -67,6 +67,7 @@ struct PoemSuccessView: View {
         .sheet(isPresented: $showAIComment) {
             AICommentSheet(comment: aiComment, isLoading: isLoadingAI)
         }
+        .withToast()  // 添加Toast支持，确保Toast显示在最顶层
     }
     
     // MARK: - Action Buttons
@@ -320,7 +321,7 @@ struct PoemSuccessView: View {
                     authorId: userId,
                     title: poem.title.isEmpty ? "无标题" : poem.title,
                     content: poem.content,
-                    style: "modern"
+                    writingMode: poem.writingMode.rawValue  // 修改：使用 writingMode
                 )
                 
                 print("✅ [PoemSuccessView] 发布成功！诗歌ID: \(publishedPoem.id)")

@@ -340,7 +340,7 @@ struct MyPoemDetailView: View {
                     authorId: userId,
                     title: poem.title,
                     content: poem.content,
-                    style: "modern"
+                    writingMode: poem.writingMode.rawValue
                 )
                 
                 await MainActor.run {

@@ -15,9 +15,9 @@ struct RemotePoem: Codable, Identifiable {
     let authorId: String
     let title: String
     let content: String
-    let style: String
-    let isPublished: Bool  // 修改：匹配数据库字段 is_published
-    var isDraft: Bool      // 新增：匹配数据库字段 is_draft
+    let writingMode: String?  // 修改：匹配数据库字段 writing_mode
+    let isPublished: Bool     // 修改：匹配数据库字段 is_published
+    var isDraft: Bool         // 新增：匹配数据库字段 is_draft
     var tags: [String]?
     var likeCount: Int
     var commentCount: Int
@@ -29,7 +29,7 @@ struct RemotePoem: Codable, Identifiable {
         case authorId = "author_id"
         case title
         case content
-        case style
+        case writingMode = "writing_mode"  // 修改：从 style 改为 writing_mode
         case isPublished = "is_published"  // 修改：从 is_public 改为 is_published
         case isDraft = "is_draft"          // 新增
         case tags
@@ -48,7 +48,7 @@ struct SquarePoem: Codable, Identifiable {
     let authorPoetTitle: String
     let title: String
     let content: String
-    let style: String
+    let writingMode: String?  // 修改：匹配数据库字段 writing_mode
     var tags: [String]?
     var likeCount: Int
     var commentCount: Int
@@ -61,7 +61,7 @@ struct SquarePoem: Codable, Identifiable {
         case authorPoetTitle = "author_poet_title"
         case title
         case content
-        case style
+        case writingMode = "writing_mode"  // 修改：从 style 改为 writing_mode
         case tags
         case likeCount = "like_count"
         case commentCount = "comment_count"
@@ -76,16 +76,16 @@ struct CreatePoemRequest: Codable {
     let authorId: String
     let title: String
     let content: String
-    let style: String
-    let isPublished: Bool  // 修改：匹配数据库字段 is_published
-    let isDraft: Bool      // 新增：匹配数据库字段 is_draft
+    let writingMode: String?  // 修改：匹配数据库字段 writing_mode
+    let isPublished: Bool     // 修改：匹配数据库字段 is_published
+    let isDraft: Bool         // 新增：匹配数据库字段 is_draft
     var tags: [String]?
     
     enum CodingKeys: String, CodingKey {
         case authorId = "author_id"
         case title
         case content
-        case style
+        case writingMode = "writing_mode"  // 修改：从 style 改为 writing_mode
         case isPublished = "is_published"  // 修改：从 is_public 改为 is_published
         case isDraft = "is_draft"          // 新增
         case tags
@@ -96,15 +96,15 @@ struct CreatePoemRequest: Codable {
 struct UpdatePoemRequest: Codable {
     var title: String?
     var content: String?
-    var style: String?
-    var isPublished: Bool?  // 修改：匹配数据库字段 is_published
-    var isDraft: Bool?      // 新增：匹配数据库字段 is_draft
+    var writingMode: String?  // 修改：匹配数据库字段 writing_mode
+    var isPublished: Bool?    // 修改：匹配数据库字段 is_published
+    var isDraft: Bool?        // 新增：匹配数据库字段 is_draft
     var tags: [String]?
     
     enum CodingKeys: String, CodingKey {
         case title
         case content
-        case style
+        case writingMode = "writing_mode"  // 修改：从 style 改为 writing_mode
         case isPublished = "is_published"  // 修改：从 is_public 改为 is_published
         case isDraft = "is_draft"          // 新增
         case tags

@@ -302,7 +302,7 @@ struct MimicWritingView: View {
                         authorId: userId,
                         title: title.isEmpty ? "无标题" : title,
                         content: content,
-                        style: "modern"
+                        writingMode: "mimic"
                     )
                     await MainActor.run {
                         dismiss()
