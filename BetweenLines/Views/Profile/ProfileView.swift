@@ -36,6 +36,23 @@ struct ProfileView: View {
         case published = "已发布"
     }
     
+    // 显示的用户名（优先使用本地笔名）
+    private var displayUsername: String {
+        if authService.isAuthenticated {
+            // 如果云端用户名是默认格式（诗人+数字），优先使用本地笔名
+            let cloudUsername = authService.currentProfile?.username ?? ""
+            let localPenName = UserDefaults.standard.string(forKey: "penName") ?? ""
+            
+            if cloudUsername.hasPrefix("诗人") && !localPenName.isEmpty {
+                return localPenName
+            } else {
+                return cloudUsername.isEmpty ? poemManager.currentUserName : cloudUsername
+            }
+        } else {
+            return poemManager.currentUserName
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -191,7 +208,8 @@ struct ProfileView: View {
                         .font(Fonts.h2Small())
                         .foregroundColor(Colors.textSecondary)
                     
-                    Text(String((authService.currentProfile?.username ?? poemManager.currentUserName).prefix(7)))
+                    // 优先显示本地笔名，如果没有或是默认格式才显示云端用户名
+                    Text(String(displayUsername.prefix(7)))
                         .font(Fonts.h2Small())
                         .foregroundColor(Colors.textInk)
                     

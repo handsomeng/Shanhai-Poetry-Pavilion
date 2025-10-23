@@ -93,13 +93,16 @@ struct LandingView: View {
         }
         .alert("登录云端账号", isPresented: $showLoginInvitation) {
             Button("立即登录", role: nil) {
-                showLoginSheet = true
+                // 给一个小延迟，确保 UI 准备好
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showLoginSheet = true
+                }
             }
             Button("稍后再说", role: .cancel) {
                 completeOnboarding()
             }
         } message: {
-            Text("登录后可以将作品发布到广场，与其他诗友交流，还能云端保存你的创作")
+            Text("登录后可以将作品发布到广场，与其他诗友交流，还能云端保存你的创作\n\n提示：请确保网络连接正常")
         }
         .sheet(isPresented: $showLoginSheet) {
             LoginView()

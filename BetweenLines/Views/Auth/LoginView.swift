@@ -8,6 +8,32 @@
 import SwiftUI
 import AuthenticationServices
 
+// MARK: - Timeout Helper
+
+struct TimeoutError: Error {}
+
+func withTimeout<T>(seconds: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+    try await withThrowingTaskGroup(of: T.self) { group in
+        // 添加实际操作
+        group.addTask {
+            try await operation()
+        }
+        
+        // 添加超时任务
+        group.addTask {
+            try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            throw TimeoutError()
+        }
+        
+        // 返回第一个完成的任务结果
+        let result = try await group.next()!
+        group.cancelAll()
+        return result
+    }
+}
+
+// MARK: - Login View
+
 struct LoginView: View {
     
     @StateObject private var authService = AuthService.shared
@@ -133,7 +159,12 @@ struct LoginView: View {
             Task {
                 do {
                     print("🍎 [DEBUG] 开始调用 authService.signInWithApple...")
-                    try await authService.signInWithApple(credential: credential)
+                    
+                    // 添加超时机制（15秒）
+                    try await withTimeout(seconds: 15) {
+                        try await authService.signInWithApple(credential: credential)
+                    }
+                    
                     print("✅ [DEBUG] Apple 登录成功！用户：\(authService.currentProfile?.username ?? "未知")")
                     
                     // 延迟一点点，让用户看到"登录中"的反馈
@@ -144,10 +175,23 @@ struct LoginView: View {
                         print("🚪 准备关闭登录界面...")
                         dismiss()
                     }
+                } catch is TimeoutError {
+                    print("❌ 登录超时")
+                    await MainActor.run {
+                        errorHandler.handle(SupabaseError.unknown("登录超时，请检查网络连接后重试"))
+                        isLoading = false
+                    }
                 } catch {
                     print("❌ Apple 登录失败：\(error.localizedDescription)")
                     await MainActor.run {
-                        errorHandler.handle(error)
+                        // 如果是网络错误，给出更友好的提示
+                        if error.localizedDescription.contains("network") || 
+                           error.localizedDescription.contains("Internet") ||
+                           error.localizedDescription.contains("connection") {
+                            errorHandler.handle(SupabaseError.unknown("网络连接失败，请检查网络后重试"))
+                        } else {
+                            errorHandler.handle(error)
+                        }
                         isLoading = false
                     }
                 }
