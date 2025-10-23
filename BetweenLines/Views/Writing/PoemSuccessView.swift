@@ -252,7 +252,7 @@ struct PoemSuccessView: View {
         }
         
         isPublishing = true
-        ToastManager.shared.show("正在提交审核...", type: .info)
+        ToastManager.shared.showInfo("正在提交审核...")
         
         Task {
             do {
