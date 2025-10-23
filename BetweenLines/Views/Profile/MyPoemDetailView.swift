@@ -158,9 +158,9 @@ struct MyPoemDetailView: View {
                 // 诗集：显示3个按钮
                 HStack(spacing: Spacing.md) {
                     // 编辑
-                    Button(action: {
+                    Button {
                         isEditing = true
-                    }) {
+                    } label: {
                         HStack {
                             Image(systemName: "pencil")
                             Text("编辑")
