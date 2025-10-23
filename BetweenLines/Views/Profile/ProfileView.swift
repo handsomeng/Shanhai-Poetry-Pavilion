@@ -349,7 +349,7 @@ struct ProfileView: View {
                                 .font(Fonts.bodyRegular())
                                 .foregroundColor(Colors.textInk)
                             
-                            Text("解锁全部高级功能")
+                            Text("免费试用 7 天，随时可退款")
                                 .font(.system(size: 12))
                                 .foregroundColor(Colors.textSecondary)
                         }

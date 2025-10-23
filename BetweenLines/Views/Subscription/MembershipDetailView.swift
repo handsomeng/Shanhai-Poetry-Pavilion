@@ -79,7 +79,7 @@ struct MembershipDetailView: View {
                             .foregroundColor(Colors.textSecondary)
                     }
                     
-                    Text("自动续费已开启")
+                    Text("7 天试用期内可随时退款")
                         .font(Fonts.caption())
                         .foregroundColor(Colors.textTertiary)
                 }
@@ -149,21 +149,21 @@ struct MembershipDetailView: View {
             
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 InfoRow(
+                    icon: "gift",
+                    title: "免费试用",
+                    description: "前 7 天免费，试用期内可随时退款"
+                )
+                
+                InfoRow(
                     icon: "arrow.triangle.2.circlepath",
                     title: "自动续费",
-                    description: "订阅将在到期前自动续费"
+                    description: "试用结束后自动续费，可随时取消"
                 )
                 
                 InfoRow(
                     icon: "xmark.circle",
                     title: "取消订阅",
                     description: "可在 App Store 订阅管理中取消"
-                )
-                
-                InfoRow(
-                    icon: "dollarsign.circle",
-                    title: "退款政策",
-                    description: "订阅后立即生效，无法退款"
                 )
                 
                 // 管理订阅按钮

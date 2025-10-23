@@ -96,11 +96,11 @@ struct SubscriptionView: View {
                 .font(.system(size: 48))
                 .foregroundColor(Colors.accentTeal)
             
-            Text("解锁全部高级功能")
+            Text("免费试用 7 天")
                 .font(Fonts.h2())
                 .foregroundColor(Colors.textInk)
             
-            Text("让诗歌创作更有灵感")
+            Text("解锁全部高级功能，随时可退款")
                 .font(Fonts.bodyRegular())
                 .foregroundColor(Colors.textSecondary)
         }
@@ -166,7 +166,7 @@ struct SubscriptionView: View {
                     Image(systemName: "crown.fill")
                 }
                 
-                Text(isPurchasing ? "购买中..." : "立即订阅")
+                Text(isPurchasing ? "处理中..." : "开始免费试用")
             }
             .font(Fonts.bodyLarge())
             .foregroundColor(.white)
@@ -206,8 +206,8 @@ struct SubscriptionView: View {
     
     private var disclaimer: some View {
         VStack(spacing: Spacing.xs) {
-            Text("• 订阅将自动续费，可随时在设置中取消")
-            Text("• 订阅后立即生效，无法退款")
+            Text("• 前 7 天免费试用，试用期内随时可退款")
+            Text("• 试用结束后自动续费，可随时在设置中取消")
             Text("• 更多详情请查看用户协议和隐私政策")
         }
         .font(.system(size: 10))
