@@ -31,24 +31,26 @@ struct AuthUser: Codable {
 struct UserProfile: Codable, Identifiable {
     let id: String
     let username: String
-    let email: String
+    var displayName: String?
     var avatarUrl: String?
     var bio: String?
     var poetTitle: String
     var totalPoems: Int
     var totalLikes: Int
+    var isPremium: Bool
     var createdAt: String
     var updatedAt: String
     
     enum CodingKeys: String, CodingKey {
         case id
         case username
-        case email
+        case displayName = "display_name"
         case avatarUrl = "avatar_url"
         case bio
         case poetTitle = "poet_title"
         case totalPoems = "total_poems"
-        case totalLikes = "total_likes"
+        case totalLikes = "total_likes_received"
+        case isPremium = "is_premium"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }
@@ -72,12 +74,12 @@ struct SignInRequest: Codable {
 struct CreateProfileRequest: Codable {
     let id: String
     let username: String
-    let email: String
+    let displayName: String?
     
     enum CodingKeys: String, CodingKey {
         case id
         case username
-        case email
+        case displayName = "display_name"
     }
 }
 

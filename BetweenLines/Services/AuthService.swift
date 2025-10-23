@@ -140,22 +140,30 @@ class AuthService: ObservableObject {
         } else {
             // 首次登录，创建用户资料
             let username: String
+            let displayName: String?
+            
             if let fullName = credential.fullName {
                 // 使用 Apple 提供的姓名
                 let givenName = fullName.givenName ?? ""
                 let familyName = fullName.familyName ?? ""
-                username = (familyName + givenName).isEmpty ? "诗人\(String(userId.prefix(6)))" : (familyName + givenName)
+                
+                if !givenName.isEmpty || !familyName.isEmpty {
+                    username = "诗人\(String(userId.prefix(6)))"
+                    displayName = (familyName + givenName)
+                } else {
+                    username = "诗人\(String(userId.prefix(6)))"
+                    displayName = nil
+                }
             } else {
                 // 使用默认用户名
                 username = "诗人\(String(userId.prefix(6)))"
+                displayName = nil
             }
-            
-            let email = credential.email ?? "\(userId)@privaterelay.appleid.com"
             
             let profileRequest = CreateProfileRequest(
                 id: response.user.id,
                 username: username,
-                email: email
+                displayName: displayName
             )
             
             let profile: UserProfile = try await client.request(
