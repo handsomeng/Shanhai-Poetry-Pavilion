@@ -451,42 +451,75 @@ struct ProfileView: View {
     // MARK: - Poems List
     
     private var poemsListSection: some View {
-        ScrollView {
-            LazyVStack(spacing: Spacing.md) {
-                ForEach(currentPoems) { poem in
-                    NavigationLink(destination: destinationView(for: poem)) {
-                        if selectedTab == .published {
-                            PublishedPoemCard(poem: poem)
-                        } else {
-                            MyPoemCard(
-                                poem: poem,
-                                onDelete: {
+        Group {
+            if selectedTab == .published {
+                // V1版本：广场建设中
+                publishedPlaceholderView
+            } else {
+                // 诗集和草稿正常显示
+                ScrollView {
+                    LazyVStack(spacing: Spacing.md) {
+                        ForEach(currentPoems) { poem in
+                            NavigationLink(destination: destinationView(for: poem)) {
+                                MyPoemCard(
+                                    poem: poem,
+                                    onDelete: {
+                                        poemToDelete = poem
+                                        showingDeleteAlert = true
+                                    }
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
                                     poemToDelete = poem
                                     showingDeleteAlert = true
+                                } label: {
+                                    Label("删除", systemImage: "trash")
                                 }
-                            )
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        if selectedTab != .published {
-                            Button(role: .destructive) {
-                                poemToDelete = poem
-                                showingDeleteAlert = true
-                            } label: {
-                                Label("删除", systemImage: "trash")
                             }
                         }
+                        
+                        if currentPoems.isEmpty {
+                            emptyStateView
+                        }
                     }
-                }
-                
-                if currentPoems.isEmpty {
-                    emptyStateView
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.md)
                 }
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
         }
+    }
+    
+    // V1版本：已发布占位视图
+    private var publishedPlaceholderView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            Image(systemName: "square.and.arrow.up")
+                .font(.system(size: 60))
+                .foregroundColor(Colors.textInk)
+            
+            VStack(spacing: 12) {
+                Text("诗歌广场")
+                    .font(Fonts.h2())
+                    .foregroundColor(Colors.textInk)
+                
+                Text("建设中...")
+                    .font(Fonts.body())
+                    .foregroundColor(Colors.textSecondary)
+            }
+            
+            Text("您可以先将诗歌保存到【诗集】\n待广场开放后再发布")
+                .font(Fonts.body())
+                .foregroundColor(Colors.textTertiary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 8)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, Spacing.lg)
     }
     
     private var emptyStateView: some View {
