@@ -99,10 +99,19 @@ class SupabaseHTTPClient {
             
             // 解析响应
             do {
+                // 打印原始响应数据（用于调试）
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("🔍 [DEBUG] 原始响应: \(jsonString)")
+                }
+                
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 return try decoder.decode(T.self, from: data)
             } catch {
+                print("❌ [DEBUG] 解码失败: \(error)")
+                if let decodingError = error as? DecodingError {
+                    print("❌ [DEBUG] 详细错误: \(decodingError)")
+                }
                 throw SupabaseError.decodingError(error)
             }
             
