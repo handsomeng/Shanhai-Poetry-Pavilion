@@ -20,6 +20,23 @@ enum PoemPublishError: LocalizedError {
     }
 }
 
+/// iCloud 同步状态
+enum iCloudSyncStatus {
+    case idle           // 空闲
+    case syncing        // 同步中
+    case synced         // 已同步
+    case failed(String) // 同步失败
+    
+    var description: String {
+        switch self {
+        case .idle: return "待同步"
+        case .syncing: return "同步中..."
+        case .synced: return "已同步"
+        case .failed(let error): return "同步失败: \(error)"
+        }
+    }
+}
+
 /// 诗歌管理器（单例模式）
 class PoemManager: ObservableObject {
     
@@ -32,6 +49,9 @@ class PoemManager: ObservableObject {
     
     /// 当前用户的笔名
     @Published var currentUserName: String = ""
+    
+    /// iCloud 同步状态
+    @Published private(set) var syncStatus: iCloudSyncStatus = .idle
     
     // MARK: - 私有属性
     
@@ -49,6 +69,7 @@ class PoemManager: ObservableObject {
         loadCurrentUserName()
         loadPublicPoems()
         observePenNameChanges()
+        observeiCloudChanges()
     }
     
     // MARK: - 计算属性（新逻辑）
@@ -269,24 +290,75 @@ class PoemManager: ObservableObject {
         allPoems.first { $0.id == id }
     }
     
-    // MARK: - 本地存储
+    // MARK: - 本地存储 + iCloud 同步
     
-    /// 保存到本地
+    /// 保存到本地和 iCloud
     private func savePoems() {
         // 只保存当前用户的诗歌
         let myPoems = allPoems.filter { $0.authorName == currentUserName }
         
-        if let encoded = try? JSONEncoder().encode(myPoems) {
-            UserDefaults.standard.set(encoded, forKey: poemsKey)
+        guard let encoded = try? JSONEncoder().encode(myPoems) else {
+            print("❌ [PoemManager] 诗歌编码失败")
+            DispatchQueue.main.async { [weak self] in
+                self?.syncStatus = .failed("编码失败")
+            }
+            return
+        }
+        
+        // 1. 保存到本地 UserDefaults（快速访问）
+        UserDefaults.standard.set(encoded, forKey: poemsKey)
+        
+        // 2. 同步到 iCloud（自动备份 + 跨设备同步）
+        DispatchQueue.main.async { [weak self] in
+            self?.syncStatus = .syncing
+        }
+        
+        let iCloudStore = NSUbiquitousKeyValueStore.default
+        iCloudStore.set(encoded, forKey: poemsKey)
+        
+        // 立即同步到 iCloud
+        let synced = iCloudStore.synchronize()
+        
+        DispatchQueue.main.async { [weak self] in
+            if synced {
+                self?.syncStatus = .synced
+                print("☁️ [PoemManager] 已同步到 iCloud (\(myPoems.count) 首诗)")
+            } else {
+                self?.syncStatus = .idle
+                print("⚠️ [PoemManager] iCloud 同步可能延迟")
+            }
         }
     }
     
-    /// 从本地加载
+    /// 从 iCloud 或本地加载（优先 iCloud）
     private func loadPoems() {
-        if let data = UserDefaults.standard.data(forKey: poemsKey),
-           let decoded = try? JSONDecoder().decode([Poem].self, from: data) {
+        let iCloudStore = NSUbiquitousKeyValueStore.default
+        
+        // 1. 优先从 iCloud 加载（最新数据）
+        if let iCloudData = iCloudStore.data(forKey: poemsKey),
+           let decoded = try? JSONDecoder().decode([Poem].self, from: iCloudData) {
             allPoems = decoded
+            print("☁️ [PoemManager] 已从 iCloud 加载 \(decoded.count) 首诗")
+            
+            // 同步到本地（提高下次加载速度）
+            UserDefaults.standard.set(iCloudData, forKey: poemsKey)
+            return
         }
+        
+        // 2. 如果 iCloud 无数据，回退到本地
+        if let localData = UserDefaults.standard.data(forKey: poemsKey),
+           let decoded = try? JSONDecoder().decode([Poem].self, from: localData) {
+            allPoems = decoded
+            print("💾 [PoemManager] 已从本地加载 \(decoded.count) 首诗")
+            
+            // 上传到 iCloud（首次同步）
+            iCloudStore.set(localData, forKey: poemsKey)
+            iCloudStore.synchronize()
+            print("☁️ [PoemManager] 已将本地数据上传到 iCloud")
+            return
+        }
+        
+        print("📝 [PoemManager] 无数据，全新开始")
     }
     
     /// 加载当前用户名
@@ -327,6 +399,61 @@ class PoemManager: ObservableObject {
         if updated {
             savePoems()
             print("✅ [PoemManager] 已更新 \(allPoems.count) 首诗歌的作者名")
+        }
+    }
+    
+    /// 监听 iCloud 变化（其他设备的更新）
+    private func observeiCloudChanges() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleiCloudStoreChange),
+            name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: NSUbiquitousKeyValueStore.default
+        )
+        
+        print("☁️ [PoemManager] 已启动 iCloud 变化监听")
+    }
+    
+    /// 处理 iCloud 数据变化
+    @objc private func handleiCloudStoreChange(notification: Notification) {
+        print("☁️ [PoemManager] 检测到 iCloud 数据变化")
+        
+        guard let userInfo = notification.userInfo,
+              let changeReason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int else {
+            return
+        }
+        
+        // 变化原因
+        let reason: String
+        switch changeReason {
+        case NSUbiquitousKeyValueStoreServerChange:
+            reason = "服务器同步"
+        case NSUbiquitousKeyValueStoreInitialSyncChange:
+            reason = "初始同步"
+        case NSUbiquitousKeyValueStoreQuotaViolationChange:
+            reason = "存储配额超限"
+            print("⚠️ [PoemManager] iCloud 存储空间不足")
+        case NSUbiquitousKeyValueStoreAccountChange:
+            reason = "账号变更"
+        default:
+            reason = "未知原因"
+        }
+        
+        print("☁️ [PoemManager] 变化原因: \(reason)")
+        
+        // 重新加载数据
+        let iCloudStore = NSUbiquitousKeyValueStore.default
+        if let iCloudData = iCloudStore.data(forKey: poemsKey),
+           let decoded = try? JSONDecoder().decode([Poem].self, from: iCloudData) {
+            
+            // 更新数据
+            DispatchQueue.main.async { [weak self] in
+                self?.allPoems = decoded
+                print("✅ [PoemManager] 已从 iCloud 更新 \(decoded.count) 首诗")
+                
+                // 同步到本地
+                UserDefaults.standard.set(iCloudData, forKey: self?.poemsKey ?? "saved_poems")
+            }
         }
     }
     
