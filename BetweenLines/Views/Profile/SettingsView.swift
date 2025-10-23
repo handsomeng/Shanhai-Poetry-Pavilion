@@ -21,10 +21,10 @@ struct SettingsView: View {
                 Colors.backgroundCream.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: Spacing.xxl) {
-                        // 顶部留白
+                    VStack(spacing: Spacing.lg) {
+                        // 顶部留白（减少）
                         Spacer()
-                            .frame(height: Spacing.lg)
+                            .frame(height: Spacing.sm)
                         
                         // 个人设置区域
                         settingsSection(title: "个人信息") {
@@ -49,10 +49,58 @@ struct SettingsView: View {
                             }
                         }
                         
-                        // 关于区域
+                        // 关于区域（直接显示内容）
                         settingsSection(title: "关于") {
-                            NavigationLink(destination: AboutView()) {
-                                navigationRow(label: "关于山海诗馆")
+                            VStack(spacing: 0) {
+                                infoRow(label: "应用名称", value: "山海诗馆")
+                                
+                                Divider()
+                                    .padding(.horizontal, Spacing.md)
+                                
+                                infoRow(label: "版本", value: "v1.0.0")
+                                
+                                Divider()
+                                    .padding(.horizontal, Spacing.md)
+                                
+                                // 开发者（可点击）
+                                Button(action: {
+                                    if let url = URL(string: "https://www.handsomeng.com") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }) {
+                                    HStack {
+                                        Text("开发者")
+                                            .font(Fonts.bodyRegular())
+                                            .foregroundColor(Colors.textSecondary)
+                                        Spacer()
+                                        Text("HandsomeMeng")
+                                            .font(Fonts.bodyRegular())
+                                            .foregroundColor(Colors.accentTeal)
+                                        Image(systemName: "arrow.up.right.square")
+                                            .font(.system(size: 12, weight: .light))
+                                            .foregroundColor(Colors.accentTeal)
+                                    }
+                                    .padding(.vertical, Spacing.md)
+                                    .padding(.horizontal, Spacing.md)
+                                }
+                                
+                                Divider()
+                                    .padding(.horizontal, Spacing.md)
+                                
+                                // 特别感谢
+                                VStack(alignment: .leading, spacing: Spacing.sm) {
+                                    Text("特别感谢")
+                                        .font(Fonts.bodyRegular())
+                                        .foregroundColor(Colors.textSecondary)
+                                    
+                                    Text("Cursor、Claude、DeepSeek 和所有山海诗馆的诗人们")
+                                        .font(.system(size: 13, weight: .light))
+                                        .foregroundColor(Colors.textInk)
+                                        .lineSpacing(4)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, Spacing.md)
+                                .padding(.horizontal, Spacing.md)
                             }
                         }
                         
@@ -98,8 +146,9 @@ struct SettingsView: View {
                             }
                         }
                         
+                        // 底部留白（减少）
                         Spacer()
-                            .frame(height: Spacing.xxl)
+                            .frame(height: Spacing.lg)
                     }
                     .padding(.horizontal, Spacing.lg)
                 }
@@ -158,7 +207,7 @@ struct SettingsView: View {
         title: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.lg) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             Text(title.uppercased())
                 .font(.system(size: 13, weight: .light))
                 .foregroundColor(Colors.textSecondary)
