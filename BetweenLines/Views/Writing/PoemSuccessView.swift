@@ -196,8 +196,8 @@ struct PoemSuccessView: View {
             do {
                 guard let userId = authService.currentUser?.id else { return }
                 
-                // 提交审核（同步）
-                let result = try await poemService.publishPoem(
+                // 发布到云端
+                _ = try await poemService.publishPoem(
                     authorId: userId,
                     title: poem.title.isEmpty ? "无标题" : poem.title,
                     content: poem.content,
@@ -207,58 +207,22 @@ struct PoemSuccessView: View {
                 await MainActor.run {
                     isPublishing = false
                     
-                    if result.approved {
-                        ToastManager.shared.showSuccess("审核通过，已发布到广场")
-                    } else {
-                        ToastManager.shared.showError("审核未通过：\(result.reason ?? "内容不符合规范")")
-                    }
+                    // 更新本地状态为审核中
+                    var updatedPoem = poem
+                    updatedPoem.auditStatus = .pending
+                    updatedPoem.inSquare = false
+                    PoemManager.shared.updatePoem(updatedPoem)
                     
-                    // 等待Toast显示后关闭
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        dismiss()
-                    }
+                    // 提示用户
+                    ToastManager.shared.showSuccess("已提交审核，请耐心等待")
+                    
+                    // 关闭成功页面
+                    dismiss()
                 }
             } catch {
                 await MainActor.run {
                     isPublishing = false
-                    ErrorHandler.shared.handle(error)
-                }
-            }
-        }
-    }
-}
-
-// MARK: - AI Comment Sheet
-
-struct AICommentSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    let comment: String
-    let isLoading: Bool
-    
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Colors.backgroundCream
-                    .ignoresSafeArea()
-                
-                if isLoading {
-                    ProgressView("AI 点评中...")
-                } else {
-                    ScrollView {
-                        Text(comment)
-                            .font(Fonts.bodyRegular())
-                            .foregroundColor(Colors.textInk)
-                            .padding(Spacing.lg)
-                    }
-                }
-            }
-            .navigationTitle("AI 点评")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
-                        dismiss()
-                    }
+                    ToastManager.shared.showError("发布失败：\(error.localizedDescription)")
                 }
             }
         }
@@ -273,4 +237,5 @@ struct AICommentSheet: View {
         poemImage: UIImage(systemName: "photo")!
     )
 }
+
 
