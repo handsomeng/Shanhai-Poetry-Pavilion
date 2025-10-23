@@ -39,12 +39,16 @@ class PoemManager: ObservableObject {
     private let poemsKey = "saved_poems"
     private let publicPoemsKey = "public_poems"
     
+    /// 用于监听笔名变化
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - 初始化
     
     private init() {
         loadPoems()
         loadCurrentUserName()
         loadPublicPoems()
+        observePenNameChanges()
     }
     
     // MARK: - 计算属性（新逻辑）
@@ -115,7 +119,8 @@ class PoemManager: ObservableObject {
             existingPoem.id != poem.id && // 不是同一首诗
             existingPoem.title == poem.title && // 标题相同
             existingPoem.content == poem.content && // 内容相同
-            existingPoem.inMyCollection // 已在诗集中
+            existingPoem.inMyCollection && // 已在诗集中
+            existingPoem.authorName == currentUserName // 同一作者
         }
         
         if isDuplicate {
@@ -289,13 +294,57 @@ class PoemManager: ObservableObject {
         currentUserName = UserDefaults.standard.string(forKey: UserDefaultsKeys.penName) ?? "诗人"
     }
     
+    /// 监听笔名变化
+    private func observePenNameChanges() {
+        // 监听UserDefaults中penName的变化
+        NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                let newPenName = UserDefaults.standard.string(forKey: UserDefaultsKeys.penName) ?? "诗人"
+                
+                // 如果笔名发生变化，同步更新所有诗歌的authorName
+                if newPenName != self.currentUserName {
+                    let oldPenName = self.currentUserName
+                    print("📝 [PoemManager] 检测到笔名变化: \(oldPenName) → \(newPenName)")
+                    self.updateAuthorName(from: oldPenName, to: newPenName)
+                    self.currentUserName = newPenName
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    /// 更新所有诗歌的作者名
+    private func updateAuthorName(from oldName: String, to newName: String) {
+        var updated = false
+        
+        for i in 0..<allPoems.count {
+            if allPoems[i].authorName == oldName {
+                allPoems[i].authorName = newName
+                updated = true
+            }
+        }
+        
+        if updated {
+            savePoems()
+            print("✅ [PoemManager] 已更新 \(allPoems.count) 首诗歌的作者名")
+        }
+    }
+    
     /// 加载公共诗歌（示例数据）
     private func loadPublicPoems() {
-        // 首次启动时，加载示例诗歌
-        if UserDefaults.standard.bool(forKey: "has_loaded_public_poems") == false {
+        // 每次启动都加载示例诗歌到内存（不持久化，避免丢失）
+        // 示例诗歌的authorName与当前用户不同，不会被savePoems()保存
+        
+        // 检查是否已有示例诗歌（避免重复添加）
+        let hasExamples = allPoems.contains { poem in
+            Poem.examples.contains { example in
+                example.id == poem.id
+            }
+        }
+        
+        if !hasExamples {
             allPoems.append(contentsOf: Poem.examples)
-            UserDefaults.standard.set(true, forKey: "has_loaded_public_poems")
-            savePoems()
+            print("✅ [PoemManager] 已加载 \(Poem.examples.count) 首示例诗歌")
         }
     }
     
@@ -407,7 +456,8 @@ class PoemManager: ObservableObject {
     func deleteAll() {
         allPoems.removeAll()
         savePoems()
-        UserDefaults.standard.set(false, forKey: "has_loaded_public_poems")
+        // 重新加载示例诗歌
+        loadPublicPoems()
     }
 }
 
