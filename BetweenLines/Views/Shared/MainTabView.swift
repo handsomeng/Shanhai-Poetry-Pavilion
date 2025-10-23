@@ -16,10 +16,10 @@ struct MainTabView: View {
         case learning = "学诗", writing = "写诗", explore = "赏诗", library = "我的"
         var iconName: String {
             switch self {
-            case .learning: return "TabIconLearn"      // 学诗：书本图标
-            case .writing: return "TabIconWrite"       // 写诗：羽毛笔图标
-            case .explore: return "TabIconExplore"     // 赏诗：山海图标
-            case .library: return "TabIconProfile"     // 我的：人物图标
+            case .learning: return "book"                      // 学诗：打开的书，学习感
+            case .writing: return "pencil.line"                // 写诗：线性铅笔，书写感
+            case .explore: return "text.book.closed"           // 赏诗：诗集，欣赏阅读
+            case .library: return "person"                     // 我的：简洁人物，个人中心
             }
         }
     }
@@ -27,22 +27,22 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             LearningView()
-                .tabItem { Label(Tab.learning.rawValue, image: Tab.learning.iconName) }
+                .tabItem { Label(Tab.learning.rawValue, systemImage: Tab.learning.iconName) }
                 .tag(Tab.learning)
                 .environmentObject(tabManager)
             
             WritingView()
-                .tabItem { Label(Tab.writing.rawValue, image: Tab.writing.iconName) }
+                .tabItem { Label(Tab.writing.rawValue, systemImage: Tab.writing.iconName) }
                 .tag(Tab.writing)
                 .environmentObject(tabManager)
             
             ExploreView()
-                .tabItem { Label(Tab.explore.rawValue, image: Tab.explore.iconName) }
+                .tabItem { Label(Tab.explore.rawValue, systemImage: Tab.explore.iconName) }
                 .tag(Tab.explore)
                 .environmentObject(tabManager)
             
             ProfileView()
-                .tabItem { Label(Tab.library.rawValue, image: Tab.library.iconName) }
+                .tabItem { Label(Tab.library.rawValue, systemImage: Tab.library.iconName) }
                 .tag(Tab.library)
                 .environmentObject(tabManager)
         }
