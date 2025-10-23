@@ -20,7 +20,7 @@ extension SquarePoem {
             createdAt: ISO8601DateFormatter().date(from: createdAt) ?? Date(),
             tags: tags ?? [],
             inSquare: true,
-            squareLikeCount: likeCount,
+            squareLikeCount: likeCount ?? 0,  // 解包可选值，默认为0
             isPublished: true
         )
     }
@@ -39,7 +39,7 @@ extension RemotePoem {
             createdAt: ISO8601DateFormatter().date(from: createdAt) ?? Date(),
             tags: tags ?? [],
             inSquare: isPublished,       // 修改：使用 isPublished 代替 isPublic
-            squareLikeCount: likeCount,
+            squareLikeCount: likeCount ?? 0,  // 解包可选值，默认为0
             isPublished: isPublished     // 修改：使用 isPublished 代替 isPublic
         )
     }
