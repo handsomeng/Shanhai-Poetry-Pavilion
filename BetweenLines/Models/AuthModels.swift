@@ -38,6 +38,7 @@ struct UserProfile: Codable, Identifiable {
     var totalPoems: Int
     var totalLikes: Int
     var isPremium: Bool
+    var userNumber: Int?  // 用户注册序号
     var createdAt: String
     var updatedAt: String
     
@@ -51,6 +52,7 @@ struct UserProfile: Codable, Identifiable {
         case totalPoems = "total_poems"
         case totalLikes = "total_likes_received"
         case isPremium = "is_premium"
+        case userNumber = "user_number"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
     }

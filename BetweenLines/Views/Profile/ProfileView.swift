@@ -53,15 +53,11 @@ struct ProfileView: View {
         }
     }
     
-    // 用户序号（基于用户ID后6位）
+    // 用户序号（真实注册序号）
     private var userNumber: String {
-        if authService.isAuthenticated, let userId = authService.currentUser?.id {
-            // 从 UUID 中提取数字
-            let numbers = userId.filter { $0.isNumber }
-            if numbers.count >= 6 {
-                let lastSix = String(numbers.suffix(6))
-                return lastSix
-            }
+        if authService.isAuthenticated, let number = authService.currentProfile?.userNumber {
+            // 格式化为至少 6 位数字
+            return String(format: "%06d", number)
         }
         return "000001"
     }
