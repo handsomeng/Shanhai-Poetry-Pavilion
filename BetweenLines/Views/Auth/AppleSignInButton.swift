@@ -107,8 +107,13 @@ class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate, ASAut
         // 获取当前活动的窗口
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else {
-            print("⚠️ [DEBUG] Coordinator: 无法获取窗口，使用第一个窗口")
-            return UIApplication.shared.windows.first!
+            print("⚠️ [DEBUG] Coordinator: 无法获取窗口，使用默认窗口")
+            // 使用 keyWindow 的现代方式
+            let keyWindow = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .first { $0.isKeyWindow }
+            return keyWindow ?? UIWindow()
         }
         print("✅ [DEBUG] Coordinator: 成功获取窗口")
         return window

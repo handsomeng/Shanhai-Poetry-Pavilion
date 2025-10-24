@@ -323,39 +323,33 @@ struct SettingsView: View {
     
     private func deleteAccount() {
         Task {
-            do {
-                // 1. 调用后端 API 删除账号（如果有）
-                // TODO: 添加后端删除账号 API
-                
-                // 2. 登出
-                try await authService.signOut()
-                
-                // 3. 清除本地所有数据
-                let domain = Bundle.main.bundleIdentifier!
-                UserDefaults.standard.removePersistentDomain(forName: domain)
-                UserDefaults.standard.synchronize()
-                
-                // 4. 清除诗歌数据
-                PoemManager.shared.deleteAll()
-                
-                // 5. 清除 iCloud 数据
-                let iCloudStore = NSUbiquitousKeyValueStore.default
-                iCloudStore.dictionaryRepresentation.keys.forEach { key in
-                    iCloudStore.removeObject(forKey: key)
-                }
-                iCloudStore.synchronize()
-                
-                await MainActor.run {
-                    ToastManager.shared.showSuccess("账号已删除")
-                    dismiss()
-                }
-                
-                // 注意：这会导致应用返回引导页
-            } catch {
-                await MainActor.run {
-                    ToastManager.shared.showError("删除账号失败：\(error.localizedDescription)")
-                }
+            // 1. 调用后端 API 删除账号（如果有）
+            // TODO: 添加后端删除账号 API
+            
+            // 2. 登出
+            await authService.signOut()
+            
+            // 3. 清除本地所有数据
+            let domain = Bundle.main.bundleIdentifier!
+            UserDefaults.standard.removePersistentDomain(forName: domain)
+            UserDefaults.standard.synchronize()
+            
+            // 4. 清除诗歌数据
+            PoemManager.shared.deleteAll()
+            
+            // 5. 清除 iCloud 数据
+            let iCloudStore = NSUbiquitousKeyValueStore.default
+            iCloudStore.dictionaryRepresentation.keys.forEach { key in
+                iCloudStore.removeObject(forKey: key)
             }
+            iCloudStore.synchronize()
+            
+            await MainActor.run {
+                ToastManager.shared.showSuccess("账号已删除")
+                dismiss()
+            }
+            
+            // 注意：这会导致应用返回引导页
         }
     }
 }
