@@ -297,33 +297,15 @@ struct MimicWritingView: View {
             return
         }
         
-        if authService.isAuthenticated {
-            Task {
-                do {
-                    guard let userId = authService.currentUser?.id else { return }
-                    _ = try await poemService.saveDraft(
-                        authorId: userId,
-                        title: title.isEmpty ? "无标题" : title,
-                        content: content,
-                        writingMode: "mimic"
-                    )
-                    await MainActor.run {
-                        dismiss()
-                    }
-                } catch {
-                    print("保存草稿失败: \(error)")
-                }
-            }
-        } else {
-            let newPoem = poemManager.createDraft(
-                title: title,
-                content: content,
-                tags: [],
-                writingMode: .mimic
-            )
-            poemManager.savePoem(newPoem)
-            dismiss()
-        }
+        // 保存到本地
+        let newPoem = poemManager.createDraft(
+            title: title,
+            content: content,
+            tags: [],
+            writingMode: .mimic
+        )
+        poemManager.savePoem(newPoem)
+        dismiss()
     }
     
     /// 保存到诗集

@@ -60,9 +60,6 @@ struct PoemSuccessView: View {
                 }
             }
         }
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
         .sheet(isPresented: $showAIComment) {
             AICommentSheet(comment: aiComment, isLoading: isLoadingAI)
         }
@@ -138,7 +135,7 @@ struct PoemSuccessView: View {
                     } else {
                         Image(systemName: "paperplane.fill")
                     }
-                    Text(authService.isAuthenticated ? "发布到广场" : "登录后发布到广场")
+                    Text("发布到广场")
                         .fontWeight(.medium)
                 }
                 .font(Fonts.bodyRegular())
