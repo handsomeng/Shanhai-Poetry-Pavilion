@@ -17,18 +17,14 @@ struct MyPoemDetailView: View {
     let poem: Poem
     let isDraft: Bool // 是否是草稿
     
-    @State private var isEditing = false
     @State private var editedTitle: String
     @State private var editedContent: String
     
     @State private var showingDeleteAlert = false
-    @State private var showingPublishSheet = false
     @State private var isPublishing = false
     
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
-    
-    @State private var showLoginSheet = false
     
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
@@ -42,23 +38,17 @@ struct MyPoemDetailView: View {
             Colors.backgroundCream
                 .ignoresSafeArea()
             
-            if isEditing {
-                editingView
-            } else {
-                detailView
-            }
+            editingView
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(isEditing)
         .toolbar {
-            if isEditing {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
-                        // 恢复原内容
-                        editedTitle = poem.title
-                        editedContent = poem.content
-                        isEditing = false
-                    }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingDeleteAlert = true
+                }) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.red)
                 }
             }
         }
@@ -77,35 +67,6 @@ struct MyPoemDetailView: View {
         }
     }
     
-    // MARK: - Detail View（只读）
-    
-    private var detailView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.xl) {
-                // 标题
-                if !poem.title.isEmpty {
-                    Text(poem.title)
-                        .font(.system(size: 24, weight: .medium, design: .serif))
-                        .foregroundColor(Colors.textInk)
-                }
-                
-                // 内容
-                Text(poem.content)
-                    .font(.system(size: 18, design: .serif))
-                    .foregroundColor(Colors.textInk)
-                    .lineSpacing(8)
-                
-                Spacer(minLength: 100)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Spacing.lg)
-            .padding(.top, Spacing.xl)
-        }
-        .safeAreaInset(edge: .bottom) {
-            bottomButtons
-        }
-    }
-    
     // MARK: - Editing View
     
     private var editingView: some View {
@@ -118,152 +79,63 @@ struct MyPoemDetailView: View {
                         .foregroundColor(Colors.textInk)
                         .padding(.horizontal, Spacing.lg)
                         .padding(.top, Spacing.lg)
+                        .onChange(of: editedTitle) { _ in
+                            saveEdits()
+                        }
                     
                     // 内容输入
                     TextEditor(text: $editedContent)
                         .font(.system(size: 18, design: .serif))
                         .foregroundColor(Colors.textInk)
                         .scrollContentBackground(.hidden)
+                        .lineSpacing(8)
                         .frame(minHeight: 400)
                         .padding(.horizontal, Spacing.lg)
+                        .onChange(of: editedContent) { _ in
+                            saveEdits()
+                        }
                 }
             }
             
-            // 编辑时的底部按钮
-            editBottomButtons
+            // 底部发布按钮
+            publishButton
         }
     }
     
-    // MARK: - Bottom Buttons（只读模式）
+    // MARK: - Publish Button（底部细条按钮）
     
-    private var bottomButtons: some View {
-        VStack(spacing: Spacing.sm) {
-            if isDraft {
-                // 草稿：只显示"保存到诗集"
-                Button(action: saveToCollection) {
-                    Text("保存到诗集")
-                        .font(Fonts.bodyLarge())
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
-                        .background(Colors.accentTeal)
-                        .cornerRadius(CornerRadius.medium)
-                }
-            } else {
-                // 诗集：显示3个按钮
-                HStack(spacing: Spacing.md) {
-                    // 编辑
-                    Button {
-                        isEditing = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "pencil")
-                            Text("编辑")
-                        }
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.textInk)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
-                        .background(Colors.white)
-                        .cornerRadius(CornerRadius.medium)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(Colors.textSecondary.opacity(0.2), lineWidth: 1)
-                        )
-                    }
-                    
-                    // 发布到广场
-                    Button(action: publishToSquare) {
-                        HStack {
-                            if isPublishing {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                            } else {
-                                Image(systemName: poem.inSquare ? "checkmark.circle.fill" : "paperplane.fill")
-                                Text(poem.inSquare ? "已发布" : "发布")
-                            }
-                        }
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(poem.inSquare ? Colors.textSecondary : .white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
-                        .background(poem.inSquare ? Colors.white : Colors.accentTeal)
-                        .cornerRadius(CornerRadius.medium)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(poem.inSquare ? Colors.border : Color.clear, lineWidth: 1)
-                        )
-                    }
-                    .disabled(poem.inSquare || isPublishing)
-                }
-                
-                // 删除按钮（独立一行）
-                Button(action: {
-                    showingDeleteAlert = true
-                }) {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("删除")
-                    }
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(.red)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                    )
-                }
-            }
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
-        .background(Colors.white)
-    }
-    
-    // MARK: - Bottom Buttons（编辑模式）
-    
-    private var editBottomButtons: some View {
+    private var publishButton: some View {
         VStack(spacing: 0) {
+            // 分隔线
             Divider()
             
-            if editedTitle == poem.title && editedContent == poem.content {
-                // 未修改：显示"退出"
-                Button(action: {
-                    isEditing = false
-                }) {
-                    Text("退出")
-                        .font(Fonts.bodyLarge())
-                        .foregroundColor(Colors.textSecondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
+            // 发布按钮
+            Button(action: publishToSquare) {
+                HStack(spacing: 6) {
+                    if isPublishing {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .tint(poem.inSquare ? Colors.textSecondary : Colors.accentTeal)
+                    } else {
+                        Image(systemName: poem.inSquare ? "checkmark.circle.fill" : "square.and.arrow.up")
+                            .font(.system(size: 14))
+                    }
+                    
+                    Text(poem.inSquare ? "已发布到广场" : "发布到广场")
+                        .font(.system(size: 15))
                 }
-            } else {
-                // 已修改：显示"保存"
-                Button(action: saveEdits) {
-                    Text("保存")
-                        .font(Fonts.bodyLarge())
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
-                        .background(Colors.accentTeal)
-                        .cornerRadius(CornerRadius.medium)
-                }
-                .disabled(editedContent.isEmpty)
-                .padding(.horizontal, Spacing.lg)
+                .foregroundColor(poem.inSquare ? Colors.textSecondary : Colors.accentTeal)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
             }
+            .disabled(poem.inSquare || isPublishing)
         }
-        .padding(.vertical, Spacing.sm)
         .background(Colors.white)
     }
     
     // MARK: - Actions
     
-    /// 保存编辑
+    /// 保存编辑（实时自动保存）
     private func saveEdits() {
         var updatedPoem = poem
         updatedPoem.title = editedTitle
@@ -277,47 +149,17 @@ struct MyPoemDetailView: View {
         }
         
         poemManager.savePoem(updatedPoem)
-        
-        // 生成图片
-        generatedImage = PoemImageGenerator.generate(poem: updatedPoem)
-        
-        // Toast提示
-        ToastManager.shared.showSuccess("已保存")
-        
-        // 退出编辑模式
-        isEditing = false
-        
-        // 显示成功页面
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            showSuccessView = true
-        }
-    }
-    
-    /// 草稿保存到诗集
-    private func saveToCollection() {
-        var updatedPoem = poem
-        updatedPoem.inMyCollection = true
-        poemManager.savePoem(updatedPoem)
-        
-        // 生成图片
-        generatedImage = PoemImageGenerator.generate(poem: updatedPoem)
-        
-        // Toast提示
-        ToastManager.shared.showSuccess("已保存到你的诗集")
-        
-        // 显示成功页面
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            showSuccessView = true
-        }
     }
     
     /// 发布到广场（本地版本）
     private func publishToSquare() {
         // 检查是否已发布
         if poem.inSquare {
-            ToastManager.shared.showInfo("这首诗已经在广场上了")
             return
         }
+        
+        // 先保存当前编辑
+        saveEdits()
         
         isPublishing = true
         
