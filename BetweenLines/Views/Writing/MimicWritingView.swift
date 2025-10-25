@@ -29,6 +29,7 @@ struct MimicWritingView: View {
     @State private var generatedImage: UIImage?
     @State private var showingCancelConfirm = false
     @State private var hasSaved = false  // 跟踪是否已保存
+    @State private var autoSaveTimer: Timer?  // 自动保存定时器
     
     var body: some View {
         ZStack {
@@ -98,21 +99,27 @@ struct MimicWritingView: View {
             SubscriptionView()
         }
         .onAppear {
-            // 监听键盘
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillShowNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                isKeyboardVisible = true
+            if !aiExamplePoem.isEmpty {
+                startAutoSave()
             }
-            
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillHideNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                isKeyboardVisible = false
+        }
+        .onDisappear {
+            stopAutoSave()
+            // 退出前保存一次
+            if !content.isEmpty && !hasSaved {
+                autoSaveDraft()
+            }
+        }
+        .onChange(of: content) { oldValue, newValue in
+            // 内容变化时重置定时器
+            if !newValue.isEmpty && !aiExamplePoem.isEmpty {
+                resetAutoSaveTimer()
+            }
+        }
+        .onChange(of: aiExamplePoem) { oldValue, newValue in
+            // 示例生成后启动自动保存
+            if !newValue.isEmpty {
+                startAutoSave()
             }
         }
     }
@@ -282,6 +289,43 @@ struct MimicWritingView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Auto Save
+    
+    /// 启动自动保存
+    private func startAutoSave() {
+        autoSaveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+            autoSaveDraft()
+        }
+    }
+    
+    /// 停止自动保存
+    private func stopAutoSave() {
+        autoSaveTimer?.invalidate()
+        autoSaveTimer = nil
+    }
+    
+    /// 重置自动保存定时器
+    private func resetAutoSaveTimer() {
+        stopAutoSave()
+        startAutoSave()
+    }
+    
+    /// 自动保存草稿
+    private func autoSaveDraft() {
+        // 只有在有内容且未手动保存时才自动保存
+        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !hasSaved else { return }
+        
+        let draft = poemManager.createDraft(
+            title: title,
+            content: content,
+            tags: [],
+            writingMode: .mimic
+        )
+        poemManager.savePoem(draft)
+        print("📝 [MimicWriting] 自动保存草稿")
     }
     
     // MARK: - Save Actions

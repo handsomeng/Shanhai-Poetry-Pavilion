@@ -29,6 +29,7 @@ struct ThemeWritingView: View {
     @State private var generatedImage: UIImage?
     @State private var showingCancelConfirm = false
     @State private var hasSaved = false  // 跟踪是否已保存
+    @State private var autoSaveTimer: Timer?  // 自动保存定时器
     
     var body: some View {
         ZStack {
@@ -96,6 +97,30 @@ struct ThemeWritingView: View {
         }
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
+        }
+        .onAppear {
+            if !aiTheme.isEmpty {
+                startAutoSave()
+            }
+        }
+        .onDisappear {
+            stopAutoSave()
+            // 退出前保存一次
+            if !content.isEmpty && !hasSaved {
+                autoSaveDraft()
+            }
+        }
+        .onChange(of: content) { oldValue, newValue in
+            // 内容变化时重置定时器
+            if !newValue.isEmpty && !aiTheme.isEmpty {
+                resetAutoSaveTimer()
+            }
+        }
+        .onChange(of: aiTheme) { oldValue, newValue in
+            // 主题生成后启动自动保存
+            if !newValue.isEmpty {
+                startAutoSave()
+            }
         }
     }
     
@@ -269,6 +294,43 @@ struct ThemeWritingView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Auto Save
+    
+    /// 启动自动保存
+    private func startAutoSave() {
+        autoSaveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+            autoSaveDraft()
+        }
+    }
+    
+    /// 停止自动保存
+    private func stopAutoSave() {
+        autoSaveTimer?.invalidate()
+        autoSaveTimer = nil
+    }
+    
+    /// 重置自动保存定时器
+    private func resetAutoSaveTimer() {
+        stopAutoSave()
+        startAutoSave()
+    }
+    
+    /// 自动保存草稿
+    private func autoSaveDraft() {
+        // 只有在有内容且未手动保存时才自动保存
+        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !hasSaved else { return }
+        
+        let draft = poemManager.createDraft(
+            title: title,
+            content: content,
+            tags: [],
+            writingMode: .theme
+        )
+        poemManager.savePoem(draft)
+        print("📝 [ThemeWriting] 自动保存草稿")
     }
     
     // MARK: - Save Actions

@@ -23,6 +23,7 @@ struct DirectWritingView: View {
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
     @State private var hasSaved = false  // 跟踪是否已保存
+    @State private var autoSaveTimer: Timer?  // 自动保存定时器
     
     // 初始化（可选：编辑现有诗歌）
     let existingPoem: Poem?
@@ -44,25 +45,20 @@ struct DirectWritingView: View {
             )
         }
         .onAppear {
-            // 监听键盘显示/隐藏
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillShowNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                withAnimation(.easeOut(duration: 0.25)) {
-                    isKeyboardVisible = true
-                }
+            loadExistingPoem()
+            startAutoSave()
+        }
+        .onDisappear {
+            stopAutoSave()
+            // 退出前保存一次
+            if !content.isEmpty && !hasSaved {
+                autoSaveDraft()
             }
-            
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillHideNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                withAnimation(.easeOut(duration: 0.25)) {
-                    isKeyboardVisible = false
-                }
+        }
+        .onChange(of: content) { oldValue, newValue in
+            // 内容变化时重置定时器
+            if !newValue.isEmpty {
+                resetAutoSaveTimer()
             }
         }
         .navigationTitle("直接写诗")
@@ -155,6 +151,43 @@ struct DirectWritingView: View {
             content = poem.content
             currentPoem = poem
         }
+    }
+    
+    // MARK: - Auto Save
+    
+    /// 启动自动保存
+    private func startAutoSave() {
+        autoSaveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+            autoSaveDraft()
+        }
+    }
+    
+    /// 停止自动保存
+    private func stopAutoSave() {
+        autoSaveTimer?.invalidate()
+        autoSaveTimer = nil
+    }
+    
+    /// 重置自动保存定时器
+    private func resetAutoSaveTimer() {
+        stopAutoSave()
+        startAutoSave()
+    }
+    
+    /// 自动保存草稿
+    private func autoSaveDraft() {
+        // 只有在有内容且未手动保存时才自动保存
+        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !hasSaved else { return }
+        
+        let draft = poemManager.createDraft(
+            title: title,
+            content: content,
+            tags: [],
+            writingMode: .direct
+        )
+        poemManager.savePoem(draft)
+        print("📝 [DirectWriting] 自动保存草稿")
     }
     
     // MARK: - Save Actions
