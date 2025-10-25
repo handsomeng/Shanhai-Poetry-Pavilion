@@ -78,12 +78,11 @@ struct MyPoemDetailView: View {
     
     private var editingView: some View {
         ScrollView {
-            VStack(spacing: Spacing.md) {
+            VStack(alignment: .leading, spacing: Spacing.md) {
                 // 标题输入
                 TextField("标题（选填）", text: $editedTitle)
                     .font(.system(size: 24, weight: .medium, design: .serif))
                     .foregroundColor(Colors.textInk)
-                    .padding(.horizontal, Spacing.lg)
                     .padding(.top, Spacing.lg)
                     .onChange(of: editedTitle) {
                         saveEdits()
@@ -94,13 +93,13 @@ struct MyPoemDetailView: View {
                     .font(.system(size: 18, design: .serif))
                     .foregroundColor(Colors.textInk)
                     .scrollContentBackground(.hidden)
+                    .scrollDisabled(true)
                     .lineSpacing(8)
-                    .frame(minHeight: 400)
-                    .padding(.horizontal, Spacing.lg)
-                    .onChange(of: editedContent) {
-                        saveEdits()
-                    }
+                    .frame(minHeight: 300)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.xl) // 确保内容不被 Tab Bar 遮挡
         }
     }
     
