@@ -47,13 +47,16 @@ class UserIdentityService: ObservableObject {
     // MARK: - Initialization
     
     init() {
+        // 先初始化 penName（必须在访问 storedPenName 前）
+        let localPenName = UserDefaults.standard.string(forKey: "userPenName") ?? ""
+        
         // 从 iCloud 恢复笔名（跨设备同步）
         if let cloudPenName = NSUbiquitousKeyValueStore.default.string(forKey: "penName"),
            !cloudPenName.isEmpty {
             self.penName = cloudPenName
             print("☁️ [UserIdentityService] 从 iCloud 恢复笔名: \(cloudPenName)")
         } else {
-            self.penName = storedPenName
+            self.penName = localPenName
         }
         
         // 监听 iCloud 变化
