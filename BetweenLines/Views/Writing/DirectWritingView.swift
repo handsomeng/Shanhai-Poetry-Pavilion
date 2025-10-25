@@ -11,7 +11,6 @@ struct DirectWritingView: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
-    @StateObject private var authService = AuthService.shared
     @StateObject private var poemService = PoemService.shared
     
     // 编辑状态

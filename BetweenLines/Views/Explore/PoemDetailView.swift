@@ -12,7 +12,6 @@ struct PoemDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var authService = AuthService.shared
     @StateObject private var interactionService = InteractionService.shared
     @StateObject private var poemService = PoemService.shared
     

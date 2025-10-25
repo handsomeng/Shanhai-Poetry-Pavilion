@@ -10,7 +10,6 @@ import SwiftUI
 struct ProfileView: View {
     
     // 后端服务
-    @StateObject private var authService = AuthService.shared
     @StateObject private var poemService = PoemService.shared
     
     // 本地服务（用于收藏和会员）

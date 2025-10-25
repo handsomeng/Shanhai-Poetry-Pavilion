@@ -13,7 +13,6 @@ struct ThemeWritingView: View {
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var subscriptionManager = SubscriptionManager.shared
     @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var authService = AuthService.shared
     @StateObject private var poemService = PoemService.shared
     
     // AI 生成的主题和引导

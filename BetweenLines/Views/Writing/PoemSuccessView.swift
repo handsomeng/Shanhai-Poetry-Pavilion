@@ -11,7 +11,6 @@ import Photos
 struct PoemSuccessView: View {
     
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var authService = AuthService.shared
     @StateObject private var poemService = PoemService.shared
     
     let poem: Poem
