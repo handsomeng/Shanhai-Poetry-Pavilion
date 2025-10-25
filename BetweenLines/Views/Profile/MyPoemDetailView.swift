@@ -311,26 +311,11 @@ struct MyPoemDetailView: View {
         }
     }
     
-    /// 发布到广场（暂时关闭）
+    /// 发布到广场（本地版本）
     private func publishToSquare() {
-        // V1 版本：广场功能建设中
-        ToastManager.shared.showInfo("诗歌广场正在建设中，敬请期待 ✨")
-        print("📊 [MyPoemDetailView] 用户尝试发布到广场")
-        
-        // TODO: V2 版本再开启真实发布功能
-        /*
-        guard authService.isAuthenticated else {
-            showLoginSheet = true
-            return
-        }
-        
-        guard let userId = authService.currentUser?.id else {
-            ToastManager.shared.showError("用户信息获取失败")
-            return
-        }
-        
+        // 检查是否已发布
         if poem.inSquare {
-            ToastManager.shared.showInfo("已发布到广场")
+            ToastManager.shared.showInfo("这首诗已经在广场上了")
             return
         }
         
@@ -338,35 +323,31 @@ struct MyPoemDetailView: View {
         
         Task {
             do {
-                _ = try await poemService.publishPoem(
-                    authorId: userId,
-                    title: poem.title,
-                    content: poem.content,
-                    writingMode: poem.writingMode.rawValue
-                )
+                print("🚀 [MyPoemDetailView] 开始发布到广场...")
+                
+                // 使用 PoemManager 发布到本地广场
+                try poemManager.publishToSquare(poem)
+                
+                print("✅ [MyPoemDetailView] 发布成功！")
                 
                 await MainActor.run {
                     isPublishing = false
-                    
-                    // 更新本地状态
-                    var updatedPoem = poem
-                    updatedPoem.auditStatus = .pending
-                    updatedPoem.inSquare = false // 审核中不算在广场
-                    poemManager.savePoem(updatedPoem)
-                    
-                    ToastManager.shared.showSuccess("已提交审核，请耐心等待")
+                    ToastManager.shared.showSuccess("已发布到广场！")
                     
                     // 返回上一页
-                    dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        dismiss()
+                    }
                 }
             } catch {
+                print("❌ [MyPoemDetailView] 发布失败：\(error)")
+                
                 await MainActor.run {
                     isPublishing = false
-                    ToastManager.shared.showError("发布失败：\(error.localizedDescription)")
+                    ToastManager.shared.showError(error.localizedDescription)
                 }
             }
         }
-        */
     }
     
     /// 删除诗歌

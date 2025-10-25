@@ -290,66 +290,39 @@ struct PoemSuccessView: View {
         }
     }
     
-    /// 发布到广场（暂时关闭）
+    /// 发布到广场（本地版本）
     private func publishToSquare() {
-        // V1 版本：广场功能建设中
-        ToastManager.shared.showInfo("诗歌广场正在建设中，敬请期待 ✨")
-        print("📊 [PoemSuccessView] 用户尝试发布到广场")
-        
-        // TODO: V2 版本再开启真实发布功能
-        /*
-        // 检查是否登录
-        guard authService.isAuthenticated else {
-            showLoginSheet = true
-            return
-        }
-        
-        // 检查userId
-        guard let userId = authService.currentUser?.id else {
-            ToastManager.shared.showError("用户信息异常，请重新登录")
-            return
-        }
-        
         // 检查内容
         guard !poem.content.isEmpty else {
             ToastManager.shared.showError("诗歌内容不能为空")
             return
         }
         
+        // 检查是否已发布
+        if poem.inSquare {
+            ToastManager.shared.showInfo("这首诗已经在广场上了")
+            return
+        }
+        
         isPublishing = true
-        ToastManager.shared.showInfo("正在提交审核...")
         
         Task {
             do {
                 print("🚀 [PoemSuccessView] 开始发布到广场...")
-                print("📝 [PoemSuccessView] 作者ID: \(userId)")
                 print("📝 [PoemSuccessView] 标题: \(poem.title.isEmpty ? "无标题" : poem.title)")
                 print("📝 [PoemSuccessView] 内容长度: \(poem.content.count)")
                 
-                // 发布到云端
-                let publishedPoem = try await poemService.publishPoem(
-                    authorId: userId,
-                    title: poem.title.isEmpty ? "无标题" : poem.title,
-                    content: poem.content,
-                    writingMode: poem.writingMode.rawValue
-                )
+                // 使用 PoemManager 发布到本地广场
+                try PoemManager.shared.publishToSquare(poem)
                 
-                print("✅ [PoemSuccessView] 发布成功！诗歌ID: \(publishedPoem.id)")
+                print("✅ [PoemSuccessView] 发布成功！")
                 
                 await MainActor.run {
                     isPublishing = false
-                    
-                    // 更新本地状态为审核中
-                    var updatedPoem = poem
-                    updatedPoem.auditStatus = .pending
-                    updatedPoem.inSquare = false
-                    PoemManager.shared.savePoem(updatedPoem)
-                    
-                    // 提示用户
-                    ToastManager.shared.showSuccess("已提交审核，请耐心等待")
+                    ToastManager.shared.showSuccess("已发布到广场！")
                     
                     // 延迟关闭，让用户看到提示
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         dismiss()
                     }
                 }
@@ -358,22 +331,10 @@ struct PoemSuccessView: View {
                 
                 await MainActor.run {
                     isPublishing = false
-                    
-                    // 更详细的错误信息
-                    let errorMessage: String
-                    if error.localizedDescription.contains("Network") || error.localizedDescription.contains("network") {
-                        errorMessage = "网络连接失败，请检查网络后重试"
-                    } else if error.localizedDescription.contains("401") || error.localizedDescription.contains("403") {
-                        errorMessage = "登录已过期，请重新登录"
-                    } else {
-                        errorMessage = "发布失败：\(error.localizedDescription)"
-                    }
-                    
-                    ToastManager.shared.showError(errorMessage)
+                    ToastManager.shared.showError(error.localizedDescription)
                 }
             }
         }
-        */
     }
 }
 
