@@ -24,7 +24,6 @@ struct ThemeWritingView: View {
     @State private var title = ""
     @State private var content = ""
     @State private var currentPoem: Poem?
-    @State private var isKeyboardVisible = false
     @State private var showingSubscription = false
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
@@ -63,10 +62,11 @@ struct ThemeWritingView: View {
             
             if !aiTheme.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("换主题") {
-                        generateTheme()
+                    Button("保存") {
+                        saveToCollection()
                     }
-                    .disabled(isLoadingTheme)
+                    .disabled(content.isEmpty)
+                    .foregroundColor(content.isEmpty ? Colors.textSecondary : Colors.accentTeal)
                 }
             }
         }
@@ -96,24 +96,6 @@ struct ThemeWritingView: View {
         }
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
-        }
-        .onAppear {
-            // 监听键盘
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillShowNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                isKeyboardVisible = true
-            }
-            
-            NotificationCenter.default.addObserver(
-                forName: UIResponder.keyboardWillHideNotification,
-                object: nil,
-                queue: .main
-            ) { _ in
-                isKeyboardVisible = false
-            }
         }
     }
     
@@ -177,18 +159,13 @@ struct ThemeWritingView: View {
             // 顶部主题卡片（精简）
             themeCard
             
-            // 编辑器
+            // 编辑器（全屏，不显示字数统计）
             PoemEditorView(
                 title: $title,
                 content: $content,
                 placeholder: "围绕主题「\(aiTheme)」，写下你的诗...",
-                showWordCount: !isKeyboardVisible
+                showWordCount: false
             )
-            
-            // 底部按钮
-            if !isKeyboardVisible {
-                bottomButtons
-            }
         }
     }
     
@@ -196,27 +173,37 @@ struct ThemeWritingView: View {
     
     private var themeCard: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            // 头部：主题标题
-            HStack {
+            // 头部：主题标题 + 换主题按钮
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("创作主题")
                         .font(Fonts.captionSmall())
                         .foregroundColor(Colors.textSecondary)
                     
                     Text(aiTheme)
-                        .font(.system(size: 20, weight: .medium, design: .serif))
+                        .font(.system(size: 18, weight: .medium, design: .serif))
                         .foregroundColor(Colors.textInk)
                 }
                 
                 Spacer()
                 
-                Text("AI 推荐")
-                    .font(Fonts.captionSmall())
+                // 换主题按钮
+                Button(action: {
+                    generateTheme()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 12))
+                        Text("换一个")
+                            .font(Fonts.captionSmall())
+                    }
                     .foregroundColor(Colors.accentTeal)
-                    .padding(.horizontal, Spacing.xs)
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 6)
                     .background(Colors.accentTeal.opacity(0.1))
                     .cornerRadius(CornerRadius.small)
+                }
+                .disabled(isLoadingTheme)
             }
             
             // 引导内容

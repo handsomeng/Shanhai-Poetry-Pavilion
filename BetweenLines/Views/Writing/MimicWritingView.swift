@@ -24,7 +24,6 @@ struct MimicWritingView: View {
     @State private var title = ""
     @State private var content = ""
     @State private var currentPoem: Poem?
-    @State private var isKeyboardVisible = false
     @State private var showingSubscription = false
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
@@ -63,10 +62,11 @@ struct MimicWritingView: View {
             
             if !aiExamplePoem.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("换一首") {
-                        generateExample()
+                    Button("保存") {
+                        saveToCollection()
                     }
-                    .disabled(isLoadingExample)
+                    .disabled(content.isEmpty)
+                    .foregroundColor(content.isEmpty ? Colors.textSecondary : Colors.accentTeal)
                 }
             }
         }
@@ -175,65 +175,61 @@ struct MimicWritingView: View {
     private var splitView: some View {
         VStack(spacing: 0) {
             // 上半部分：AI 示例诗（可展开）
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isExampleExpanded.toggle()
-                }
-            }) {
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    HStack {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("示例诗歌")
                             .font(Fonts.caption())
                             .foregroundColor(Colors.textSecondary)
                         
-                        Spacer()
-                        
-                        HStack(spacing: 4) {
-                            Text("AI 生成")
-                                .font(Fonts.captionSmall())
-                                .foregroundColor(Colors.accentTeal)
-                                .padding(.horizontal, Spacing.xs)
-                                .padding(.vertical, 2)
-                                .background(Colors.accentTeal.opacity(0.1))
-                                .cornerRadius(CornerRadius.small)
-                            
-                            Image(systemName: isExampleExpanded ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(Colors.textSecondary)
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isExampleExpanded.toggle()
+                            }
+                        }) {
+                            Text(aiExamplePoem)
+                                .font(Fonts.bodyRegular())
+                                .foregroundColor(Colors.textInk)
+                                .lineSpacing(6)
+                                .lineLimit(isExampleExpanded ? nil : 3)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     
-                    Text(aiExamplePoem)
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.textInk)
-                        .lineSpacing(6)
-                        .lineLimit(isExampleExpanded ? nil : 3) // 展开时无限制，否则3行
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // 换一首按钮
+                    Button(action: {
+                        generateExample()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 12))
+                            Text("换一首")
+                                .font(Fonts.captionSmall())
+                        }
+                        .foregroundColor(Colors.accentTeal)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, 6)
+                        .background(Colors.accentTeal.opacity(0.1))
+                        .cornerRadius(CornerRadius.small)
+                    }
+                    .disabled(isLoadingExample)
                 }
-                .padding(Spacing.md)
             }
-            .buttonStyle(PlainButtonStyle())
+            .padding(Spacing.md)
             .background(Colors.backgroundCream.opacity(0.5))
             
             Divider()
                 .background(Colors.border.opacity(0.3))
             
-            // 下半部分：用户创作区
-            VStack(spacing: 0) {
-                // 编辑器
-                PoemEditorView(
-                    title: $title,
-                    content: $content,
-                    placeholder: "对照示例，写下你的诗...",
-                    showWordCount: !isKeyboardVisible
-                )
-            }
+            // 下半部分：用户创作区（全屏，不显示字数统计）
+            PoemEditorView(
+                title: $title,
+                content: $content,
+                placeholder: "对照示例，写下你的诗...",
+                showWordCount: false
+            )
             .background(Colors.white)
-            
-            // 底部按钮
-            if !isKeyboardVisible {
-                bottomButtons
-            }
         }
     }
     

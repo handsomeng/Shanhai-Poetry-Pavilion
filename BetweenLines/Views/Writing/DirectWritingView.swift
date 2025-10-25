@@ -20,7 +20,6 @@ struct DirectWritingView: View {
     
     // UI 状态
     @State private var showingCancelConfirm = false
-    @State private var isKeyboardVisible = false
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
     @State private var hasSaved = false  // 跟踪是否已保存
@@ -37,19 +36,12 @@ struct DirectWritingView: View {
             Colors.backgroundCream
                 .ignoresSafeArea(edges: .top)  // 只忽略顶部，让键盘能推动界面
             
-            VStack(spacing: 0) {
-                // 诗歌编辑器
-                PoemEditorView(
-                    title: $title,
-                    content: $content,
-                    showWordCount: !isKeyboardVisible
-                )
-                
-                // 底部操作按钮（键盘弹起时隐藏）
-                if !isKeyboardVisible {
-                    bottomButtons
-                }
-            }
+            // 诗歌编辑器（全屏，不显示字数统计）
+            PoemEditorView(
+                title: $title,
+                content: $content,
+                showWordCount: false
+            )
         }
         .onAppear {
             // 监听键盘显示/隐藏
@@ -81,6 +73,14 @@ struct DirectWritingView: View {
                 Button("取消") {
                     handleCancel()
                 }
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("保存") {
+                    saveToCollection()
+                }
+                .disabled(content.isEmpty)
+                .foregroundColor(content.isEmpty ? Colors.textSecondary : Colors.accentTeal)
             }
         }
         .alert("确认取消", isPresented: $showingCancelConfirm) {

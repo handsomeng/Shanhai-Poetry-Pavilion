@@ -85,21 +85,23 @@ struct PoemEditorView: View {
                 Text(placeholder)
                     .font(Fonts.bodyPoem())
                     .foregroundColor(Colors.textSecondary.opacity(0.5))
-                    .padding(.horizontal, Spacing.lg + 4) // TextEditor 内部有额外的 padding
+                    .lineSpacing(8)  // 增加行间距
+                    .padding(.horizontal, Spacing.lg + 4)
                     .padding(.vertical, Spacing.md + 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .allowsHitTesting(false) // 不拦截点击
+                    .allowsHitTesting(false)
             }
             
             // 文本编辑器 - 可滚动，可点击任意位置
             TextEditor(text: $content)
                 .font(Fonts.bodyPoem())
                 .foregroundColor(Colors.textInk)
+                .lineSpacing(8)  // 增加行间距
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.md)
                 .scrollContentBackground(.hidden)
                 .focused($isContentFocused)
-                .scrollDismissesKeyboard(.interactively) // iOS 16+ 支持手势关闭键盘
+                .scrollDismissesKeyboard(.interactively)
         }
         .background(Colors.white)
     }
