@@ -40,12 +40,13 @@ struct MyPoemDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     // 分享按钮
                     Button(action: sharePoem) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 16, weight: .regular))
                             .foregroundColor(Colors.accentTeal)
+                            .frame(width: 44, height: 32)
                     }
                     
                     // 删除按钮
@@ -55,6 +56,7 @@ struct MyPoemDetailView: View {
                         Image(systemName: "trash")
                             .font(.system(size: 16, weight: .regular))
                             .foregroundColor(.red)
+                            .frame(width: 44, height: 32)
                     }
                 }
             }
