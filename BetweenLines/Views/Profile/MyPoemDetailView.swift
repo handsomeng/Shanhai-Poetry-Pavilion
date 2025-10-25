@@ -95,7 +95,7 @@ struct MyPoemDetailView: View {
                     }
                 
                 // 底部留白，防止被按钮遮挡
-                Spacer(minLength: 80)
+                Spacer(minLength: 20)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -107,33 +107,33 @@ struct MyPoemDetailView: View {
     
     private var publishButton: some View {
         Button(action: publishToSquare) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 if isPublishing {
                     ProgressView()
-                        .scaleEffect(0.8)
+                        .scaleEffect(0.7)
                         .tint(.white)
                 } else {
                     Image(systemName: poem.inSquare ? "checkmark.circle.fill" : "square.and.arrow.up")
-                        .font(.system(size: 16))
+                        .font(.system(size: 14))
                 }
                 
                 Text(poem.inSquare ? "已发布到广场" : "发布到广场")
-                    .font(Fonts.bodyLarge())
-                    .fontWeight(.medium)
+                    .font(.system(size: 15))
             }
             .foregroundColor(poem.inSquare ? Colors.textSecondary : .white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.md)
+            .padding(.vertical, 10)
             .background(poem.inSquare ? Colors.backgroundCream : Colors.accentTeal)
-            .cornerRadius(CornerRadius.medium)
+            .cornerRadius(CornerRadius.small)
             .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                RoundedRectangle(cornerRadius: CornerRadius.small)
                     .stroke(poem.inSquare ? Colors.border : Color.clear, lineWidth: 1)
             )
         }
         .disabled(poem.inSquare || isPublishing)
         .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
+        .padding(.top, 8)
+        .padding(.bottom, 8)
         .background(Colors.white)
     }
     
