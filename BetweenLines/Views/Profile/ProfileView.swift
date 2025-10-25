@@ -104,54 +104,49 @@ struct ProfileView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            // 第一行：笔名 + 会员标识
-            HStack(alignment: .center, spacing: Spacing.sm) {
-                // 大字笔名
-                Text(displayUsername)
-                    .font(.system(size: 28, weight: .medium, design: .serif))
-                    .foregroundColor(Colors.textInk)
-                
-                // 会员标识
-                if subscriptionManager.isSubscribed {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(Color(hex: "D4AF37"))
-                }
-                
-                Spacer()
-            }
-            
-            // 第二行：标签（称号 · 序号）
-            HStack(spacing: Spacing.sm) {
-                // 称号标签
-                TagView(text: currentPoetTitle)
-                
-                // 序号标签
-                TagView(text: "第 \(userNumber) 位山海诗人")
-            }
-            
-            // 第三行：统计信息（可点击查看称号详情）
-            Button(action: {
-                showingPoetTitle = true
-            }) {
-                HStack(spacing: 4) {
-                    Text(statsText)
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.textSecondary)
+        HStack(alignment: .center, spacing: Spacing.md) {
+            // 左侧：笔名 + 称号
+            VStack(alignment: .leading, spacing: 6) {
+                // 笔名 + 会员标识
+                HStack(spacing: Spacing.sm) {
+                    Text(displayUsername)
+                        .font(.system(size: 24, weight: .medium, design: .serif))
+                        .foregroundColor(Colors.textInk)
                     
-                    // 箭头指示可点击
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Colors.textSecondary.opacity(0.4))
+                    if subscriptionManager.isSubscribed {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(hex: "D4AF37"))
+                    }
                 }
+                
+                // 称号标签（可点击查看详情）
+                Button(action: {
+                    showingPoetTitle = true
+                }) {
+                    HStack(spacing: 4) {
+                        Text(currentPoetTitle)
+                            .font(Fonts.caption())
+                            .foregroundColor(Colors.textSecondary)
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(Colors.textSecondary.opacity(0.5))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Colors.textSecondary.opacity(0.08))
+                    .cornerRadius(5)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
-            .buttonStyle(PlainButtonStyle())
+            
+            Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.sm)
+        .padding(.top, Spacing.sm)  // 减少顶部间距
+        .padding(.bottom, Spacing.xs)  // 减少底部间距
     }
     
     // MARK: - Membership Card
@@ -262,7 +257,7 @@ struct ProfileView: View {
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
             .scaleButtonStyle()
             .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.sm)  // 缩小底部间距
+            .padding(.bottom, Spacing.xs)  // 进一步缩小底部间距
     }
     
     // MARK: - Stats Section
@@ -323,7 +318,7 @@ struct ProfileView: View {
             }
             .padding(.horizontal, Spacing.lg)
         }
-        .padding(.vertical, Spacing.md)
+        .padding(.vertical, Spacing.sm)  // 减少 tab 的上下间距
     }
     
     // MARK: - Poems List

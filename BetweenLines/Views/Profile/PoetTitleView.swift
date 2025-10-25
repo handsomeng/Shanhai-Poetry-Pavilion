@@ -11,6 +11,13 @@ struct PoetTitleView: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
+    @StateObject private var identityService = UserIdentityService()
+    
+    // 用户序号（基于设备 ID 生成一个稳定的数字）
+    private var userNumber: String {
+        let hashValue = abs(identityService.userId.hashValue)
+        return String(hashValue % 100000 + 1) // 1-100000 之间的数字
+    }
     
     var body: some View {
         NavigationView {
@@ -20,6 +27,9 @@ struct PoetTitleView: View {
                 
                 ScrollView {
                     VStack(spacing: Spacing.xl) {
+                        // 用户信息卡片
+                        userInfoCard
+                        
                         // 当前称号卡片
                         currentTitleCard
                         
@@ -35,7 +45,7 @@ struct PoetTitleView: View {
                     .padding(.vertical, Spacing.xl)
                 }
             }
-            .navigationTitle("诗人称号")
+            .navigationTitle("诗人等级")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -49,6 +59,54 @@ struct PoetTitleView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - User Info Card
+    
+    private var userInfoCard: some View {
+        VStack(spacing: Spacing.md) {
+            // 第 xxx 位山海诗人
+            HStack(spacing: 4) {
+                Image(systemName: "person.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(Colors.accentTeal)
+                
+                Text("第 \(userNumber) 位山海诗人")
+                    .font(Fonts.bodyRegular())
+                    .foregroundColor(Colors.textInk)
+            }
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // 统计信息
+            HStack(spacing: Spacing.xl) {
+                VStack(spacing: 4) {
+                    Text("\(poemManager.myStats.totalPoems)")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(Colors.textInk)
+                    
+                    Text("已写诗歌")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
+                }
+                
+                VStack(spacing: 4) {
+                    Text("\(poemManager.myStats.totalLikes)")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(Colors.textInk)
+                    
+                    Text("获得点赞")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.lg)
+        .background(Colors.white)
+        .cornerRadius(CornerRadius.card)
+        .shadow(color: .black.opacity(0.05), radius: 12, x: 0, y: 4)
     }
     
     // MARK: - Current Title Card
