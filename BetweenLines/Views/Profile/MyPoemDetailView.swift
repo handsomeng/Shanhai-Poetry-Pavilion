@@ -137,9 +137,9 @@ struct MyPoemDetailView: View {
             return
         }
         
-        // 生成诗歌图片
+        // 生成诗歌图片（使用纯模板，不包含导航栏）
         Task {
-            let renderer = ImageRenderer(content: PoemImageView(poem: latestPoem))
+            let renderer = ImageRenderer(content: poemTemplateForImage(poem: latestPoem))
             renderer.scale = 3.0 // 高清图片
             
             if let image = renderer.uiImage {
@@ -153,6 +153,71 @@ struct MyPoemDetailView: View {
                 }
             }
         }
+    }
+    
+    /// 诗歌图片模板（纯模板，用于生成图片）
+    @MainActor
+    private func poemTemplateForImage(poem: Poem) -> some View {
+        VStack(alignment: .leading, spacing: 32) {
+            // 标题（如果有）
+            if !poem.title.isEmpty {
+                Text(poem.title)
+                    .font(.system(size: 32, weight: .thin, design: .serif))
+                    .foregroundColor(Color(hex: "0A0A0A"))
+                    .tracking(3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            // 正文
+            Text(poem.content)
+                .font(.system(size: 20, weight: .light, design: .serif))
+                .foregroundColor(Color(hex: "4A4A4A"))
+                .lineSpacing(18)
+                .tracking(1.5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            Spacer()
+                .frame(height: 32)
+            
+            // 底部信息
+            VStack(alignment: .leading, spacing: 16) {
+                Rectangle()
+                    .frame(height: 0.5)
+                    .foregroundColor(Color(hex: "E5E5E5"))
+                
+                // 第一行：第 X 首诗
+                Text("第 \(poemManager.myCollection.count) 首诗")
+                    .font(.system(size: 13, weight: .light))
+                    .foregroundColor(Color(hex: "ABABAB"))
+                    .tracking(1.5)
+                
+                // 第二行：称号 · 作者名
+                HStack(spacing: 4) {
+                    Text(poemManager.currentPoetTitle.displayName)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(Color(hex: "6A6A6A"))
+                    
+                    Text("·")
+                        .font(.system(size: 14, weight: .ultraLight))
+                        .foregroundColor(Color(hex: "ABABAB"))
+                    
+                    Text(poem.authorName)
+                        .font(.system(size: 14, weight: .ultraLight))
+                        .foregroundColor(Color(hex: "ABABAB"))
+                }
+                
+                // 第三行：山海诗馆
+                Text("山海诗馆")
+                    .font(.system(size: 12, weight: .ultraLight, design: .serif))
+                    .foregroundColor(Color(hex: "ABABAB"))
+                    .tracking(2)
+            }
+        }
+        .padding(.horizontal, 56)
+        .padding(.vertical, 72)
+        .frame(width: 400)
+        .background(Color.white)
     }
     
     /// 删除诗歌
