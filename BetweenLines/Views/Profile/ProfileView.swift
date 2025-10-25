@@ -106,19 +106,11 @@ struct ProfileView: View {
     private var headerSection: some View {
         HStack(alignment: .center, spacing: Spacing.md) {
             // 左侧：笔名 + 称号
-            VStack(alignment: .leading, spacing: 6) {
-                // 笔名 + 会员标识
-                HStack(spacing: Spacing.sm) {
-                    Text(displayUsername)
-                        .font(.system(size: 24, weight: .medium, design: .serif))
-                        .foregroundColor(Colors.textInk)
-                    
-                    if subscriptionManager.isSubscribed {
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "D4AF37"))
-                    }
-                }
+            HStack(alignment: .center, spacing: Spacing.sm) {
+                // 笔名
+                Text(displayUsername)
+                    .font(.system(size: 24, weight: .medium, design: .serif))
+                    .foregroundColor(Colors.textInk)
                 
                 // 称号标签（可点击查看详情）
                 Button(action: {
@@ -526,35 +518,22 @@ private struct MyPoemCard: View {
     let poem: Poem
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            // 标题和作者
-            VStack(alignment: .leading, spacing: 4) {
-                Text(poem.title.isEmpty ? "无标题" : poem.title)
-                    .font(Fonts.bodyLarge())
-                    .foregroundColor(Colors.textInk)
-                
-                Text(poem.authorName)
-                    .font(Fonts.captionSmall())
-                    .foregroundColor(Colors.textSecondary)
-            }
-            
-            // 诗歌内容
-            Text(poem.content)
-                .font(Fonts.body())
+        HStack(alignment: .center, spacing: Spacing.md) {
+            // 左侧：标题
+            Text(poem.title.isEmpty ? "无标题" : poem.title)
+                .font(Fonts.bodyLarge())
                 .foregroundColor(Colors.textInk)
-                .lineSpacing(4)
-                .lineLimit(4)
+                .lineLimit(1)
             
-            // 底部信息：只显示日期（自己的诗集不需要点赞）
-            HStack {
-                Spacer()
-                
-                Text(poem.shortDate)
-                    .font(Fonts.footnote())
-                    .foregroundColor(Colors.textSecondary)
-            }
+            Spacer()
+            
+            // 右侧：时间
+            Text(poem.shortDate)
+                .font(Fonts.caption())
+                .foregroundColor(Colors.textSecondary)
         }
-        .padding(Spacing.lg)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.md)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
