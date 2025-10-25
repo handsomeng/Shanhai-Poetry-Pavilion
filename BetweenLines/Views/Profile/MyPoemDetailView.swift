@@ -67,9 +67,6 @@ struct MyPoemDetailView: View {
                 PoemSuccessView(poem: poem, poemImage: image)
             }
         }
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
         .alert("确认删除", isPresented: $showingDeleteAlert) {
             Button("删除", role: .destructive) {
                 deletePoem()
