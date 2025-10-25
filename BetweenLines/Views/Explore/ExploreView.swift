@@ -10,7 +10,6 @@ import SwiftUI
 struct ExploreView: View {
     
     @StateObject private var poemManager = PoemManager.shared
-    @State private var selectedCategory: PoemCategory?
     
     var body: some View {
         NavigationStack {
@@ -42,7 +41,7 @@ struct ExploreView: View {
             LazyVStack(spacing: Spacing.md) {
                 ForEach(squarePoems) { poem in
                     NavigationLink(destination: PoemDetailView(poem: poem)) {
-                        PoemCard(poem: poem)
+                        SquarePoemCard(poem: poem)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -81,7 +80,60 @@ struct ExploreView: View {
     
     private var squarePoems: [Poem] {
         // 获取所有发布到广场的诗歌（包括自己和其他人的）
-        return poemManager.squarePoems
+        return poemManager.explorePoems
+    }
+}
+
+// MARK: - Square Poem Card
+
+/// 广场诗歌卡片（带点赞数）
+private struct SquarePoemCard: View {
+    let poem: Poem
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            // 标题和作者
+            VStack(alignment: .leading, spacing: 4) {
+                Text(poem.title.isEmpty ? "无标题" : poem.title)
+                    .font(Fonts.bodyLarge())
+                    .foregroundColor(Colors.textInk)
+                
+                Text(poem.authorName)
+                    .font(Fonts.captionSmall())
+                    .foregroundColor(Colors.textSecondary)
+            }
+            
+            // 诗歌内容
+            Text(poem.content)
+                .font(Fonts.body())
+                .foregroundColor(Colors.textInk)
+                .lineSpacing(4)
+                .lineLimit(4)
+            
+            // 底部信息：日期 + 点赞数
+            HStack {
+                Text(poem.shortDate)
+                    .font(Fonts.footnote())
+                    .foregroundColor(Colors.textSecondary)
+                
+                Spacer()
+                
+                // 点赞数
+                HStack(spacing: 4) {
+                    Image(systemName: poem.isLiked ? "heart.fill" : "heart")
+                        .font(.system(size: 14))
+                        .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
+                    
+                    Text("\(poem.squareLikeCount)")
+                        .font(Fonts.footnote())
+                        .foregroundColor(Colors.textSecondary)
+                }
+            }
+        }
+        .padding(Spacing.lg)
+        .background(Colors.white)
+        .cornerRadius(CornerRadius.card)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 }
 
