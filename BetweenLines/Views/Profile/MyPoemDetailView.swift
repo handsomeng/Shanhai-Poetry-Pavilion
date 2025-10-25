@@ -22,12 +22,6 @@ struct MyPoemDetailView: View {
     
     @State private var showingDeleteAlert = false
     @State private var showingShareSheet = false
-    @State private var generatedImage: UIImage?
-    
-    // 从 poemManager 中获取最新的诗歌状态
-    private var currentPoem: Poem? {
-        poemManager.allPoems.first(where: { $0.id == poem.id })
-    }
     
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
@@ -66,8 +60,8 @@ struct MyPoemDetailView: View {
             }
         }
         .sheet(isPresented: $showingShareSheet) {
-            if let image = generatedImage {
-                PoemImageView(image: image)
+            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) {
+                PoemImageView(poem: latestPoem)
             }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert) {
@@ -91,7 +85,7 @@ struct MyPoemDetailView: View {
                     .foregroundColor(Colors.textInk)
                     .padding(.horizontal, Spacing.lg)
                     .padding(.top, Spacing.lg)
-                    .onChange(of: editedTitle) { _ in
+                    .onChange(of: editedTitle) {
                         saveEdits()
                     }
                 
@@ -103,7 +97,7 @@ struct MyPoemDetailView: View {
                     .lineSpacing(8)
                     .frame(minHeight: 400)
                     .padding(.horizontal, Spacing.lg)
-                    .onChange(of: editedContent) { _ in
+                    .onChange(of: editedContent) {
                         saveEdits()
                     }
             }
@@ -130,15 +124,7 @@ struct MyPoemDetailView: View {
         // 先保存当前编辑
         saveEdits()
         
-        // 获取最新的诗歌数据
-        guard let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) else {
-            return
-        }
-        
-        // 生成图片
-        generatedImage = PoemImageGenerator.generate(poem: latestPoem)
-        
-        // 显示分享界面
+        // 显示分享界面（PoemImageView 会自动从 poemManager 获取最新数据）
         showingShareSheet = true
     }
     
