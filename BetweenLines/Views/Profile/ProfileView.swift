@@ -137,8 +137,8 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.sm)  // 减少顶部间距
-        .padding(.bottom, Spacing.xs)  // 减少底部间距
+        .padding(.top, Spacing.sm)  // 顶部间距
+        .padding(.bottom, Spacing.sm)  // 增加底部间距，与会员卡片拉开距离
     }
     
     // MARK: - Membership Card
@@ -249,7 +249,7 @@ struct ProfileView: View {
             .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
             .scaleButtonStyle()
             .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.xs)  // 进一步缩小底部间距
+            .padding(.bottom, Spacing.sm)  // 增加底部间距，与 Tab 拉开距离
     }
     
     // MARK: - Stats Section
@@ -310,7 +310,7 @@ struct ProfileView: View {
             }
             .padding(.horizontal, Spacing.lg)
         }
-        .padding(.vertical, Spacing.sm)  // 减少 tab 的上下间距
+        .padding(.vertical, Spacing.md)  // 增加 tab 的上下间距，让布局更舒适
     }
     
     // MARK: - Poems List
