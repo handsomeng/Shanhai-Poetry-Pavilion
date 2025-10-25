@@ -26,6 +26,11 @@ struct MyPoemDetailView: View {
     @State private var showSuccessView = false
     @State private var generatedImage: UIImage?
     
+    // 从 poemManager 中获取最新的诗歌状态
+    private var currentPoem: Poem? {
+        poemManager.allPoems.first(where: { $0.id == poem.id })
+    }
+    
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
         self.isDraft = isDraft
@@ -90,12 +95,10 @@ struct MyPoemDetailView: View {
                     .lineSpacing(8)
                     .frame(minHeight: 400)
                     .padding(.horizontal, Spacing.lg)
+                    .padding(.bottom, 0)
                     .onChange(of: editedContent) { _ in
                         saveEdits()
                     }
-                
-                // 底部留白，防止被按钮遮挡
-                Spacer(minLength: 20)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -106,31 +109,33 @@ struct MyPoemDetailView: View {
     // MARK: - Publish Button（底部按钮）
     
     private var publishButton: some View {
-        Button(action: publishToSquare) {
+        let isPublished = currentPoem?.inSquare ?? poem.inSquare
+        
+        return Button(action: publishToSquare) {
             HStack(spacing: 6) {
                 if isPublishing {
                     ProgressView()
                         .scaleEffect(0.7)
                         .tint(.white)
                 } else {
-                    Image(systemName: poem.inSquare ? "checkmark.circle.fill" : "square.and.arrow.up")
+                    Image(systemName: isPublished ? "checkmark.circle.fill" : "square.and.arrow.up")
                         .font(.system(size: 14))
                 }
                 
-                Text(poem.inSquare ? "已发布到广场" : "发布到广场")
+                Text(isPublished ? "已发布到广场" : "发布到广场")
                     .font(.system(size: 15))
             }
-            .foregroundColor(poem.inSquare ? Colors.textSecondary : .white)
+            .foregroundColor(isPublished ? Colors.textSecondary : .white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
-            .background(poem.inSquare ? Colors.backgroundCream : Colors.accentTeal)
+            .background(isPublished ? Colors.backgroundCream : Colors.accentTeal)
             .cornerRadius(CornerRadius.small)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.small)
-                    .stroke(poem.inSquare ? Colors.border : Color.clear, lineWidth: 1)
+                    .stroke(isPublished ? Colors.border : Color.clear, lineWidth: 1)
             )
         }
-        .disabled(poem.inSquare || isPublishing)
+        .disabled(isPublished || isPublishing)
         .padding(.horizontal, Spacing.lg)
         .padding(.top, 8)
         .padding(.bottom, 8)
@@ -159,8 +164,9 @@ struct MyPoemDetailView: View {
     /// - 发布后，本地修改会自动覆盖广场上的内容
     /// - 从广场删除不影响本地诗集
     private func publishToSquare() {
-        // 检查是否已发布
-        if poem.inSquare {
+        // 检查最新状态是否已发布
+        let isPublished = currentPoem?.inSquare ?? poem.inSquare
+        if isPublished {
             return
         }
         
@@ -173,9 +179,14 @@ struct MyPoemDetailView: View {
             do {
                 print("🚀 [MyPoemDetailView] 开始发布到广场...")
                 
+                // 获取最新的诗歌数据
+                guard let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) else {
+                    throw NSError(domain: "MyPoemDetailView", code: -1, userInfo: [NSLocalizedDescriptionKey: "找不到诗歌"])
+                }
+                
                 // 使用 PoemManager 发布到本地广场
                 // 发布后，本地和广场共享同一个 poem.id
-                try poemManager.publishToSquare(poem)
+                try poemManager.publishToSquare(latestPoem)
                 
                 print("✅ [MyPoemDetailView] 发布成功！")
                 
