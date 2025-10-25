@@ -9,12 +9,10 @@ import SwiftUI
 
 struct ProfileView: View {
     
-    // 后端服务
-    @StateObject private var poemService = PoemService.shared
-    
-    // 本地服务（用于收藏和会员）
+    // 本地服务
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var identityService = UserIdentityService()
     
     // UI 状态
     @State private var selectedTab: ProfileTab = .collection
@@ -24,41 +22,21 @@ struct ProfileView: View {
     @State private var showingSubscription = false
     @State private var showingMembershipDetail = false
     @State private var showingPoetTitle = false
-    @State private var showingLogin = false
-    @State private var showingLogoutConfirm = false
-    @State private var myPublishedPoems: [Poem] = []
-    @State private var myDraftPoems: [Poem] = []
     
     enum ProfileTab: String, CaseIterable {
         case collection = "诗集"
         case drafts = "草稿"
-        case published = "已发布"
     }
     
-    // 显示的用户名（优先使用本地笔名）
+    // 显示的用户名
     private var displayUsername: String {
-        if authService.isAuthenticated {
-            // 如果云端用户名是默认格式（诗人+数字），优先使用本地笔名
-            let cloudUsername = authService.currentProfile?.username ?? ""
-            let localPenName = UserDefaults.standard.string(forKey: "penName") ?? ""
-            
-            if cloudUsername.hasPrefix("诗人") && !localPenName.isEmpty {
-                return localPenName
-            } else {
-                return cloudUsername.isEmpty ? poemManager.currentUserName : cloudUsername
-            }
-        } else {
-            return poemManager.currentUserName
-        }
+        return identityService.penName.isEmpty ? "山海诗人" : identityService.penName
     }
     
-    // 用户序号（真实注册序号）
+    // 用户序号（基于设备 ID 生成一个稳定的数字）
     private var userNumber: String {
-        if authService.isAuthenticated, let number = authService.currentProfile?.userNumber {
-            // 直接显示数字，不补零
-            return String(number)
-        }
-        return "1"
+        let hashValue = abs(identityService.userId.hashValue)
+        return String(hashValue % 100000 + 1) // 1-100000 之间的数字
     }
     
     var body: some View {
@@ -84,26 +62,12 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: Spacing.md) {
-                        // 设置按钮
-                        Button(action: {
-                            showingSettings = true
-                        }) {
-                            Image(systemName: "gearshape")
-                                .font(.system(size: 18, weight: .ultraLight))
-                                .foregroundColor(Colors.textSecondary)
-                        }
-                        
-                        // 登出按钮（仅已登录时显示）
-                        if authService.isAuthenticated {
-                            Button(action: {
-                                showingLogoutConfirm = true
-                            }) {
-                                Image(systemName: "rectangle.portrait.and.arrow.right")
-                                    .font(.system(size: 18, weight: .ultraLight))
-                                    .foregroundColor(Colors.error)
-                            }
-                        }
+                    Button(action: {
+                        showingSettings = true
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 18, weight: .ultraLight))
+                            .foregroundColor(Colors.textSecondary)
                     }
                 }
             }
@@ -119,17 +83,6 @@ struct ProfileView: View {
             .sheet(isPresented: $showingPoetTitle) {
                 PoetTitleView()
             }
-            .sheet(isPresented: $showingLogin) {
-                LoginView()
-            }
-            .alert("确认退出登录", isPresented: $showingLogoutConfirm) {
-                Button("取消", role: .cancel) { }
-                Button("退出", role: .destructive) {
-                    authService.signOut()
-                }
-            } message: {
-                Text("退出后将无法发布诗歌和使用互动功能")
-            }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
             Button("取消", role: .cancel) {}
@@ -139,72 +92,19 @@ struct ProfileView: View {
         } message: { poem in
             Text("确定要删除《\(poem.title)》吗？")
         }
-        .task {
-            // 加载用户诗歌
-            if authService.isAuthenticated {
-                await loadUserPoems()
-            }
-        }
-        .onChange(of: authService.isAuthenticated) { oldValue, newValue in
-            if newValue {
-                Task {
-                    await loadUserPoems()
-                }
-            } else {
-                myPublishedPoems = []
-                myDraftPoems = []
-            }
-        }
-        .onChange(of: selectedTab) { oldValue, newValue in
-            if authService.isAuthenticated {
-                Task {
-                    await loadUserPoems()
-                }
-            }
-        }
-    }
-    
-    // MARK: - Load User Poems
-    
-    private func loadUserPoems() async {
-        guard let userId = authService.currentUser?.id else { return }
-        
-        do {
-            try await poemService.fetchMyPoems(authorId: userId)
-            
-            // 分类为草稿和已发布
-            let allPoems = poemService.myPoems
-            myDraftPoems = allPoems.filter { $0.isDraft }.map { $0.toLocalPoem(authorName: authService.currentProfile?.username ?? "我") }
-            myPublishedPoems = allPoems.filter { $0.isPublished }.map { $0.toLocalPoem(authorName: authService.currentProfile?.username ?? "我") }
-        } catch {
-            print("加载用户诗歌失败: \(error)")
-        }
     }
     
     // MARK: - Delete Poem
     
     private func deletePoem(_ poem: Poem) {
-        if authService.isAuthenticated && (selectedTab == .drafts || selectedTab == .published) {
-            // 后端删除
-            Task {
-                do {
-                    try await poemService.deletePoem(id: poem.id)
-                    await loadUserPoems()
-                } catch {
-                    print("删除失败: \(error)")
-                }
-            }
-        } else {
-            // 本地删除（诗集）
-            poemManager.deletePoem(poem)
-        }
+        poemManager.deletePoem(poem)
     }
     
     // MARK: - Header Section
     
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            // 第一行：笔名 + 会员/登录按钮
+            // 第一行：笔名 + 会员标识
             HStack(alignment: .center, spacing: Spacing.sm) {
                 // 大字笔名
                 Text(displayUsername)
@@ -212,27 +112,18 @@ struct ProfileView: View {
                     .foregroundColor(Colors.textInk)
                 
                 // 会员标识
-                if authService.isAuthenticated && subscriptionManager.isSubscribed {
+                if subscriptionManager.isSubscribed {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 16))
                         .foregroundColor(Color(hex: "D4AF37"))
                 }
                 
                 Spacer()
-                
-                // 登录按钮（仅未登录时显示）
-                if !authService.isAuthenticated {
-                    Button("登录") {
-                        showingLogin = true
-                    }
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.accentTeal)
-                }
             }
             
             // 第二行：标签（称号 · 序号）
             HStack(spacing: Spacing.sm) {
-                // 称号标签（始终使用客户端计算，不依赖数据库）
+                // 称号标签
                 TagView(text: currentPoetTitle)
                 
                 // 序号标签
@@ -241,16 +132,9 @@ struct ProfileView: View {
             
             // 第三行：统计信息（可点击查看称号详情）
             Button(action: {
-                if authService.isAuthenticated {
-                    // 已登录：显示称号详情
-                    showingPoetTitle = true
-                } else {
-                    // 未登录：提示登录
-                    showingLogin = true
-                }
+                showingPoetTitle = true
             }) {
                 HStack(spacing: 4) {
-                    // V1版本：统一使用本地计算（因为广场已关闭，后端数据不准确）
                     Text(statsText)
                         .font(Fonts.bodyRegular())
                         .foregroundColor(Colors.textSecondary)
@@ -266,7 +150,7 @@ struct ProfileView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.sm)  // 缩小底部间距
+        .padding(.bottom, Spacing.sm)
     }
     
     // MARK: - Membership Card
@@ -444,69 +328,30 @@ struct ProfileView: View {
     // MARK: - Poems List
     
     private var poemsListSection: some View {
-        Group {
-            if selectedTab == .published {
-                // V1版本：广场建设中
-                publishedPlaceholderView
-            } else {
-                // 诗集和草稿正常显示
-                ScrollView {
-                    LazyVStack(spacing: Spacing.md) {
-                        ForEach(currentPoems) { poem in
-                            NavigationLink(destination: destinationView(for: poem)) {
-                                MyPoemCard(poem: poem)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    poemToDelete = poem
-                                    showingDeleteAlert = true
-                                } label: {
-                                    Label("删除", systemImage: "trash")
-                                }
-                            }
-                        }
-                        
-                        if currentPoems.isEmpty {
-                            emptyStateView
+        ScrollView {
+            LazyVStack(spacing: Spacing.md) {
+                ForEach(currentPoems) { poem in
+                    NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)) {
+                        MyPoemCard(poem: poem)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            poemToDelete = poem
+                            showingDeleteAlert = true
+                        } label: {
+                            Label("删除", systemImage: "trash")
                         }
                     }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.vertical, Spacing.md)
+                }
+                
+                if currentPoems.isEmpty {
+                    emptyStateView
                 }
             }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
         }
-    }
-    
-    // V1版本：已发布占位视图
-    private var publishedPlaceholderView: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            Image(systemName: "square.and.arrow.up")
-                .font(.system(size: 60))
-                .foregroundColor(Colors.textInk)
-            
-            VStack(spacing: 12) {
-                Text("诗歌广场")
-                    .font(Fonts.h2())
-                    .foregroundColor(Colors.textInk)
-                
-                Text("建设中...")
-                    .font(Fonts.body())
-                    .foregroundColor(Colors.textSecondary)
-            }
-            
-            Text("您可以先将诗歌保存到【诗集】\n待广场开放后再发布")
-                .font(Fonts.body())
-                .foregroundColor(Colors.textTertiary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 8)
-            
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, Spacing.lg)
     }
     
     private var emptyStateView: some View {
@@ -527,14 +372,9 @@ struct ProfileView: View {
     private var currentPoems: [Poem] {
         switch selectedTab {
         case .collection:
-            // 诗集：继续使用本地收藏
             return poemManager.myCollection
         case .drafts:
-            // 草稿：使用后端数据（如果已登录）
-            return authService.isAuthenticated ? myDraftPoems : poemManager.myDrafts
-        case .published:
-            // 已发布：使用后端数据（如果已登录）
-            return authService.isAuthenticated ? myPublishedPoems : poemManager.myPublishedToSquare
+            return poemManager.myDrafts
         }
     }
     
@@ -542,7 +382,6 @@ struct ProfileView: View {
         switch selectedTab {
         case .collection: return "doc.text"
         case .drafts: return "doc.plaintext"
-        case .published: return "square.and.arrow.up"
         }
     }
     
@@ -550,42 +389,19 @@ struct ProfileView: View {
         switch selectedTab {
         case .collection: return "还没有保存作品"
         case .drafts: return "没有草稿"
-        case .published: return "还没有发布到广场"
         }
     }
     
-    private func destinationView(for poem: Poem) -> some View {
-        Group {
-            if selectedTab == .published {
-                // 已发布的诗歌跳转到广场详情页
-                PoemDetailView(poem: poem)
-            } else {
-                // 诗集和草稿跳转到新的编辑详情页
-                MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)
-            }
-        }
-    }
-    
-    /// 当前诗人称号（始终使用客户端本地计算，不依赖数据库）
+    /// 当前诗人称号
     private var currentPoetTitle: String {
-        // V1版本：统一使用本地计算（因为广场已关闭，后端数据不准确）
         let poemCount = poemManager.myStats.totalPoems
-        // 客户端计算称号（与 PoetTitle.swift 保持一致）
         return PoetTitle.title(forPoemCount: poemCount).displayName
     }
     
-    /// 统计文本（V1版本：诗歌数量使用本地计算）
+    /// 统计文本
     private var statsText: String {
         let stats = poemManager.myStats
-        let likeCount: Int
-        if authService.isAuthenticated, let profile = authService.currentProfile {
-            // 已登录：使用后端的点赞数
-            likeCount = profile.totalLikes
-        } else {
-            // 未登录：使用本地的点赞数
-            likeCount = stats.totalLikes
-        }
-        return "已写 \(stats.totalPoems) 首诗，获得 \(likeCount) 个赞"
+        return "已写 \(stats.totalPoems) 首诗，获得 \(stats.totalLikes) 个赞"
     }
 }
 
