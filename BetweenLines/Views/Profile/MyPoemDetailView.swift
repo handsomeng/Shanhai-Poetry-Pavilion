@@ -22,6 +22,7 @@ struct MyPoemDetailView: View {
     
     @State private var showingDeleteAlert = false
     @State private var showingShareSheet = false
+    @State private var generatedImage: UIImage? = nil
     
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
@@ -61,9 +62,14 @@ struct MyPoemDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingShareSheet) {
-            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) {
-                PoemImageView(poem: latestPoem)
+        .fullScreenCover(isPresented: $showingShareSheet) {
+            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }),
+               let image = generatedImage {
+                PoemSuccessView(
+                    poem: latestPoem,
+                    poemImage: image,
+                    showWriteAgain: false
+                )
             }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert) {
@@ -125,8 +131,28 @@ struct MyPoemDetailView: View {
         // 先保存当前编辑
         saveEdits()
         
-        // 显示分享界面（PoemImageView 会自动从 poemManager 获取最新数据）
-        showingShareSheet = true
+        // 获取最新的诗歌数据
+        guard let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) else {
+            ToastManager.shared.showError("诗歌数据加载失败")
+            return
+        }
+        
+        // 生成诗歌图片
+        Task {
+            let renderer = ImageRenderer(content: PoemImageView(poem: latestPoem))
+            renderer.scale = 3.0 // 高清图片
+            
+            if let image = renderer.uiImage {
+                await MainActor.run {
+                    self.generatedImage = image
+                    self.showingShareSheet = true
+                }
+            } else {
+                await MainActor.run {
+                    ToastManager.shared.showError("图片生成失败")
+                }
+            }
+        }
     }
     
     /// 删除诗歌

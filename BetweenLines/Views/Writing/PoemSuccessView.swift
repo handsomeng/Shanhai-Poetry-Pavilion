@@ -12,15 +12,23 @@ struct PoemSuccessView: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemService = PoemService.shared
+    @StateObject private var poemManager = PoemManager.shared
     
     let poem: Poem
     let poemImage: UIImage
+    let showWriteAgain: Bool // 是否显示"再写一首"按钮
     
     @State private var isPublishing = false
     @State private var showLoginSheet = false
     @State private var showAIComment = false
     @State private var aiComment = ""
     @State private var isLoadingAI = false
+    
+    init(poem: Poem, poemImage: UIImage, showWriteAgain: Bool = true) {
+        self.poem = poem
+        self.poemImage = poemImage
+        self.showWriteAgain = showWriteAgain
+    }
     
     var body: some View {
         ZStack {
@@ -133,29 +141,38 @@ struct PoemSuccessView: View {
                             .scaleEffect(0.9)
                             .tint(.white)
                     } else {
-                        Image(systemName: "paperplane.fill")
+                        Image(systemName: currentPoem?.inSquare == true ? "checkmark.circle.fill" : "paperplane.fill")
                     }
-                    Text("发布到广场")
+                    Text(currentPoem?.inSquare == true ? "已发布到广场" : "发布到广场")
                         .fontWeight(.medium)
                 }
                 .font(Fonts.bodyRegular())
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.md)
-                .background(Colors.accentTeal)
+                .background(currentPoem?.inSquare == true ? Colors.textSecondary : Colors.accentTeal)
                 .cornerRadius(CornerRadius.medium)
             }
-            .disabled(isPublishing)
+            .disabled(isPublishing || currentPoem?.inSquare == true)
             
-            // 再写一首提示
-            Button(action: { dismiss() }) {
-                Text("再写一首")
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.textTertiary)
-                    .padding(.top, 8)
+            // 再写一首提示（可选显示）
+            if showWriteAgain {
+                Button(action: { dismiss() }) {
+                    Text("再写一首")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textTertiary)
+                        .padding(.top, 8)
+                }
             }
         }
         .padding(.horizontal, Spacing.xl)
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// 获取最新的诗歌状态（用于判断是否已发布）
+    private var currentPoem: Poem? {
+        poemManager.allPoems.first(where: { $0.id == poem.id })
     }
     
     // MARK: - Actions
