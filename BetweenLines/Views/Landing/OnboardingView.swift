@@ -278,11 +278,10 @@ struct PenNamePageView: View {
     let pageIndex: Int
     let totalPages: Int
     
+    @StateObject private var identityService = UserIdentityService()
     @State private var penName: String = ""
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
-    @State private var showLoginInvitation = false
-    @State private var showLoginSheet = false
     @State private var animateContent = false
     
     var body: some View {
@@ -344,10 +343,12 @@ struct PenNamePageView: View {
                     showError = true
                     return
                 }
-                // 保存笔名
+                // 保存笔名到 UserIdentityService
+                identityService.setPenName(trimmed)
+                // 同时保存到 UserDefaults（兼容旧代码）
                 UserDefaults.standard.set(trimmed, forKey: "penName")
-                // 显示登录邀请
-                showLoginInvitation = true
+                // 完成引导
+                completeOnboarding()
             }) {
                 Text("开始创作")
                     .font(.system(size: 15, weight: .regular))
@@ -370,37 +371,6 @@ struct PenNamePageView: View {
         .onAppear {
             withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
                 animateContent = true
-            }
-        }
-        .alert("登录云端账号", isPresented: $showLoginInvitation) {
-            Button("立即登录", role: nil) {
-                // 先触发网络权限请求，再显示登录界面
-                Task {
-                    print("🌐 [Onboarding] 开始网络预检...")
-                    _ = await SupabaseHTTPClient.ensureNetworkPermission()
-                    
-                    // 给一个小延迟，确保权限弹窗处理完毕
-                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5秒
-                    
-                    await MainActor.run {
-                        print("🌐 [Onboarding] 网络预检完成，显示登录界面")
-                        showLoginSheet = true
-                    }
-                }
-            }
-            Button("稍后再说", role: .cancel) {
-                completeOnboarding()
-            }
-        } message: {
-            Text("登录后可以云端保存你的创作，支持多设备同步")
-        }
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
-        .onChange(of: showLoginSheet) { oldValue, newValue in
-            // 当登录界面关闭时，完成 onboarding
-            if oldValue == true && newValue == false {
-                completeOnboarding()
             }
         }
     }

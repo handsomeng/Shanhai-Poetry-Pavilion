@@ -9,10 +9,9 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var authService = AuthService.shared
+    @StateObject private var identityService = UserIdentityService()
     @AppStorage("penName") private var penName: String = ""
     @State private var showResetAlert = false
-    @State private var showDeleteAccountAlert = false
     @State private var showSuccessToast = false
     
     var body: some View {
@@ -104,36 +103,14 @@ struct SettingsView: View {
                             }
                         }
                         
-                        // 危险操作区域
+                        // 数据管理区域
                         settingsSection(title: "数据管理") {
-                            // 删除账号（仅已登录用户）
-                            if authService.isAuthenticated {
-                                Button(action: {
-                                    showDeleteAccountAlert = true
-                                }) {
-                                    HStack {
-                                        Text("删除账号")
-                                            .font(Fonts.bodyRegular())
-                                            .foregroundColor(Colors.error)
-                                        Spacer()
-                                        Image(systemName: "person.crop.circle.badge.xmark")
-                                            .font(.system(size: 14, weight: .ultraLight))
-                                            .foregroundColor(Colors.error)
-                                    }
-                                    .padding(.vertical, Spacing.md)
-                                    .padding(.horizontal, Spacing.md)
-                                }
-                                
-                                Divider()
-                                    .padding(.horizontal, Spacing.md)
-                            }
-                            
                             // 重置本地数据
                             Button(action: {
                                 showResetAlert = true
                             }) {
                                 HStack {
-                                    Text("重置本地数据")
+                                    Text("重置所有数据")
                                         .font(Fonts.bodyRegular())
                                         .foregroundColor(Colors.error)
                                     Spacer()
@@ -181,21 +158,13 @@ struct SettingsView: View {
                     .foregroundColor(Colors.textInk)
                 }
             }
-            .alert("重置本地数据", isPresented: $showResetAlert) {
+            .alert("重置所有数据", isPresented: $showResetAlert) {
                 Button("取消", role: .cancel) {}
                 Button("确认重置", role: .destructive) {
                     resetAllData()
                 }
             } message: {
-                Text("此操作将删除本地的所有诗歌、草稿和个人信息，且不可恢复。确定要继续吗？")
-            }
-            .alert("删除账号", isPresented: $showDeleteAccountAlert) {
-                Button("取消", role: .cancel) {}
-                Button("确认删除", role: .destructive) {
-                    deleteAccount()
-                }
-            } message: {
-                Text("删除账号后，您的所有数据（包括云端数据）将被永久删除，且不可恢复。确定要继续吗？")
+                Text("此操作将删除所有诗歌、草稿、个人信息和云端数据，且不可恢复。确定要继续吗？")
             }
         }
     }
@@ -307,50 +276,29 @@ struct SettingsView: View {
     // MARK: - 重置数据
     
     private func resetAllData() {
-        // 清除本地所有诗歌数据
+        // 1. 清除本地所有诗歌数据
         PoemManager.shared.deleteAll()
         
-        // 清空笔名
+        // 2. 清空笔名
         penName = ""
+        identityService.setPenName("")
         
-        ToastManager.shared.showSuccess("本地数据已重置")
+        // 3. 清除所有 UserDefaults 数据
+        let domain = Bundle.main.bundleIdentifier!
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        UserDefaults.standard.synchronize()
+        
+        // 4. 清除 iCloud 数据
+        let iCloudStore = NSUbiquitousKeyValueStore.default
+        iCloudStore.dictionaryRepresentation.keys.forEach { key in
+            iCloudStore.removeObject(forKey: key)
+        }
+        iCloudStore.synchronize()
+        
+        ToastManager.shared.showSuccess("所有数据已重置")
         
         // 关闭设置页
         dismiss()
-    }
-    
-    // MARK: - 删除账号
-    
-    private func deleteAccount() {
-        Task {
-            // 1. 调用后端 API 删除账号（如果有）
-            // TODO: 添加后端删除账号 API
-            
-            // 2. 登出
-            await authService.signOut()
-            
-            // 3. 清除本地所有数据
-            let domain = Bundle.main.bundleIdentifier!
-            UserDefaults.standard.removePersistentDomain(forName: domain)
-            UserDefaults.standard.synchronize()
-            
-            // 4. 清除诗歌数据
-            PoemManager.shared.deleteAll()
-            
-            // 5. 清除 iCloud 数据
-            let iCloudStore = NSUbiquitousKeyValueStore.default
-            iCloudStore.dictionaryRepresentation.keys.forEach { key in
-                iCloudStore.removeObject(forKey: key)
-            }
-            iCloudStore.synchronize()
-            
-            await MainActor.run {
-                ToastManager.shared.showSuccess("账号已删除")
-                dismiss()
-            }
-            
-            // 注意：这会导致应用返回引导页
-        }
     }
 }
 

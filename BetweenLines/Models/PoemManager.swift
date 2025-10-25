@@ -55,31 +55,22 @@ class PoemManager: ObservableObject {
     
     // MARK: - 私有属性
     
-    /// 当前登录用户的 ID（用于数据隔离）
-    private var currentUserId: String? {
-        return AuthService.shared.currentUser?.id
+    /// 用户身份服务
+    private let identityService = UserIdentityService()
+    
+    /// 当前用户的 ID（设备唯一标识）
+    private var currentUserId: String {
+        return identityService.userId
     }
     
-    /// UserDefaults 存储键（动态，基于 userId）
+    /// UserDefaults 存储键（基于设备 userId）
     private var poemsKey: String {
-        if let userId = currentUserId {
-            // 已登录：数据绑定 userID
-            return "saved_poems_\(userId)"
-        } else {
-            // 游客：使用本地 key（不同步）
-            return "saved_poems_guest"
-        }
+        return "saved_poems_\(currentUserId)"
     }
     
-    /// iCloud 存储键（动态，基于 userId）
+    /// iCloud 存储键（基于设备 userId，自动同步）
     private var iCloudPoemsKey: String {
-        if let userId = currentUserId {
-            // 已登录：同步到 iCloud
-            return "icloud_poems_\(userId)"
-        } else {
-            // 游客：不同步到 iCloud（返回空 key，后续逻辑会跳过）
-            return ""
-        }
+        return "icloud_poems_\(currentUserId)"
     }
     
     private let publicPoemsKey = "public_poems"
@@ -95,7 +86,7 @@ class PoemManager: ObservableObject {
         // loadPublicPoems() // V2-lite: 移除示例诗歌，让用户从空白开始
         observePenNameChanges()
         observeiCloudChanges()
-        observeAuthChanges()
+        // observeAuthChanges() // 已移除登录系统，不需要监听账号变化
     }
     
     // MARK: - 计算属性（新逻辑）
@@ -109,7 +100,7 @@ class PoemManager: ObservableObject {
             if let poemUserId = poem.userId {
                 let match = (poemUserId == currentUserId)
                 if !match {
-                    print("   [myCollection] 跳过诗歌 '\(poem.title)' (userId不匹配: \(poemUserId) != \(currentUserId ?? "nil"))")
+                    print("   [myCollection] 跳过诗歌 '\(poem.title)' (userId不匹配: \(poemUserId) != \(currentUserId))")
                 }
                 return match
             }
@@ -214,14 +205,14 @@ class PoemManager: ObservableObject {
         print("   • 诗歌标题: \(poem.title)")
         print("   • 诗歌ID: \(poem.id)")
         print("   • 诗歌userId: \(poem.userId ?? "nil")")
-        print("   • currentUserId: \(currentUserId ?? "nil")")
+        print("   • currentUserId: \(currentUserId)")
         print("   • 当前allPoems数量: \(allPoems.count)")
         
         // ⚠️ 关键修复：如果诗歌没有 userId，自动设置为当前用户 ID
         var poemToSave = poem
-        if poemToSave.userId == nil && currentUserId != nil {
+        if poemToSave.userId == nil {
             poemToSave.userId = currentUserId
-            print("🔧 [saveToCollection] 自动设置 userId: \(currentUserId!)")
+            print("🔧 [saveToCollection] 自动设置 userId: \(currentUserId)")
         }
         
         // 检查是否已存在相同内容的诗歌（防止重复保存）
@@ -401,7 +392,7 @@ class PoemManager: ObservableObject {
     private func savePoems() {
         print("💾 [PoemManager] savePoems() 被调用")
         print("   • allPoems 数量: \(allPoems.count)")
-        print("   • currentUserId: \(currentUserId ?? "nil(游客)")")
+        print("   • currentUserId: \(currentUserId)")
         
         // 只保存当前用户的诗歌（使用 userId 严格隔离）
         let myPoems = allPoems.filter { poem in
@@ -411,21 +402,14 @@ class PoemManager: ObservableObject {
             if let poemUserId = poem.userId {
                 let match = (poemUserId == currentUserId)
                 if !match {
-                    print("   • 跳过诗歌 '\(poem.title)' (userId: \(poemUserId) != currentUserId: \(currentUserId ?? "nil"))")
+                    print("   • 跳过诗歌 '\(poem.title)' (userId: \(poemUserId) != currentUserId: \(currentUserId))")
                 }
                 return match
             }
             
             // 兼容旧数据（没有 userId 的诗歌，使用 authorName）
-            // 但只在未登录（游客模式）时才使用 authorName 过滤
-            if currentUserId == nil {
-                print("   • 包含旧诗歌 '\(poem.title)' (无userId，用authorName)")
-                return poem.authorName == currentUserName
-            }
-            
-            // 已登录但诗歌没有 userId：不保存（防止数据混淆）
-            print("   • 跳过旧诗歌 '\(poem.title)' (已登录但无userId)")
-            return false
+            print("   • 包含旧诗歌 '\(poem.title)' (无userId，用authorName)")
+            return poem.authorName == currentUserName
         }
         
         print("   • 过滤后待保存诗歌数量: \(myPoems.count)")
@@ -443,32 +427,24 @@ class PoemManager: ObservableObject {
         UserDefaults.standard.set(encoded, forKey: localKey)
         print("💾 [PoemManager] 已保存到本地: \(localKey) (\(myPoems.count) 首诗)")
         
-        // 2. 同步到 iCloud（仅已登录用户）
-        if !iCloudPoemsKey.isEmpty {
-            DispatchQueue.main.async { [weak self] in
-                self?.syncStatus = .syncing
-            }
-            
-            let iCloudStore = NSUbiquitousKeyValueStore.default
-            iCloudStore.set(encoded, forKey: iCloudPoemsKey)
-            
-            // 立即同步到 iCloud
-            let synced = iCloudStore.synchronize()
-            
-            DispatchQueue.main.async { [weak self] in
-                if synced {
-                    self?.syncStatus = .synced
-                    print("☁️ [PoemManager] 已同步到 iCloud: \(self?.iCloudPoemsKey ?? "") (\(myPoems.count) 首诗)")
-                } else {
-                    self?.syncStatus = .idle
-                    print("⚠️ [PoemManager] iCloud 同步可能延迟")
-                }
-            }
-        } else {
-            // 游客模式，不同步到 iCloud
-            print("👤 [PoemManager] 游客模式，仅保存到本地")
-            DispatchQueue.main.async { [weak self] in
+        // 2. 同步到 iCloud（自动同步）
+        DispatchQueue.main.async { [weak self] in
+            self?.syncStatus = .syncing
+        }
+        
+        let iCloudStore = NSUbiquitousKeyValueStore.default
+        iCloudStore.set(encoded, forKey: iCloudPoemsKey)
+        
+        // 立即同步到 iCloud
+        let synced = iCloudStore.synchronize()
+        
+        DispatchQueue.main.async { [weak self] in
+            if synced {
+                self?.syncStatus = .synced
+                print("☁️ [PoemManager] 已同步到 iCloud: \(self?.iCloudPoemsKey ?? "") (\(myPoems.count) 首诗)")
+            } else {
                 self?.syncStatus = .idle
+                print("⚠️ [PoemManager] iCloud 同步可能延迟")
             }
         }
     }
@@ -479,9 +455,8 @@ class PoemManager: ObservableObject {
         let cloudKey = iCloudPoemsKey
         let iCloudStore = NSUbiquitousKeyValueStore.default
         
-        // 1. 已登录用户：优先从 iCloud 加载（最新数据）
-        if !cloudKey.isEmpty,
-           let iCloudData = iCloudStore.data(forKey: cloudKey),
+        // 1. 优先从 iCloud 加载（最新数据）
+        if let iCloudData = iCloudStore.data(forKey: cloudKey),
            let decoded = try? JSONDecoder().decode([Poem].self, from: iCloudData) {
             allPoems = decoded
             print("☁️ [PoemManager] 已从 iCloud 加载: \(cloudKey) (\(decoded.count) 首诗)")
@@ -503,12 +478,10 @@ class PoemManager: ObservableObject {
             // 迁移旧数据
             migrateOldPoems()
             
-            // 已登录用户：上传到 iCloud（首次同步）
-            if !cloudKey.isEmpty {
-                iCloudStore.set(localData, forKey: cloudKey)
-                iCloudStore.synchronize()
-                print("☁️ [PoemManager] 已将本地数据上传到 iCloud: \(cloudKey)")
-            }
+            // 上传到 iCloud（首次同步）
+            iCloudStore.set(localData, forKey: cloudKey)
+            iCloudStore.synchronize()
+            print("☁️ [PoemManager] 已将本地数据上传到 iCloud: \(cloudKey)")
             return
         }
         
@@ -518,12 +491,7 @@ class PoemManager: ObservableObject {
     /// 迁移旧数据：为没有 userId 的诗歌设置 userId
     private func migrateOldPoems() {
         var needsMigration = false
-        
-        // 只在已登录时才迁移（游客模式下的诗不需要 userId）
-        guard let userId = currentUserId else {
-            print("👤 [PoemManager] 游客模式，跳过数据迁移")
-            return
-        }
+        let userId = currentUserId
         
         for i in 0..<allPoems.count {
             // V2-lite: 已移除示例诗歌，无需跳过
@@ -567,67 +535,6 @@ class PoemManager: ObservableObject {
             .store(in: &cancellables)
     }
     
-    /// 监听账号登录/登出
-    private func observeAuthChanges() {
-        // 监听 AuthService 的登录状态变化
-        AuthService.shared.$isAuthenticated
-            .dropFirst() // 忽略初始值
-            .sink { [weak self] isAuthenticated in
-                guard let self = self else { return }
-                
-                // 使用 Task 确保在主线程且延迟一点点，让 AuthService 状态完全更新
-                Task { @MainActor in
-                    // 小延迟，确保 currentUser 已更新
-                    try? await Task.sleep(nanoseconds: 50_000_000) // 0.05秒
-                    
-                    if isAuthenticated {
-                        // 登录：重新加载该账号的数据
-                        let userId = AuthService.shared.currentUser?.id ?? "unknown"
-                        print("🔐 [PoemManager] 检测到登录，用户ID: \(userId)")
-                        self.reloadData()
-                    } else {
-                        // 登出：重新加载游客数据
-                        print("🔓 [PoemManager] 检测到登出，切换到游客模式")
-                        // 确保 currentUser 已清空
-                        if AuthService.shared.currentUser == nil {
-                            self.reloadData()
-                        } else {
-                            // 再等一下
-                            try? await Task.sleep(nanoseconds: 50_000_000)
-                            self.reloadData()
-                        }
-                    }
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    /// 重新加载数据（账号切换时）
-    private func reloadData() {
-        let oldCount = allPoems.count
-        let oldKey = poemsKey
-        
-        print("🔄 [PoemManager] 开始重新加载数据")
-        print("   • 旧数据数量: \(oldCount)")
-        print("   • 旧存储 key: \(oldKey)")
-        
-        // 清空当前数据
-        allPoems.removeAll()
-        
-        // 重新加载诗歌
-        loadPoems()
-        
-        // 重新加载示例
-        // loadPublicPoems() // V2-lite: 移除示例诗歌
-        
-        let newCount = allPoems.count
-        let newKey = poemsKey
-        
-        print("✅ [PoemManager] 数据重新加载完成")
-        print("   • 新数据数量: \(newCount)")
-        print("   • 新存储 key: \(newKey)")
-        print("   • 当前用户ID: \(currentUserId ?? "游客")")
-    }
     
     /// 更新所有诗歌的作者名
     private func updateAuthorName(from oldName: String, to newName: String) {
@@ -688,12 +595,6 @@ class PoemManager: ObservableObject {
         // 重新加载数据（使用动态 key）
         let cloudKey = iCloudPoemsKey
         let localKey = poemsKey
-        
-        guard !cloudKey.isEmpty else {
-            print("👤 [PoemManager] 游客模式，忽略 iCloud 变化")
-            return
-        }
-        
         let iCloudStore = NSUbiquitousKeyValueStore.default
         if let iCloudData = iCloudStore.data(forKey: cloudKey),
            let decoded = try? JSONDecoder().decode([Poem].self, from: iCloudData) {
