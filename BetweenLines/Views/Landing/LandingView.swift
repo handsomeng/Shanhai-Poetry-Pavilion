@@ -113,9 +113,6 @@ struct LandingView: View {
         } message: {
             Text("登录后可以将作品发布到广场，与其他诗友交流，还能云端保存你的创作")
         }
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
         .onChange(of: showLoginSheet) { oldValue, newValue in
             // 当登录界面关闭时，完成 onboarding
             if oldValue == true && newValue == false {

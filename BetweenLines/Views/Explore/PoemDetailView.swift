@@ -74,9 +74,6 @@ struct PoemDetailView: View {
         } message: {
             Text("确定要从广场删除这首诗吗？删除后其他用户将无法看到。")
         }
-        .sheet(isPresented: $showLoginSheet) {
-            LoginView()
-        }
         .task {
             loadInteractionStatus()
         }
@@ -185,39 +182,15 @@ struct PoemDetailView: View {
     
     /// 加载点赞和收藏状态
     private func loadInteractionStatus() {
-        // 初始化点赞数
+        // 初始化点赞数和本地状态
         likeCount = poem.squareLikeCount
-        
-        guard authService.isAuthenticated,
-              let userId = authService.currentUser?.id else {
-            return
-        }
-        
-        Task {
-            do {
-                // 检查点赞状态
-                let liked = try await interactionService.checkLiked(userId: userId, poemId: poem.id)
-                // 检查收藏状态
-                let favorited = try await interactionService.checkFavorited(userId: userId, poemId: poem.id)
-                
-                await MainActor.run {
-                    isLiked = liked
-                    isFavorited = favorited
-                }
-            } catch {
-                print("加载互动状态失败: \(error)")
-            }
-        }
+        isLiked = poem.isLiked
+        // 收藏状态从 PoemManager 获取
+        isFavorited = poemManager.myCollection.contains { $0.id == poem.id }
     }
     
     /// 处理点赞
     private func handleLike() {
-        guard authService.isAuthenticated,
-              let userId = authService.currentUser?.id else {
-            showLoginSheet = true
-            return
-        }
-        
         // 触发动画
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
             likeScale = 1.3
@@ -229,34 +202,16 @@ struct PoemDetailView: View {
             }
         }
         
-        // 立即更新 UI
-        let wasLiked = isLiked
+        // 切换点赞状态（本地）
+        poemManager.toggleLike(for: poem)
+        
+        // 更新 UI
         isLiked.toggle()
         likeCount += isLiked ? 1 : -1
-        
-        // 调用后端 API
-        Task {
-            do {
-                try await interactionService.toggleLike(userId: userId, poemId: poem.id)
-            } catch {
-                // 失败时回滚
-                await MainActor.run {
-                    isLiked = wasLiked
-                    likeCount += wasLiked ? 1 : -1
-                    toastManager.showError("操作失败")
-                }
-            }
-        }
     }
     
     /// 处理收藏
     private func handleFavorite() {
-        guard authService.isAuthenticated,
-              let userId = authService.currentUser?.id else {
-            showLoginSheet = true
-            return
-        }
-        
         // 触发动画
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
             favoriteScale = 1.3
@@ -268,53 +223,26 @@ struct PoemDetailView: View {
             }
         }
         
-        // 立即更新 UI
-        let wasFavorited = isFavorited
+        // 切换收藏状态
         isFavorited.toggle()
         
         if isFavorited {
+            // 添加到诗集
+            poemManager.saveToCollection(poem)
             toastManager.showSuccess("已添加到收藏")
         } else {
+            // 从诗集移除
+            poemManager.removeFromCollection(poem)
             toastManager.showSuccess("已取消收藏")
-        }
-        
-        // 调用后端 API
-        Task {
-            do {
-                try await interactionService.toggleFavorite(userId: userId, poemId: poem.id)
-            } catch {
-                // 失败时回滚
-                await MainActor.run {
-                    isFavorited = wasFavorited
-                    toastManager.showError("操作失败")
-                }
-            }
         }
     }
     
     /// 删除诗歌
     private func deletePoem() {
-        if authService.isAuthenticated {
-            // 后端删除
-            Task {
-                do {
-                    try await poemService.deletePoem(id: poem.id)
-                    await MainActor.run {
-                        toastManager.showSuccess("已删除")
-                        dismiss()
-                    }
-                } catch {
-                    await MainActor.run {
-                        toastManager.showError("删除失败")
-                    }
-                }
-            }
-        } else {
-            // 本地删除
-            poemManager.removeFromSquare(poem)
-            toastManager.showSuccess("已从广场删除")
-            dismiss()
-        }
+        // 从广场删除
+        poemManager.removeFromSquare(poem)
+        toastManager.showSuccess("已从广场删除")
+        dismiss()
     }
 }
 
