@@ -91,17 +91,11 @@ private struct SquarePoemCard: View {
     let poem: Poem
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            // 标题和作者
-            VStack(alignment: .leading, spacing: 4) {
-                Text(poem.title.isEmpty ? "无标题" : poem.title)
-                    .font(Fonts.bodyLarge())
-                    .foregroundColor(Colors.textInk)
-                
-                Text(poem.authorName)
-                    .font(Fonts.body())  // 从 captionSmall 改为 body
-                    .foregroundColor(Colors.textSecondary)
-            }
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            // 标题（加粗加大）
+            Text(poem.title.isEmpty ? "无标题" : poem.title)
+                .font(.system(size: 20, weight: .bold, design: .serif))
+                .foregroundColor(Colors.textInk)
             
             // 诗歌内容
             Text(poem.content)
@@ -110,27 +104,38 @@ private struct SquarePoemCard: View {
                 .lineSpacing(4)
                 .lineLimit(4)
             
-            // 底部信息：日期 + 点赞数
-            HStack {
-                Text(poem.shortDate)
-                    .font(Fonts.footnote())
-                    .foregroundColor(Colors.textSecondary)
+            // 底部信息：作者 + 日期（左）+ 点赞数（右）
+            HStack(alignment: .center) {
+                // 左侧：作者 · 时间
+                HStack(spacing: 4) {
+                    Text(poem.authorName)
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
+                    
+                    Text("·")
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary.opacity(0.5))
+                    
+                    Text(poem.shortDate)
+                        .font(Fonts.caption())
+                        .foregroundColor(Colors.textSecondary)
+                }
                 
                 Spacer()
                 
-                // 点赞数
+                // 右侧：点赞数
                 HStack(spacing: 4) {
                     Image(systemName: poem.isLiked ? "heart.fill" : "heart")
                         .font(.system(size: 14))
                         .foregroundColor(poem.isLiked ? .red : Colors.textSecondary)
                     
                     Text("\(poem.squareLikeCount)")
-                        .font(Fonts.footnote())
+                        .font(Fonts.caption())
                         .foregroundColor(Colors.textSecondary)
                 }
             }
         }
-        .padding(Spacing.md)  // 从 lg 改为 md，减少留白
+        .padding(Spacing.md)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
