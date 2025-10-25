@@ -26,6 +26,7 @@ struct ProfileView: View {
     enum ProfileTab: String, CaseIterable {
         case collection = "诗集"
         case drafts = "草稿"
+        case published = "广场"
     }
     
     // 显示的用户名
@@ -331,7 +332,7 @@ struct ProfileView: View {
         ScrollView {
             LazyVStack(spacing: Spacing.md) {
                 ForEach(currentPoems) { poem in
-                    NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)) {
+                    NavigationLink(destination: destinationView(for: poem)) {
                         MyPoemCard(poem: poem)
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -351,6 +352,17 @@ struct ProfileView: View {
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.vertical, Spacing.md)
+        }
+    }
+    
+    @ViewBuilder
+    private func destinationView(for poem: Poem) -> some View {
+        if selectedTab == .published {
+            // 已发布到广场的诗歌，跳转到广场详情页（可以看点赞等互动）
+            PoemDetailView(poem: poem)
+        } else {
+            // 诗集和草稿，跳转到编辑详情页
+            MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)
         }
     }
     
@@ -375,6 +387,8 @@ struct ProfileView: View {
             return poemManager.myCollection
         case .drafts:
             return poemManager.myDrafts
+        case .published:
+            return poemManager.myPublishedToSquare
         }
     }
     
@@ -382,6 +396,7 @@ struct ProfileView: View {
         switch selectedTab {
         case .collection: return "doc.text"
         case .drafts: return "doc.plaintext"
+        case .published: return "square.and.arrow.up"
         }
     }
     
@@ -389,6 +404,7 @@ struct ProfileView: View {
         switch selectedTab {
         case .collection: return "还没有保存作品"
         case .drafts: return "没有草稿"
+        case .published: return "还没有发布到广场"
         }
     }
     
