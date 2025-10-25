@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import CloudKit
+import Combine
 
 /// 用户身份服务 - 管理匿名用户 ID 和笔名
 /// 替代 AuthService，使用设备 ID + iCloud 同步实现无登录方案
