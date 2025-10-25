@@ -91,7 +91,7 @@ private struct SquarePoemCard: View {
     let poem: Poem
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
             // 标题和作者
             VStack(alignment: .leading, spacing: 4) {
                 Text(poem.title.isEmpty ? "无标题" : poem.title)
@@ -99,7 +99,7 @@ private struct SquarePoemCard: View {
                     .foregroundColor(Colors.textInk)
                 
                 Text(poem.authorName)
-                    .font(Fonts.captionSmall())
+                    .font(Fonts.body())  // 从 captionSmall 改为 body
                     .foregroundColor(Colors.textSecondary)
             }
             
@@ -130,7 +130,7 @@ private struct SquarePoemCard: View {
                 }
             }
         }
-        .padding(Spacing.lg)
+        .padding(Spacing.md)  // 从 lg 改为 md，减少留白
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)

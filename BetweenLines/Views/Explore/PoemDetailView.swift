@@ -17,11 +17,8 @@ struct PoemDetailView: View {
     
     @State var poem: Poem
     @State private var likeScale: CGFloat = 1.0
-    @State private var favoriteScale: CGFloat = 1.0
     @State private var showingDeleteAlert = false
-    @State private var showLoginSheet = false
     @State private var isLiked = false
-    @State private var isFavorited = false
     @State private var likeCount = 0
     
     var body: some View {
@@ -146,28 +143,14 @@ struct PoemDetailView: View {
             Button(action: handleLike) {
                 VStack(spacing: 8) {
                     Image(systemName: isLiked ? "heart.fill" : "heart")
-                        .font(.system(size: 28))
+                        .font(.system(size: 32))
                         .foregroundColor(isLiked ? .red : Colors.textSecondary)
                         .scaleEffect(likeScale)
                     
                     Text("\(likeCount)")
-                        .font(Fonts.caption())
+                        .font(Fonts.body())
                         .foregroundColor(Colors.textSecondary)
                         .contentTransition(.numericText())
-                }
-            }
-            
-            // 收藏
-            Button(action: handleFavorite) {
-                VStack(spacing: 8) {
-                    Image(systemName: isFavorited ? "star.fill" : "star")
-                        .font(.system(size: 28))
-                        .foregroundColor(isFavorited ? Color(hex: "FFD700") : Colors.textSecondary)
-                        .scaleEffect(favoriteScale)
-                    
-                    Text(isFavorited ? "已收藏" : "收藏")
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
                 }
             }
             
@@ -180,13 +163,11 @@ struct PoemDetailView: View {
     
     // MARK: - Actions
     
-    /// 加载点赞和收藏状态
+    /// 加载点赞状态
     private func loadInteractionStatus() {
         // 初始化点赞数和本地状态
         likeCount = poem.squareLikeCount
         isLiked = poem.isLiked
-        // 收藏状态从 PoemManager 获取
-        isFavorited = poemManager.myCollection.contains { $0.id == poem.id }
     }
     
     /// 处理点赞
@@ -208,33 +189,6 @@ struct PoemDetailView: View {
         // 更新 UI
         isLiked.toggle()
         likeCount += isLiked ? 1 : -1
-    }
-    
-    /// 处理收藏
-    private func handleFavorite() {
-        // 触发动画
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
-            favoriteScale = 1.3
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                favoriteScale = 1.0
-            }
-        }
-        
-        // 切换收藏状态
-        isFavorited.toggle()
-        
-        if isFavorited {
-            // 添加到诗集
-            poemManager.saveToCollection(poem)
-            toastManager.showSuccess("已添加到收藏")
-        } else {
-            // 从诗集移除
-            poemManager.removeFromCollection(poem)
-            toastManager.showSuccess("已取消收藏")
-        }
     }
     
     /// 删除诗歌
