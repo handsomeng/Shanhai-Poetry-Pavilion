@@ -70,66 +70,70 @@ struct MyPoemDetailView: View {
     // MARK: - Editing View
     
     private var editingView: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: Spacing.md) {
-                    // 标题输入
-                    TextField("标题（选填）", text: $editedTitle)
-                        .font(.system(size: 24, weight: .medium, design: .serif))
-                        .foregroundColor(Colors.textInk)
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.top, Spacing.lg)
-                        .onChange(of: editedTitle) { _ in
-                            saveEdits()
-                        }
-                    
-                    // 内容输入
-                    TextEditor(text: $editedContent)
-                        .font(.system(size: 18, design: .serif))
-                        .foregroundColor(Colors.textInk)
-                        .scrollContentBackground(.hidden)
-                        .lineSpacing(8)
-                        .frame(minHeight: 400)
-                        .padding(.horizontal, Spacing.lg)
-                        .onChange(of: editedContent) { _ in
-                            saveEdits()
-                        }
-                }
+        ScrollView {
+            VStack(spacing: Spacing.md) {
+                // 标题输入
+                TextField("标题（选填）", text: $editedTitle)
+                    .font(.system(size: 24, weight: .medium, design: .serif))
+                    .foregroundColor(Colors.textInk)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.top, Spacing.lg)
+                    .onChange(of: editedTitle) { _ in
+                        saveEdits()
+                    }
+                
+                // 内容输入
+                TextEditor(text: $editedContent)
+                    .font(.system(size: 18, design: .serif))
+                    .foregroundColor(Colors.textInk)
+                    .scrollContentBackground(.hidden)
+                    .lineSpacing(8)
+                    .frame(minHeight: 400)
+                    .padding(.horizontal, Spacing.lg)
+                    .onChange(of: editedContent) { _ in
+                        saveEdits()
+                    }
+                
+                // 底部留白，防止被按钮遮挡
+                Spacer(minLength: 80)
             }
-            
-            // 底部发布按钮
+        }
+        .safeAreaInset(edge: .bottom) {
             publishButton
         }
     }
     
-    // MARK: - Publish Button（底部细条按钮）
+    // MARK: - Publish Button（底部按钮）
     
     private var publishButton: some View {
-        VStack(spacing: 0) {
-            // 分隔线
-            Divider()
-            
-            // 发布按钮
-            Button(action: publishToSquare) {
-                HStack(spacing: 6) {
-                    if isPublishing {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                            .tint(poem.inSquare ? Colors.textSecondary : Colors.accentTeal)
-                    } else {
-                        Image(systemName: poem.inSquare ? "checkmark.circle.fill" : "square.and.arrow.up")
-                            .font(.system(size: 14))
-                    }
-                    
-                    Text(poem.inSquare ? "已发布到广场" : "发布到广场")
-                        .font(.system(size: 15))
+        Button(action: publishToSquare) {
+            HStack(spacing: 8) {
+                if isPublishing {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                        .tint(.white)
+                } else {
+                    Image(systemName: poem.inSquare ? "checkmark.circle.fill" : "square.and.arrow.up")
+                        .font(.system(size: 16))
                 }
-                .foregroundColor(poem.inSquare ? Colors.textSecondary : Colors.accentTeal)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                
+                Text(poem.inSquare ? "已发布到广场" : "发布到广场")
+                    .font(Fonts.bodyLarge())
+                    .fontWeight(.medium)
             }
-            .disabled(poem.inSquare || isPublishing)
+            .foregroundColor(poem.inSquare ? Colors.textSecondary : .white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.md)
+            .background(poem.inSquare ? Colors.backgroundCream : Colors.accentTeal)
+            .cornerRadius(CornerRadius.medium)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .stroke(poem.inSquare ? Colors.border : Color.clear, lineWidth: 1)
+            )
         }
+        .disabled(poem.inSquare || isPublishing)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.sm)
         .background(Colors.white)
     }
     
@@ -142,16 +146,18 @@ struct MyPoemDetailView: View {
         updatedPoem.content = editedContent
         updatedPoem.updatedAt = Date()
         
-        // 如果已发布，需要重新审核
-        if poem.inSquare {
-            updatedPoem.auditStatus = .pending
-            updatedPoem.hasUnpublishedChanges = true
-        }
+        // 如果已发布到广场，本地修改会自动覆盖广场上的内容
+        // 因为本地和广场共享同一首诗（通过 poem.id 关联）
         
         poemManager.savePoem(updatedPoem)
     }
     
-    /// 发布到广场（本地版本）
+    /// 发布到广场
+    /// 
+    /// 发布机制：
+    /// - 本地诗集和广场诗歌通过 poem.id 一一对应，共享同一首诗
+    /// - 发布后，本地修改会自动覆盖广场上的内容
+    /// - 从广场删除不影响本地诗集
     private func publishToSquare() {
         // 检查是否已发布
         if poem.inSquare {
@@ -168,6 +174,7 @@ struct MyPoemDetailView: View {
                 print("🚀 [MyPoemDetailView] 开始发布到广场...")
                 
                 // 使用 PoemManager 发布到本地广场
+                // 发布后，本地和广场共享同一个 poem.id
                 try poemManager.publishToSquare(poem)
                 
                 print("✅ [MyPoemDetailView] 发布成功！")
