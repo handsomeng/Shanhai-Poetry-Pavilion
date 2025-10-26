@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -329,7 +330,7 @@ struct SettingsView: View {
         toastManager.showInfo("正在恢复购买...")
         Task {
             do {
-                try await AppStore.sync()
+                try await AppTransaction.shared
                 await subscriptionManager.updateSubscriptionStatus()
                 DispatchQueue.main.async {
                     if subscriptionManager.isSubscribed {

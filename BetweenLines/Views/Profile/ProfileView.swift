@@ -78,7 +78,7 @@ struct ProfileView: View {
                 MembershipDetailView()
             }
             .sheet(isPresented: $showingPoetTitle) {
-                PoetTitleView()
+                PoetTitleView(poemCount: poemManager.allPoems.count)
             }
         }
         // 移除删除诗歌的 alert（诗歌管理已移到【诗集】Tab）
