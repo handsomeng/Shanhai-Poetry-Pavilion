@@ -22,10 +22,16 @@ struct MyPoemDetailView: View {
     @State private var isEditing = false
     @State private var editedTitle: String
     @State private var editedContent: String
+    @FocusState private var focusedField: Field?
     
     // UI 状态
     @State private var showingActionsMenu = false
     @State private var showingDeleteAlert = false
+    
+    enum Field {
+        case title
+        case content
+    }
     
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
@@ -181,6 +187,7 @@ struct MyPoemDetailView: View {
                     .font(.system(size: 24, weight: .medium, design: .serif))
                     .foregroundColor(Colors.textInk)
                     .padding(.top, Spacing.lg)
+                    .focused($focusedField, equals: .title)
                 
                 // 内容输入
                 TextEditor(text: $editedContent)
@@ -191,6 +198,7 @@ struct MyPoemDetailView: View {
                     .lineSpacing(8)
                     .frame(minHeight: 300)
                     .fixedSize(horizontal: false, vertical: true)
+                    .focused($focusedField, equals: .content)
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.bottom, Spacing.xl)
@@ -239,10 +247,17 @@ struct MyPoemDetailView: View {
         // 重置编辑内容为当前诗歌内容
         editedTitle = poem.title
         editedContent = poem.content
+        
+        // 延迟一下，确保编辑视图已经渲染完成
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // 聚焦到内容输入框，光标会自动移到最后
+            focusedField = .content
+        }
     }
     
     /// 取消编辑
     private func cancelEditing() {
+        focusedField = nil // 收起键盘
         isEditing = false
         // 恢复原始内容
         editedTitle = poem.title
@@ -251,6 +266,8 @@ struct MyPoemDetailView: View {
     
     /// 保存编辑
     private func saveEditing() {
+        focusedField = nil // 收起键盘
+        
         var updatedPoem = poem
         updatedPoem.title = editedTitle
         updatedPoem.content = editedContent
