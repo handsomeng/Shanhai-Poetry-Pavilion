@@ -57,8 +57,10 @@ struct CreateModeSelectorView: View {
             )
         }
         .padding(Spacing.lg)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.xl)
         .background(Colors.backgroundCream)
-        .presentationDetents([.height(280)])
+        .presentationDetents([.height(320)])
         .presentationDragIndicator(.visible)
     }
 }
