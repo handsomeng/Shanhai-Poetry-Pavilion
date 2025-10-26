@@ -2,7 +2,9 @@
 //  MyPoemDetailView.swift
 //  山海诗馆
 //
-//  诗集/草稿的详情页（支持编辑、删除、分享）
+//  诗歌详情页：支持查看、编辑、复制、删除
+//  - 默认只读模式，点击 ⋯ 菜单可选择操作
+//  - 编辑模式：显示取消和完成按钮
 //
 
 import SwiftUI
@@ -11,17 +13,19 @@ struct MyPoemDetailView: View {
     
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
-    @StateObject private var poemService = PoemService.shared
     @StateObject private var toastManager = ToastManager.shared
     
     let poem: Poem
     let isDraft: Bool // 是否是草稿
     
+    // 编辑状态
+    @State private var isEditing = false
     @State private var editedTitle: String
     @State private var editedContent: String
     
+    // UI 状态
+    @State private var showingActionsMenu = false
     @State private var showingDeleteAlert = false
-    @State private var showingShareSheet = false
     
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
@@ -35,35 +39,95 @@ struct MyPoemDetailView: View {
             Colors.backgroundCream
                 .ignoresSafeArea()
             
-            editingView
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 12) {
-                    // 分享按钮
-                    Button(action: sharePoem) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(Colors.accentTeal)
-                            .frame(width: 44, height: 32)
+            // 主内容
+            if isEditing {
+                editingView
+            } else {
+                readOnlyView
+            }
+            
+            // 操作菜单（右上角）
+            if showingActionsMenu {
+                Color.black.opacity(0.001) // 透明遮罩，用于点击关闭
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showingActionsMenu = false
+                        }
                     }
-                    
-                    // 删除按钮
-                    Button(action: {
-                        showingDeleteAlert = true
-                    }) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(.red)
-                            .frame(width: 44, height: 32)
+                
+                VStack {
+                    HStack {
+                        Spacer()
+                        PoemActionsMenu(
+                            onShare: {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    showingActionsMenu = false
+                                }
+                                sharePoem()
+                            },
+                            onEdit: {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    showingActionsMenu = false
+                                }
+                                enterEditMode()
+                            },
+                            onCopy: {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    showingActionsMenu = false
+                                }
+                                copyPoem()
+                            },
+                            onDelete: {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    showingActionsMenu = false
+                                }
+                                showingDeleteAlert = true
+                            }
+                        )
+                        .padding(.trailing, 16)
+                        .padding(.top, 60) // 从导航栏下方弹出
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                     }
+                    Spacer()
                 }
             }
         }
-        .sheet(isPresented: $showingShareSheet) {
-            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) {
-                ShareSheet(poem: latestPoem)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(isEditing)
+        .toolbar {
+            if isEditing {
+                // 编辑模式：取消 + 完成
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        cancelEditing()
+                    }
+                    .foregroundColor(Colors.textSecondary)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        saveEditing()
+                    }
+                    .foregroundColor(Colors.accentTeal)
+                }
+            } else {
+                // 只读模式：⋯ 菜单
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showingActionsMenu.toggle()
+                        }
+                    }) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Colors.textInk)
+                            .frame(width: 44, height: 32)
+                    }
+                }
             }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert) {
@@ -76,7 +140,38 @@ struct MyPoemDetailView: View {
         }
     }
     
-    // MARK: - Editing View
+    // MARK: - Read-Only View (只读模式)
+    
+    private var readOnlyView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                // 标题
+                if !poem.title.isEmpty {
+                    Text(poem.title)
+                        .font(.system(size: 24, weight: .medium, design: .serif))
+                        .foregroundColor(Colors.textInk)
+                        .padding(.top, Spacing.lg)
+                }
+                
+                // 正文
+                Text(poem.content)
+                    .font(.system(size: 18, design: .serif))
+                    .foregroundColor(Colors.textInk)
+                    .lineSpacing(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Spacer()
+                    .frame(height: Spacing.xl)
+                
+                // 底部信息
+                poemMetadata
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.xl)
+        }
+    }
+    
+    // MARK: - Editing View (编辑模式)
     
     private var editingView: some View {
         ScrollView {
@@ -86,9 +181,6 @@ struct MyPoemDetailView: View {
                     .font(.system(size: 24, weight: .medium, design: .serif))
                     .foregroundColor(Colors.textInk)
                     .padding(.top, Spacing.lg)
-                    .onChange(of: editedTitle) {
-                        saveEdits()
-                    }
                 
                 // 内容输入
                 TextEditor(text: $editedContent)
@@ -101,106 +193,102 @@ struct MyPoemDetailView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.xl) // 确保内容不被 Tab Bar 遮挡
+            .padding(.bottom, Spacing.xl)
+        }
+    }
+    
+    // MARK: - Poem Metadata (底部信息)
+    
+    private var poemMetadata: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Divider()
+                .background(Colors.divider)
+            
+            // 第 X 首诗
+            Text("第 \(poemManager.myCollection.count) 首诗")
+                .font(.system(size: 13, weight: .light))
+                .foregroundColor(Colors.textTertiary)
+            
+            // 称号 · 作者名
+            HStack(spacing: 4) {
+                Text(poemManager.currentPoetTitle.displayName)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(Colors.textSecondary)
+                
+                Text("·")
+                    .font(.system(size: 14, weight: .ultraLight))
+                    .foregroundColor(Colors.textTertiary)
+                
+                Text(poem.authorName)
+                    .font(.system(size: 14, weight: .ultraLight))
+                    .foregroundColor(Colors.textTertiary)
+            }
+            
+            // 创建时间
+            Text(poem.createdAt, style: .date)
+                .font(.system(size: 12, weight: .light))
+                .foregroundColor(Colors.textTertiary)
         }
     }
     
     // MARK: - Actions
     
-    /// 保存编辑（实时自动保存）
-    private func saveEdits() {
+    /// 进入编辑模式
+    private func enterEditMode() {
+        isEditing = true
+        // 重置编辑内容为当前诗歌内容
+        editedTitle = poem.title
+        editedContent = poem.content
+    }
+    
+    /// 取消编辑
+    private func cancelEditing() {
+        isEditing = false
+        // 恢复原始内容
+        editedTitle = poem.title
+        editedContent = poem.content
+    }
+    
+    /// 保存编辑
+    private func saveEditing() {
         var updatedPoem = poem
         updatedPoem.title = editedTitle
         updatedPoem.content = editedContent
         updatedPoem.updatedAt = Date()
         
-        // 保存本地修改
-        // 因为本地和广场共享同一首诗（通过 poem.id 关联）
-        
         poemManager.savePoem(updatedPoem)
+        toastManager.showSuccess("保存成功")
+        
+        isEditing = false
     }
     
     /// 分享诗歌
     private func sharePoem() {
-        // 先保存当前编辑
-        saveEdits()
-        
-        // 显示分享界面
-        showingShareSheet = true
+        // 🚧 TODO: 实现分享功能（待开发）
+        toastManager.showInfo("分享功能开发中...")
     }
     
-    /// 诗歌图片模板（纯模板，用于生成图片）
-    @MainActor
-    private func poemTemplateForImage(poem: Poem) -> some View {
-        VStack(alignment: .leading, spacing: 32) {
-            // 标题（如果有）
-            if !poem.title.isEmpty {
-                Text(poem.title)
-                    .font(.system(size: 32, weight: .thin, design: .serif))
-                    .foregroundColor(Color(hex: "0A0A0A"))
-                    .tracking(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            
-            // 正文
-            Text(poem.content)
-                .font(.system(size: 20, weight: .light, design: .serif))
-                .foregroundColor(Color(hex: "4A4A4A"))
-                .lineSpacing(18)
-                .tracking(1.5)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
-            
-            Spacer()
-                .frame(height: 32)
-            
-            // 底部信息
-            VStack(alignment: .leading, spacing: 16) {
-                Rectangle()
-                    .frame(height: 0.5)
-                    .foregroundColor(Color(hex: "E5E5E5"))
-                
-                // 第一行：第 X 首诗
-                Text("第 \(poemManager.myCollection.count) 首诗")
-                    .font(.system(size: 13, weight: .light))
-                    .foregroundColor(Color(hex: "ABABAB"))
-                    .tracking(1.5)
-                
-                // 第二行：称号 · 作者名
-                HStack(spacing: 4) {
-                    Text(poemManager.currentPoetTitle.displayName)
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundColor(Color(hex: "6A6A6A"))
-                    
-                    Text("·")
-                        .font(.system(size: 14, weight: .ultraLight))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                    
-                    Text(poem.authorName)
-                        .font(.system(size: 14, weight: .ultraLight))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                }
-                
-                // 第三行：山海诗馆
-                Text("山海诗馆")
-                    .font(.system(size: 12, weight: .ultraLight, design: .serif))
-                    .foregroundColor(Color(hex: "ABABAB"))
-                    .tracking(2)
-            }
+    /// 复制诗歌
+    private func copyPoem() {
+        var content = ""
+        if !poem.title.isEmpty {
+            content += poem.title + "\n\n"
         }
-        .padding(.horizontal, 56)
-        .padding(.vertical, 72)
-        .frame(width: 400)
-        .background(Color.white)
+        content += poem.content
+        
+        UIPasteboard.general.string = content
+        toastManager.showSuccess("已复制")
     }
     
     /// 删除诗歌
     private func deletePoem() {
         poemManager.deletePoem(poem)
-        ToastManager.shared.showSuccess("已删除")
+        toastManager.showSuccess("已删除")
         dismiss()
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     NavigationStack {
@@ -215,4 +303,3 @@ struct MyPoemDetailView: View {
         )
     }
 }
-

@@ -25,7 +25,6 @@ struct CreateModeSelectorView: View {
                 ModeCard(
                     icon: "🎨",
                     title: "主题写诗",
-                    subtitle: "AI 给你灵感主题",
                     description: "让 AI 为你生成创作主题，激发灵感",
                     action: {
                         onSelectMode(.theme)
@@ -37,7 +36,6 @@ struct CreateModeSelectorView: View {
                 ModeCard(
                     icon: "🖼️",
                     title: "临摹写诗",
-                    subtitle: "模仿经典诗词风格",
                     description: "学习古典诗词的韵律与意境",
                     action: {
                         onSelectMode(.mimic)
@@ -49,7 +47,6 @@ struct CreateModeSelectorView: View {
                 ModeCard(
                     icon: "✍️",
                     title: "直接写诗",
-                    subtitle: "自由发挥创作",
                     description: "随心所欲，记录此刻的心情与感悟",
                     action: {
                         onSelectMode(.direct)
@@ -81,7 +78,6 @@ struct ModeCard: View {
     
     let icon: String
     let title: String
-    let subtitle: String
     let description: String
     let action: () -> Void
     
@@ -100,7 +96,7 @@ struct ModeCard: View {
                         .font(.system(size: 26))
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.system(size: 17, weight: .semibold, design: .serif))
                         .foregroundColor(Colors.textInk)
@@ -108,7 +104,7 @@ struct ModeCard: View {
                     Text(description)
                         .font(.system(size: 13))
                         .foregroundColor(Colors.textSecondary)
-                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 
                 Spacer()
