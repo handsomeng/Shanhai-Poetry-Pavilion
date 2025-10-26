@@ -16,6 +16,9 @@ struct PoetryCollectionView: View {
     @State private var selectedTab: CollectionTab = .collection
     @State private var showCreateModeSelector = false
     @State private var showSearch = false
+    @State private var showThemeWriting = false
+    @State private var showMimicWriting = false
+    @State private var showDirectWriting = false
     
     enum CollectionTab: String, CaseIterable, Identifiable {
         case collection = "诗集"
@@ -43,10 +46,31 @@ struct PoetryCollectionView: View {
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showCreateModeSelector) {
-                CreateModeSelectorView()
+                CreateModeSelectorView { mode in
+                    // 延迟一点，等半屏弹窗关闭后再打开全屏
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        switch mode {
+                        case .theme:
+                            showThemeWriting = true
+                        case .mimic:
+                            showMimicWriting = true
+                        case .direct:
+                            showDirectWriting = true
+                        }
+                    }
+                }
             }
             .sheet(isPresented: $showSearch) {
                 SearchView()
+            }
+            .fullScreenCover(isPresented: $showThemeWriting) {
+                ThemeWritingView()
+            }
+            .fullScreenCover(isPresented: $showMimicWriting) {
+                MimicWritingView()
+            }
+            .fullScreenCover(isPresented: $showDirectWriting) {
+                DirectWritingView()
             }
         }
     }
@@ -68,6 +92,7 @@ struct PoetryCollectionView: View {
                     .foregroundColor(Colors.textSecondary)
                     .font(.system(size: 20))
             }
+            .padding(.trailing, 8)  // 增加与创作按钮的间距
             
             // 创作按钮
             Button(action: { showCreateModeSelector = true }) {
