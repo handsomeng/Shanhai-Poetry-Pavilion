@@ -64,13 +64,19 @@ struct PoetryCollectionView: View {
                 SearchView()
             }
             .fullScreenCover(isPresented: $showThemeWriting) {
-                ThemeWritingView()
+                NavigationStack {
+                    ThemeWritingView()
+                }
             }
             .fullScreenCover(isPresented: $showMimicWriting) {
-                MimicWritingView()
+                NavigationStack {
+                    MimicWritingView()
+                }
             }
             .fullScreenCover(isPresented: $showDirectWriting) {
-                DirectWritingView()
+                NavigationStack {
+                    DirectWritingView()
+                }
             }
         }
     }
