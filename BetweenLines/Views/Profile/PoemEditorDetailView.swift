@@ -3,6 +3,7 @@
 //  山海诗馆
 //
 //  诗集/草稿的编辑详情页
+//  ⚠️ 已简化：移除了发布到广场和AI点评功能
 //
 
 import SwiftUI
@@ -12,7 +13,7 @@ struct PoemEditorDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    // @StateObject private var subscriptionManager = SubscriptionManager.shared // 🔴 已废弃
     
     @State var poem: Poem
     
@@ -21,12 +22,12 @@ struct PoemEditorDetailView: View {
     @State private var editedTitle: String
     @State private var editedContent: String
     
-    // 分享和AI
-    @State private var showingShareSheet = false
-    @State private var showingAIComment = false
-    @State private var aiComment = ""
-    @State private var isLoadingAI = false
-    @State private var showingSubscription = false
+    // 🔴 旧代码：分享和AI功能已废弃
+    // @State private var showingShareSheet = false
+    // @State private var showingAIComment = false
+    // @State private var aiComment = ""
+    // @State private var isLoadingAI = false
+    // @State private var showingSubscription = false
     
     // 键盘状态
     @State private var isKeyboardVisible = false
@@ -84,6 +85,7 @@ struct PoemEditorDetailView: View {
                 }
             }
         }
+        /* 🔴 旧代码：分享和AI功能已废弃
         .sheet(isPresented: $showingShareSheet) {
             ShareSheet(poem: poem)
         }
@@ -93,6 +95,7 @@ struct PoemEditorDetailView: View {
         .sheet(isPresented: $showingSubscription) {
             SubscriptionView()
         }
+        */
         .onAppear {
             setupKeyboardObservers()
         }
@@ -149,24 +152,25 @@ struct PoemEditorDetailView: View {
     
     private var bottomActions: some View {
         VStack(spacing: Spacing.xs) {
-            HStack(spacing: Spacing.xs) {
-                // 编辑按钮
-                Button(action: {
-                    isEditing = true
-                }) {
-                    HStack {
-                        Image(systemName: "pencil")
-                        Text("编辑")
-                    }
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .frame(maxWidth: .infinity)
-                    .padding(Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
+            // 编辑按钮（全宽）
+            Button(action: {
+                isEditing = true
+            }) {
+                HStack {
+                    Image(systemName: "pencil")
+                    Text("编辑")
                 }
-                .scaleButtonStyle()
-                
+                .font(Fonts.bodyRegular())
+                .foregroundColor(Colors.textInk)
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.md)
+                .background(Colors.white)
+                .cornerRadius(CornerRadius.medium)
+            }
+            .scaleButtonStyle()
+            
+            /* 🔴 旧代码：发布到广场和AI点评功能已废弃
+            HStack(spacing: Spacing.xs) {
                 // 发布到广场按钮
                 if poem.squareId != nil {
                     // 已发布状态（不可点击）
@@ -221,6 +225,7 @@ struct PoemEditorDetailView: View {
             }
             .disabled(isLoadingAI)
             .scaleButtonStyle()
+            */
         }
         .padding(Spacing.md)
         .background(Colors.backgroundCream)
@@ -254,6 +259,7 @@ struct PoemEditorDetailView: View {
         isEditing = false
     }
     
+    /* 🔴 旧代码：AI点评功能已废弃
     private func requestAIComment() {
         guard !poem.content.isEmpty else { return }
         
@@ -289,6 +295,7 @@ struct PoemEditorDetailView: View {
             }
         }
     }
+    */
     
     // MARK: - Keyboard Observers
     
