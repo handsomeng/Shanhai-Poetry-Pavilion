@@ -74,7 +74,7 @@ struct PoemShareView: View {
     // MARK: - Bottom Actions
     
     private var bottomActions: some View {
-        // 仿照 Flomo 的底部按钮布局
+        // 简化的底部按钮布局
         HStack(spacing: 0) {
             // 更换模板
             ActionButton(
@@ -100,35 +100,11 @@ struct PoemShareView: View {
                 .frame(height: 40)
                 .background(Color(hex: "E5E5E5"))
             
-            // 微信
+            // 分享
             ActionButton(
-                icon: "message",
-                title: "微信",
-                iconColor: Color(hex: "09BB07"),
-                action: shareToWechat
-            )
-            
-            Divider()
-                .frame(height: 40)
-                .background(Color(hex: "E5E5E5"))
-            
-            // 朋友圈
-            ActionButton(
-                icon: "person.3",
-                title: "朋友圈",
-                iconColor: Color(hex: "09BB07"),
-                action: shareToMoments
-            )
-            
-            Divider()
-                .frame(height: 40)
-                .background(Color(hex: "E5E5E5"))
-            
-            // 更多
-            ActionButton(
-                icon: "ellipsis.circle",
-                title: "更多",
-                action: shareMore
+                icon: "square.and.arrow.up",
+                title: "分享",
+                action: sharePoem
             )
         }
         .frame(height: 70)
@@ -190,11 +166,15 @@ extension PoemShareView {
     private func saveToPhotos() {
         Task {
             guard let image = await renderPoemAsImage() else {
-                await MainActor.run {
-                    toastManager.showError("图片生成失败，请重试")
-                }
+                toastManager.showError("图片生成失败，请重试")
                 return
             }
+            
+            // 先显示开始保存的提示
+            toastManager.showInfo("正在保存...")
+            
+            // 稍微延迟，确保 toast 显示
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1秒
             
             // 保存到相册
             await saveImageToPhotos(image)
@@ -214,66 +194,16 @@ extension PoemShareView {
         }
     }
     
-    /// 分享到微信
-    private func shareToWechat() {
+    /// 分享诗歌
+    private func sharePoem() {
         Task {
             guard let image = await renderPoemAsImage() else {
-                await MainActor.run {
-                    toastManager.showError("图片生成失败，请重试")
-                }
+                toastManager.showError("图片生成失败，请重试")
                 return
             }
             
             await MainActor.run {
-                // 检查是否安装微信
-                if canOpenWeChat() {
-                    presentSystemShare(with: image, message: "请在分享菜单中选择【微信】")
-                } else {
-                    toastManager.showError("未安装微信应用")
-                }
-            }
-        }
-    }
-    
-    /// 分享到朋友圈
-    private func shareToMoments() {
-        Task {
-            guard let image = await renderPoemAsImage() else {
-                await MainActor.run {
-                    toastManager.showError("图片生成失败，请重试")
-                }
-                return
-            }
-            
-            await MainActor.run {
-                // 检查是否安装微信
-                if canOpenWeChat() {
-                    presentSystemShare(with: image, message: "请选择【微信】，然后长按图片分享到朋友圈")
-                } else {
-                    toastManager.showError("未安装微信应用")
-                }
-            }
-        }
-    }
-    
-    /// 检查是否可以打开微信
-    private func canOpenWeChat() -> Bool {
-        guard let url = URL(string: "weixin://") else { return false }
-        return UIApplication.shared.canOpenURL(url)
-    }
-    
-    /// 更多分享方式（系统分享面板）
-    private func shareMore() {
-        Task {
-            guard let image = await renderPoemAsImage() else {
-                await MainActor.run {
-                    toastManager.showError("图片生成失败，请重试")
-                }
-                return
-            }
-            
-            await MainActor.run {
-                presentSystemShare(with: image, message: nil)
+                presentSystemShare(with: image)
             }
         }
     }
@@ -288,17 +218,9 @@ extension PoemShareView {
     
     /// 调用系统分享面板
     @MainActor
-    private func presentSystemShare(with image: UIImage, message: String?) {
-        // 构建分享项
-        var activityItems: [Any] = [image]
-        
-        // 如果有提示消息，先显示 toast
-        if let message = message {
-            toastManager.showInfo(message)
-        }
-        
+    private func presentSystemShare(with image: UIImage) {
         let activityVC = UIActivityViewController(
-            activityItems: activityItems,
+            activityItems: [image],
             applicationActivities: nil
         )
         

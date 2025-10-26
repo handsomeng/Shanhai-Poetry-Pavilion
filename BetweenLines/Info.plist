@@ -12,12 +12,5 @@
 	<string>山海诗馆需要访问您的相册以保存诗歌图片</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>山海诗馆需要访问您的相册以保存诗歌图片</string>
-	
-	<!-- 允许查询微信等应用 -->
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>weixin</string>
-		<string>wechat</string>
-	</array>
 </dict>
 </plist>
