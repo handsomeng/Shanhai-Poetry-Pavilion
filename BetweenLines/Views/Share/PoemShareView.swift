@@ -35,7 +35,7 @@ struct PoemShareView: View {
                     
                     VStack(spacing: 0) {
                         // 图片预览区域
-                        ScrollView {
+                        ScrollView(showsIndicators: false) {
                             poemImagePreview
                                 .padding(.vertical, Spacing.xl)
                         }
