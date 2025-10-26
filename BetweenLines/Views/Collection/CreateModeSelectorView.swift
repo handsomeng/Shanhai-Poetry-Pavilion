@@ -78,7 +78,7 @@ struct CreateModeSelectorView: View {
             .padding(.bottom, 50)  // 增加底部间距，避免被 Tab 挡住
         }
         .background(Colors.backgroundCream)
-        .presentationDetents([.height(520)])  // 固定高度，确保内容完整显示
+        .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
 }
@@ -97,44 +97,36 @@ struct ModeCard: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                // 顶部：图标和标题
-                HStack(spacing: Spacing.md) {
-                    // 图标背景圆形
-                    ZStack {
-                        Circle()
-                            .fill(Colors.accentTeal.opacity(0.1))
-                            .frame(width: 56, height: 56)
-                        
-                        Text(icon)
-                            .font(.system(size: 28))
-                    }
+            HStack(spacing: Spacing.md) {
+                // 图标背景圆形
+                ZStack {
+                    Circle()
+                        .fill(Colors.accentTeal.opacity(0.1))
+                        .frame(width: 48, height: 48)
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(title)
-                            .font(.system(size: 18, weight: .semibold, design: .serif))
-                            .foregroundColor(Colors.textInk)
-                        
-                        Text(subtitle)
-                            .font(Fonts.caption())
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Colors.textTertiary)
+                    Text(icon)
+                        .font(.system(size: 24))
                 }
                 
-                // 描述文字
-                Text(description)
-                    .font(Fonts.bodySmall())
-                    .foregroundColor(Colors.textSecondary)
-                    .lineLimit(2)
-                    .padding(.leading, 56 + Spacing.md)  // 与标题对齐
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .semibold, design: .serif))
+                        .foregroundColor(Colors.textInk)
+                    
+                    Text(description)
+                        .font(.system(size: 13))
+                        .foregroundColor(Colors.textSecondary)
+                        .lineLimit(1)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Colors.textTertiary)
             }
-            .padding(Spacing.lg)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Colors.white)
             .cornerRadius(CornerRadius.card)
