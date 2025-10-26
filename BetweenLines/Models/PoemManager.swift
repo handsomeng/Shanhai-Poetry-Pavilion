@@ -262,12 +262,19 @@ class PoemManager: ObservableObject {
         return true
     }
     
-    /// 保存诗歌（通用方法，更新现有诗歌）
+    /// 保存诗歌（通用方法，更新现有诗歌或添加新诗歌）
     func savePoem(_ poem: Poem) {
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
+            // 更新现有诗歌
             var updatedPoem = poem
             updatedPoem.updatedAt = Date()
             allPoems[index] = updatedPoem
+            savePoems()
+        } else {
+            // 添加新诗歌
+            var newPoem = poem
+            newPoem.updatedAt = Date()
+            allPoems.append(newPoem)
             savePoems()
         }
     }

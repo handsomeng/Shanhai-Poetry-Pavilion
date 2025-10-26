@@ -339,8 +339,7 @@ struct ThemeWritingView: View {
                 inMyCollection: false,  // 草稿状态
                 inSquare: false
             )
-            poemManager.allPoems.append(draft)
-            poemManager.savePoem(draft)
+            poemManager.savePoem(draft)  // savePoem 现在会自动添加新诗歌
             print("📝 [ThemeWriting] 自动保存 - 已创建草稿: \(draftId)")
         }
     }
