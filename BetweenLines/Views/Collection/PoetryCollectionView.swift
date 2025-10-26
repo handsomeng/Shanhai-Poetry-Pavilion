@@ -15,7 +15,6 @@ struct PoetryCollectionView: View {
     @StateObject private var poemManager = PoemManager.shared
     @State private var selectedTab: CollectionTab = .collection
     @State private var showCreateModeSelector = false
-    @State private var showSearch = false
     @State private var showThemeWriting = false
     @State private var showMimicWriting = false
     @State private var showDirectWriting = false
@@ -60,9 +59,6 @@ struct PoetryCollectionView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showSearch) {
-                SearchView()
-            }
             .fullScreenCover(isPresented: $showThemeWriting) {
                 NavigationStack {
                     ThemeWritingView()
@@ -92,18 +88,10 @@ struct PoetryCollectionView: View {
             
             Spacer()
             
-            // 搜索按钮
-            Button(action: { showSearch = true }) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(Colors.textSecondary)
-                    .font(.system(size: 20))
-            }
-            .padding(.trailing, 8)  // 增加与创作按钮的间距
-            
             // 创作按钮
             Button(action: { showCreateModeSelector = true }) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 28))
+                    .font(.system(size: 24))
                     .foregroundColor(Colors.accentTeal)
             }
         }

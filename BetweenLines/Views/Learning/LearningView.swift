@@ -26,48 +26,68 @@ struct LearningView: View {
                 Colors.backgroundCream
                     .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: Spacing.lg) {
-                        // 顶部标题
-                        VStack(alignment: .leading, spacing: Spacing.sm) {
-                            Text("学诗")
-                                .font(Fonts.titleLarge())
-                                .foregroundColor(Colors.textInk)
-                            
-                            Text("从零开始，了解现代诗的创作技巧与美学")
-                                .font(Fonts.caption())
-                                .foregroundColor(Colors.textSecondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.top, Spacing.md)
-                        
-                        // 大主题卡片列表
-                        ForEach(topics) { topic in
-                            NavigationLink(destination: TopicDetailView(topic: topic)) {
-                                TopicCardView(topic: topic)
-                                    .padding(.horizontal, Spacing.lg)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        
-                        Spacer()
-                            .frame(height: Spacing.xl)
-                    }
+                VStack(spacing: 0) {
+                    // 顶部标题栏（固定）
+                    headerSection
+                    
+                    // 主题列表
+                    topicsList
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingSettings = true }) {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: 18, weight: .ultraLight))
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                }
-            }
+            .navigationBarHidden(true)
             .fullScreenCover(isPresented: $showingSettings) {
                 SettingsView()
+            }
+        }
+    }
+    
+    // MARK: - Header Section
+    
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                // 标题
+                Text("学诗")
+                    .font(Fonts.titleLarge())
+                    .foregroundColor(Colors.textInk)
+                
+                Spacer()
+                
+                // 设置按钮
+                Button(action: { showingSettings = true }) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 18, weight: .ultraLight))
+                        .foregroundColor(Colors.textSecondary)
+                }
+            }
+            
+            // 副标题
+            Text("从零开始，了解现代诗的创作技巧与美学")
+                .font(Fonts.caption())
+                .foregroundColor(Colors.textSecondary)
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.sm)
+        .background(Colors.backgroundCream)
+    }
+    
+    // MARK: - Topics List
+    
+    private var topicsList: some View {
+        ScrollView {
+            VStack(spacing: Spacing.lg) {
+                // 大主题卡片列表
+                ForEach(topics) { topic in
+                    NavigationLink(destination: TopicDetailView(topic: topic)) {
+                        TopicCardView(topic: topic)
+                            .padding(.horizontal, Spacing.lg)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                
+                Spacer()
+                    .frame(height: Spacing.xl)
             }
         }
     }
