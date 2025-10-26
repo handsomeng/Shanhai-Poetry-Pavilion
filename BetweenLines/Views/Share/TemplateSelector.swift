@@ -65,9 +65,9 @@ struct TemplateSelector: View {
                 }
             }
             .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
+            .padding(.vertical, 12)
         }
-        .frame(height: 120) // 紧凑的高度
+        .frame(height: 100) // 更紧凑的高度
         .background(Color.white)
         .overlay(
             Rectangle()
@@ -87,13 +87,13 @@ struct TemplateSelector: View {
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 48)
+                .frame(height: 44)
                 .background(Colors.accentTeal)
                 .cornerRadius(12)
         }
         .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.lg)
+        .padding(.top, 12)
+        .padding(.bottom, 16)
         .background(Color.white)
     }
 }
@@ -105,44 +105,32 @@ struct TemplateCard: View {
     let isSelected: Bool
     let action: () -> Void
     
-    @State private var isPressed = false
-    
     var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
                 // 模板图标
                 Text(template.icon)
-                    .font(.system(size: 32))
+                    .font(.system(size: 28))
                 
                 // 模板名称
                 Text(template.rawValue)
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: 11, weight: .regular))
                     .foregroundColor(Colors.textInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
-            .frame(width: 90, height: 90)
+            .frame(width: 80, height: 76)
             .background(isSelected ? Colors.accentTeal.opacity(0.05) : Color.white)
-            .cornerRadius(12)
+            .cornerRadius(10)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 10)
                     .stroke(
                         isSelected ? Colors.accentTeal : Color(hex: "E5E5E5"),
                         lineWidth: isSelected ? 2 : 1
                     )
             )
-            .scaleEffect(isPressed ? 0.97 : 1.0)
         }
-        .buttonStyle(PlainButtonStyle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    isPressed = true
-                }
-                .onEnded { _ in
-                    isPressed = false
-                }
-        )
+        .buttonStyle(.plain)
     }
 }
 
