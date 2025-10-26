@@ -17,7 +17,7 @@ struct TemplateSelector: View {
         NavigationView {
             VStack(spacing: 0) {
                 // 主视觉区域：实时预览（占据大部分空间）
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     selectedTemplate.render(
                         poem: poem,
                         size: CGSize(width: 340, height: 0)
