@@ -19,66 +19,46 @@ struct CreateModeSelectorView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // 标题
-            Text("选择写诗模式")
-                .font(Fonts.titleMedium())
-                .foregroundColor(Colors.textInk)
-                .padding(.top, Spacing.xl)
-                .padding(.bottom, Spacing.lg)
+        VStack(spacing: Spacing.md) {
+            // 主题写诗
+            ModeCard(
+                icon: "🎨",
+                title: "主题写诗",
+                subtitle: "AI 给你灵感主题",
+                description: "让 AI 为你生成创作主题，激发灵感",
+                action: {
+                    onSelectMode(.theme)
+                    dismiss()
+                }
+            )
             
-            // 卡片列表
-            VStack(spacing: Spacing.md) {
-                // 主题写诗
-                ModeCard(
-                    icon: "🎨",
-                    title: "主题写诗",
-                    subtitle: "AI 给你灵感主题",
-                    description: "让 AI 为你生成创作主题，激发灵感",
-                    action: {
-                        onSelectMode(.theme)
-                        dismiss()
-                    }
-                )
-                
-                // 临摹写诗
-                ModeCard(
-                    icon: "🖼️",
-                    title: "临摹写诗",
-                    subtitle: "模仿经典诗词风格",
-                    description: "学习古典诗词的韵律与意境",
-                    action: {
-                        onSelectMode(.mimic)
-                        dismiss()
-                    }
-                )
-                
-                // 直接写诗
-                ModeCard(
-                    icon: "✍️",
-                    title: "直接写诗",
-                    subtitle: "自由发挥创作",
-                    description: "随心所欲，记录此刻的心情与感悟",
-                    action: {
-                        onSelectMode(.direct)
-                        dismiss()
-                    }
-                )
-            }
-            .padding(.horizontal, Spacing.lg)
+            // 临摹写诗
+            ModeCard(
+                icon: "🖼️",
+                title: "临摹写诗",
+                subtitle: "模仿经典诗词风格",
+                description: "学习古典诗词的韵律与意境",
+                action: {
+                    onSelectMode(.mimic)
+                    dismiss()
+                }
+            )
             
-            Spacer()
-            
-            // 取消按钮
-            Button("取消") {
-                dismiss()
-            }
-            .font(Fonts.bodyRegular())
-            .foregroundColor(Colors.textSecondary)
-            .padding(.bottom, 50)  // 增加底部间距，避免被 Tab 挡住
+            // 直接写诗
+            ModeCard(
+                icon: "✍️",
+                title: "直接写诗",
+                subtitle: "自由发挥创作",
+                description: "随心所欲，记录此刻的心情与感悟",
+                action: {
+                    onSelectMode(.direct)
+                    dismiss()
+                }
+            )
         }
+        .padding(Spacing.lg)
         .background(Colors.backgroundCream)
-        .presentationDetents([.medium])
+        .presentationDetents([.height(260)])
         .presentationDragIndicator(.visible)
     }
 }
