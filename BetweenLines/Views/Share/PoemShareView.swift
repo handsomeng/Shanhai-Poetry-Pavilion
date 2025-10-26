@@ -62,14 +62,14 @@ struct PoemShareView: View {
             
             // Toast 显示层（确保在最上层）
             VStack {
-                if let toast = toastManager.currentToast {
+                if let toast = toastManager.toast {
                     ToastView(toast: toast)
                         .transition(.move(edge: .top).combined(with: .opacity))
                         .padding(.top, 50)
                     Spacer()
                 }
             }
-            .animation(.spring(response: 0.3), value: toastManager.currentToast != nil)
+            .animation(.spring(response: 0.3), value: toastManager.toast != nil)
         }
     }
     
