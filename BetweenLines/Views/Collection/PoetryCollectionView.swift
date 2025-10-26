@@ -20,41 +20,28 @@ struct PoetryCollectionView: View {
     enum CollectionTab: String, CaseIterable, Identifiable {
         case collection = "诗集"
         case drafts = "草稿"
-        case published = "已发布"
         
         var id: String { rawValue }
     }
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Tab 切换
-                tabSwitcher
+            ZStack {
+                Colors.backgroundCream
+                    .ignoresSafeArea()
                 
-                // 诗歌列表
-                poemsList
-            }
-            .background(Colors.backgroundCream)
-            .navigationTitle("诗集")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 16) {
-                        // 搜索按钮
-                        Button(action: { showSearch = true }) {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(Colors.textSecondary)
-                        }
-                        
-                        // 创作按钮
-                        Button(action: { showCreateModeSelector = true }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundColor(Colors.accentTeal)
-                        }
-                    }
+                VStack(spacing: 0) {
+                    // 顶部标题栏（固定）
+                    headerSection
+                    
+                    // Tab 切换
+                    tabSwitcher
+                    
+                    // 诗歌列表
+                    poemsList
                 }
             }
+            .navigationBarHidden(true)
             .sheet(isPresented: $showCreateModeSelector) {
                 CreateModeSelectorView()
             }
@@ -62,6 +49,37 @@ struct PoetryCollectionView: View {
                 SearchView()
             }
         }
+    }
+    
+    // MARK: - Header Section
+    
+    private var headerSection: some View {
+        HStack {
+            // 标题
+            Text("诗集")
+                .font(Fonts.titleLarge())
+                .foregroundColor(Colors.textInk)
+            
+            Spacer()
+            
+            // 搜索按钮
+            Button(action: { showSearch = true }) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(Colors.textSecondary)
+                    .font(.system(size: 20))
+            }
+            
+            // 创作按钮
+            Button(action: { showCreateModeSelector = true }) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(Colors.accentTeal)
+            }
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.sm)
+        .background(Colors.backgroundCream)
     }
     
     // MARK: - Tab Switcher
@@ -146,8 +164,6 @@ struct PoetryCollectionView: View {
             return "还没有诗歌"
         case .drafts:
             return "还没有草稿"
-        case .published:
-            return "还没有发布到广场的诗"
         }
     }
     
@@ -159,8 +175,6 @@ struct PoetryCollectionView: View {
             return poemManager.myCollection.sorted { $0.createdAt > $1.createdAt }
         case .drafts:
             return poemManager.myDrafts.sorted { $0.createdAt > $1.createdAt }
-        case .published:
-            return poemManager.myPublishedToSquare.sorted { $0.createdAt > $1.createdAt }
         }
     }
     

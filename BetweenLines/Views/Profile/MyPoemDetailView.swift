@@ -2,7 +2,7 @@
 //  MyPoemDetailView.swift
 //  山海诗馆
 //
-//  诗集/草稿的详情页（支持编辑、删除、发布）
+//  诗集/草稿的详情页（支持编辑、删除、分享）
 //
 
 import SwiftUI
@@ -114,7 +114,7 @@ struct MyPoemDetailView: View {
         updatedPoem.content = editedContent
         updatedPoem.updatedAt = Date()
         
-        // 如果已发布到广场，本地修改会自动覆盖广场上的内容
+        // 保存本地修改
         // 因为本地和广场共享同一首诗（通过 poem.id 关联）
         
         poemManager.savePoem(updatedPoem)
