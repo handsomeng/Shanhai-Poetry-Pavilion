@@ -19,44 +19,53 @@ struct CreateModeSelectorView: View {
     }
     
     var body: some View {
-        VStack(spacing: Spacing.lg) {
+        VStack(spacing: 0) {
+            // 标题
             Text("选择写诗模式")
                 .font(Fonts.titleMedium())
                 .foregroundColor(Colors.textInk)
                 .padding(.top, Spacing.xl)
+                .padding(.bottom, Spacing.lg)
             
-            // 主题写诗
-            ModeButton(
-                icon: "🎨",
-                title: "主题写诗",
-                subtitle: "AI 给你灵感主题",
-                action: {
-                    onSelectMode(.theme)
-                    dismiss()
-                }
-            )
-            
-            // 临摹写诗
-            ModeButton(
-                icon: "🖼️",
-                title: "临摹写诗",
-                subtitle: "模仿经典诗词风格",
-                action: {
-                    onSelectMode(.mimic)
-                    dismiss()
-                }
-            )
-            
-            // 直接写诗
-            ModeButton(
-                icon: "✍️",
-                title: "直接写诗",
-                subtitle: "自由发挥创作",
-                action: {
-                    onSelectMode(.direct)
-                    dismiss()
-                }
-            )
+            // 卡片列表
+            VStack(spacing: Spacing.md) {
+                // 主题写诗
+                ModeCard(
+                    icon: "🎨",
+                    title: "主题写诗",
+                    subtitle: "AI 给你灵感主题",
+                    description: "让 AI 为你生成创作主题，激发灵感",
+                    action: {
+                        onSelectMode(.theme)
+                        dismiss()
+                    }
+                )
+                
+                // 临摹写诗
+                ModeCard(
+                    icon: "🖼️",
+                    title: "临摹写诗",
+                    subtitle: "模仿经典诗词风格",
+                    description: "学习古典诗词的韵律与意境",
+                    action: {
+                        onSelectMode(.mimic)
+                        dismiss()
+                    }
+                )
+                
+                // 直接写诗
+                ModeCard(
+                    icon: "✍️",
+                    title: "直接写诗",
+                    subtitle: "自由发挥创作",
+                    description: "随心所欲，记录此刻的心情与感悟",
+                    action: {
+                        onSelectMode(.direct)
+                        dismiss()
+                    }
+                )
+            }
+            .padding(.horizontal, Spacing.lg)
             
             Spacer()
             
@@ -68,61 +77,80 @@ struct CreateModeSelectorView: View {
             .foregroundColor(Colors.textSecondary)
             .padding(.bottom, 50)  // 增加底部间距，避免被 Tab 挡住
         }
-        .padding(.horizontal, Spacing.xl)
         .background(Colors.backgroundCream)
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
 }
 
-// MARK: - Mode Button
+// MARK: - Mode Card
 
-struct ModeButton: View {
+struct ModeCard: View {
     
     let icon: String
     let title: String
     let subtitle: String
+    let description: String
     let action: () -> Void
     
     @State private var isPressed = false
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.md) {
-                Text(icon)
-                    .font(.system(size: 32))
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .medium, design: .serif))
-                        .foregroundColor(Colors.textInk)
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                // 顶部：图标和标题
+                HStack(spacing: Spacing.md) {
+                    // 图标背景圆形
+                    ZStack {
+                        Circle()
+                            .fill(Colors.accentTeal.opacity(0.1))
+                            .frame(width: 56, height: 56)
+                        
+                        Text(icon)
+                            .font(.system(size: 28))
+                    }
                     
-                    Text(subtitle)
-                        .font(Fonts.caption())
-                        .foregroundColor(Colors.textSecondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .font(.system(size: 18, weight: .semibold, design: .serif))
+                            .foregroundColor(Colors.textInk)
+                        
+                        Text(subtitle)
+                            .font(Fonts.caption())
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Colors.textTertiary)
                 }
                 
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14))
-                    .foregroundColor(Colors.textTertiary)
+                // 描述文字
+                Text(description)
+                    .font(Fonts.bodySmall())
+                    .foregroundColor(Colors.textSecondary)
+                    .lineLimit(2)
+                    .padding(.leading, 56 + Spacing.md)  // 与标题对齐
             }
-            .padding(Spacing.md)
+            .padding(Spacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(Colors.white)
-            .cornerRadius(CornerRadius.medium)
-            .scaleEffect(isPressed ? 0.95 : 1.0)
+            .cornerRadius(CornerRadius.card)
+            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+            .scaleEffect(isPressed ? 0.97 : 1.0)
         }
         .buttonStyle(PlainButtonStyle())
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isPressed = true
                     }
                 }
                 .onEnded { _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isPressed = false
                     }
                 }
