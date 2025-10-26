@@ -50,9 +50,9 @@ struct AboutAppView: View {
                 }
                 .padding(.top, 32)
                 
-                // 愿景
-                infoCard(title: "愿景") {
-                    Text("山海诗馆是一款专为现代诗爱好者打造的写诗应用。\n\n我们相信，诗歌不应该是高不可攀的艺术，每个人心中都有属于自己的山海。\n\n在这里，你可以自由创作，记录灵感，学习技巧，让诗歌成为生活的一部分。")
+                // 小小愿景
+                infoCard(title: "小小愿景") {
+                    Text("你好呀，欢迎来到山海诗馆。\n\n这是一款专为现代诗爱好者打造的写诗应用。\n\n作为一个普普通通的现代诗爱好者，从一点都不会写，到在 AI 的陪伴下慢慢写出 10 首，20首，100 首 …… 现代诗成为了我必不可少的生命力量之一。\n\n我也相信，诗歌不应该是高不可攀的艺术，每个人心中都有属于自己的山海。\n\n在这里，你可以自由创作，记录灵感，学习技巧，让诗歌成为生活的一部分。")
                         .font(.system(size: 15, weight: .light))
                         .foregroundColor(Colors.textInk)
                         .lineSpacing(6)
@@ -73,8 +73,8 @@ struct AboutAppView: View {
                     VStack(spacing: 12) {
                         contactRow(
                             icon: "envelope",
-                            text: "hi@handsomeng.com",
-                            url: "mailto:hi@handsomeng.com"
+                            text: "martinwm2011@hotmail.com",
+                            url: "mailto:martinwm2011@hotmail.com"
                         )
                     }
                 }
