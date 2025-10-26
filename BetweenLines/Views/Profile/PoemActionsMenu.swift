@@ -12,6 +12,7 @@ struct PoemActionsMenu: View {
     
     let onShare: () -> Void
     let onEdit: () -> Void
+    let onAIComment: () -> Void
     let onCopy: () -> Void
     let onDelete: () -> Void
     
@@ -32,6 +33,16 @@ struct PoemActionsMenu: View {
                 icon: "pencil",
                 title: "编辑",
                 action: onEdit
+            )
+            
+            Divider()
+                .background(Colors.divider)
+            
+            // AI点评
+            MenuItem(
+                icon: "sparkles",
+                title: "AI点评",
+                action: onAIComment
             )
             
             Divider()
@@ -118,6 +129,7 @@ struct MenuItem: View {
                 PoemActionsMenu(
                     onShare: { print("分享") },
                     onEdit: { print("编辑") },
+                    onAIComment: { print("AI点评") },
                     onCopy: { print("复制") },
                     onDelete: { print("删除") }
                 )

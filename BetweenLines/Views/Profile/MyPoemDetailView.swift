@@ -14,6 +14,7 @@ struct MyPoemDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var poemManager = PoemManager.shared
     @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
     
     let poem: Poem
     let isDraft: Bool // 是否是草稿
@@ -28,6 +29,11 @@ struct MyPoemDetailView: View {
     @State private var showingActionsMenu = false
     @State private var showingDeleteAlert = false
     @State private var showingShareView = false
+    
+    // AI点评状态
+    @State private var showingAIComment = false
+    @State private var isLoadingAIComment = false
+    @State private var aiCommentText: String = ""
     
     enum Field {
         case title
@@ -74,6 +80,10 @@ struct MyPoemDetailView: View {
                             onEdit: {
                                 showingActionsMenu = false
                                 enterEditMode()
+                            },
+                            onAIComment: {
+                                showingActionsMenu = false
+                                requestAIComment()
                             },
                             onCopy: {
                                 showingActionsMenu = false
@@ -136,6 +146,15 @@ struct MyPoemDetailView: View {
             Button("取消", role: .cancel) {}
         } message: {
             Text("删除后无法恢复")
+        }
+        .sheet(isPresented: $showingAIComment) {
+            AICommentSheet(
+                comment: aiCommentText,
+                isLoading: isLoadingAIComment,
+                onDismiss: {
+                    showingAIComment = false
+                }
+            )
         }
         .fullScreenCover(isPresented: $showingShareView) {
             PoemShareView(poem: poem)
@@ -296,6 +315,55 @@ struct MyPoemDetailView: View {
     /// 分享诗歌
     private func sharePoem() {
         showingShareView = true
+    }
+    
+    /// 请求AI点评
+    private func requestAIComment() {
+        // 检查权限
+        if !subscriptionManager.canUseAIComment() {
+            let remaining = subscriptionManager.remainingAIComments()
+            if remaining == 0 {
+                toastManager.showInfo("今日AI点评次数已用完，明天再来吧")
+            } else {
+                toastManager.showInfo("今日还剩 \(remaining) 次AI点评")
+            }
+            return
+        }
+        
+        // 显示加载状态
+        isLoadingAIComment = true
+        aiCommentText = ""
+        showingAIComment = true
+        
+        // 调用AI服务
+        Task {
+            do {
+                let comment = try await AIService.shared.getPoemComment(content: poem.content)
+                await MainActor.run {
+                    aiCommentText = comment
+                    isLoadingAIComment = false
+                    
+                    // 保存点评到诗歌
+                    var updatedPoem = poem
+                    updatedPoem.aiComment = comment
+                    poemManager.addAIComment(to: updatedPoem, comment: comment)
+                    
+                    // 消耗次数
+                    subscriptionManager.useAIComment()
+                }
+            } catch {
+                await MainActor.run {
+                    isLoadingAIComment = false
+                    showingAIComment = false
+                    
+                    if let appError = error as? AppError {
+                        toastManager.showError(appError.localizedDescription)
+                    } else {
+                        toastManager.showError("AI点评失败，请稍后再试")
+                    }
+                }
+            }
+        }
     }
     
     /// 复制诗歌
