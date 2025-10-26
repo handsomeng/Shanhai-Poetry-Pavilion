@@ -16,23 +16,12 @@ struct AboutAppView: View {
                 // App Logo/Icon
                 VStack(spacing: 16) {
                     // App图标
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Colors.accentTeal,
-                                        Colors.accentTeal.opacity(0.7)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 100, height: 100)
-                        
-                        Text("🏔️")
-                            .font(.system(size: 50))
-                    }
+                    Image("AppLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                     
                     // App名称
                     Text("山海诗馆")
