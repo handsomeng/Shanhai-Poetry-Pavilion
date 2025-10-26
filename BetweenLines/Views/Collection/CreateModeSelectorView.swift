@@ -105,7 +105,7 @@ struct ModeButton: View {
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(Fonts.bodyLargeBold())
+                        .font(.system(size: 17, weight: .medium, design: .serif))
                         .foregroundColor(Colors.textInk)
                     
                     Text(subtitle)

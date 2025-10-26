@@ -184,7 +184,7 @@ struct PoemCard: View {
             // 标题（如果有）
             if !poem.title.isEmpty {
                 Text(poem.title)
-                    .font(Fonts.bodyLargeBold())
+                    .font(.system(size: 17, weight: .medium, design: .serif))
                     .foregroundColor(Colors.textInk)
                     .lineLimit(1)
             }
