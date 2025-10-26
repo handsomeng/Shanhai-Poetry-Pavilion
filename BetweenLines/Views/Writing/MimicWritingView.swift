@@ -370,18 +370,14 @@ struct MimicWritingView: View {
             return
         }
         
-        currentPoem = newPoem
         hasSaved = true  // 标记已保存
         
-        // 生成分享图片
-        generatedImage = PoemImageGenerator.generate(poem: newPoem)
-        
         // Toast 提示
-        ToastManager.shared.showSuccess("已保存到你的诗集")
+        ToastManager.shared.showSuccess("已保存")
         
-        // 显示成功页面
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            showSuccessView = true
+        // 1秒后返回诗集
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            dismiss()
         }
     }
 }

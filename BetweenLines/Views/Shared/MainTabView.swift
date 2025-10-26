@@ -13,12 +13,12 @@ struct MainTabView: View {
     @State private var selectedTab: Tab = .learning
     
     enum Tab: String, CaseIterable {
-        case learning = "学诗", writing = "写诗", explore = "赏诗", library = "我的"
+        case learning = "学诗", collection = "诗集", explore = "广场", library = "我的"
         var iconName: String {
             switch self {
             case .learning: return "book"                      // 学诗：打开的书，学习感
-            case .writing: return "pencil.line"                // 写诗：线性铅笔，书写感
-            case .explore: return "text.book.closed"           // 赏诗：诗集，欣赏阅读
+            case .collection: return "text.book.closed"        // 诗集：诗集图标，收藏感
+            case .explore: return "globe.asia.australia"       // 广场：地球图标，社区感
             case .library: return "person"                     // 我的：简洁人物，个人中心
             }
         }
@@ -31,9 +31,9 @@ struct MainTabView: View {
                 .tag(Tab.learning)
                 .environmentObject(tabManager)
             
-            WritingView()
-                .tabItem { Label(Tab.writing.rawValue, systemImage: Tab.writing.iconName) }
-                .tag(Tab.writing)
+            PoetryCollectionView()
+                .tabItem { Label(Tab.collection.rawValue, systemImage: Tab.collection.iconName) }
+                .tag(Tab.collection)
                 .environmentObject(tabManager)
             
             ExploreView()

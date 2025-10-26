@@ -25,7 +25,7 @@ struct ThemeWritingView: View {
     @State private var content = ""
     @State private var currentPoem: Poem?
     @State private var showingSubscription = false
-    @State private var showSuccessView = false
+    // 移除 showSuccessView，保存后直接返回诗集
     @State private var generatedImage: UIImage?
     @State private var showingCancelConfirm = false
     @State private var hasSaved = false  // 跟踪是否已保存
@@ -71,11 +71,7 @@ struct ThemeWritingView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showSuccessView) {
-            if let poem = currentPoem, let image = generatedImage {
-                PoemSuccessView(poem: poem, poemImage: image)
-            }
-        }
+        // 移除 PoemSuccessView，保存后直接返回诗集
         .alert("确认取消", isPresented: $showingCancelConfirm) {
             Button("放弃", role: .destructive) {
                 dismiss()
@@ -356,18 +352,14 @@ struct ThemeWritingView: View {
             return
         }
         
-        currentPoem = newPoem
         hasSaved = true  // 标记已保存
         
-        // 生成分享图片
-        generatedImage = PoemImageGenerator.generate(poem: newPoem)
-        
         // Toast 提示
-        ToastManager.shared.showSuccess("已保存到你的诗集")
+        ToastManager.shared.showSuccess("已保存")
         
-        // 显示成功页面
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            showSuccessView = true
+        // 1秒后返回诗集
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            dismiss()
         }
     }
 }

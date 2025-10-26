@@ -15,19 +15,10 @@ struct ProfileView: View {
     @StateObject private var identityService = UserIdentityService()
     
     // UI 状态
-    @State private var selectedTab: ProfileTab = .collection
-    @State private var poemToDelete: Poem?
-    @State private var showingDeleteAlert = false
     @State private var showingSettings = false
     @State private var showingSubscription = false
     @State private var showingMembershipDetail = false
     @State private var showingPoetTitle = false
-    
-    enum ProfileTab: String, CaseIterable {
-        case collection = "诗集"
-        case drafts = "草稿"
-        case published = "广场"
-    }
     
     // 显示的用户名
     private var displayUsername: String {
@@ -46,18 +37,23 @@ struct ProfileView: View {
                 Colors.backgroundCream
                     .ignoresSafeArea()
                 
-                VStack(spacing: 0) {
-                    // 头部信息
-                    headerSection
-                    
-                    // 会员状态卡片
-                    membershipCard
-                    
-                    // 选项卡
-                    tabSection
-                    
-                    // 诗歌列表
-                    poemsListSection
+                ScrollView {
+                    VStack(spacing: Spacing.lg) {
+                        // 头部信息
+                        headerSection
+                        
+                        // 会员状态卡片
+                        membershipCard
+                        
+                        // 统计数据（可点击跳转到诗集）
+                        statsSection
+                        
+                        // 诗人等级（可点击查看详情）
+                        poetTitleSection
+                        
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.horizontal, Spacing.lg)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -85,14 +81,7 @@ struct ProfileView: View {
                 PoetTitleView()
             }
         }
-        .alert("确认删除", isPresented: $showingDeleteAlert, presenting: poemToDelete) { poem in
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
-                deletePoem(poem)
-            }
-        } message: { poem in
-            Text("确定要删除《\(poem.title)》吗？")
-        }
+        // 移除删除诗歌的 alert（诗歌管理已移到【诗集】Tab）
     }
     
     // MARK: - Delete Poem
@@ -284,9 +273,37 @@ struct ProfileView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
-    // MARK: - Tab Section
+    // MARK: - Poet Title Section
     
-    private var tabSection: some View {
+    private var poetTitleSection: some View {
+        Button(action: { showingPoetTitle = true }) {
+            HStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("诗人等级")
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(Colors.textSecondary)
+                    
+                    Text(poemManager.currentPoetTitle.displayName)
+                        .font(Fonts.titleMedium())
+                        .foregroundColor(Colors.accentTeal)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(Colors.textTertiary)
+            }
+            .padding(Spacing.lg)
+            .background(Colors.white)
+            .cornerRadius(CornerRadius.card)
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // MARK: - Tab Section (移除)
+    
+    private var tabSectionOld: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Spacing.md) {
                 ForEach(ProfileTab.allCases, id: \.self) { tab in
