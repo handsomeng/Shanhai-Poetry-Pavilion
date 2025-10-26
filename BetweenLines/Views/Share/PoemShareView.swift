@@ -227,7 +227,7 @@ extension PoemShareView {
             await MainActor.run {
                 // 检查是否安装微信
                 if canOpenWeChat() {
-                    presentSystemShare(with: image, message: "选择"微信"分享给好友")
+                    presentSystemShare(with: image, message: "请在分享菜单中选择【微信】")
                 } else {
                     toastManager.showError("未安装微信应用")
                 }
@@ -248,7 +248,7 @@ extension PoemShareView {
             await MainActor.run {
                 // 检查是否安装微信
                 if canOpenWeChat() {
-                    presentSystemShare(with: image, message: "选择"微信"并长按图片分享到朋友圈")
+                    presentSystemShare(with: image, message: "请选择【微信】，然后长按图片分享到朋友圈")
                 } else {
                     toastManager.showError("未安装微信应用")
                 }
