@@ -20,13 +20,8 @@ struct CreateModeSelectorView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                Colors.backgroundCream
-                    .ignoresSafeArea()
-                
+            ScrollView {
                 VStack(spacing: Spacing.xl) {
-                    Spacer()
-                    
                     // 主题写诗
                     ModeCard(
                         icon: "🎨",
@@ -62,11 +57,11 @@ struct CreateModeSelectorView: View {
                             dismiss()
                         }
                     )
-                    
-                    Spacer()
                 }
                 .padding(.horizontal, Spacing.xl)
+                .padding(.vertical, Spacing.xxl)
             }
+            .background(Colors.backgroundCream)
             .navigationTitle("选择写诗模式")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
