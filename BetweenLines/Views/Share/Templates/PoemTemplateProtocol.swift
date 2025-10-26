@@ -27,7 +27,6 @@ enum PoemTemplateType: String, CaseIterable, Identifiable {
     case warmJapanese = "暖系日系"
     case darkNight = "深夜暗黑"
     case cyberpunk = "赛博朋克"
-    case handwritten = "手写笔记"
     
     var id: String { rawValue }
     
@@ -38,7 +37,6 @@ enum PoemTemplateType: String, CaseIterable, Identifiable {
         case .warmJapanese: return "🌸"
         case .darkNight: return "🌙"
         case .cyberpunk: return "🌃"
-        case .handwritten: return "✍️"
         }
     }
     
@@ -55,8 +53,6 @@ enum PoemTemplateType: String, CaseIterable, Identifiable {
             DarkNightTemplate().render(poem: poem, size: size)
         case .cyberpunk:
             CyberpunkTemplate().render(poem: poem, size: size)
-        case .handwritten:
-            HandwrittenTemplate().render(poem: poem, size: size)
         }
     }
 }
