@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LovartMinimalTemplate: PoemTemplate {
+struct LovartMinimalTemplate: PoemTemplateRenderable {
     var id = "lovart_minimal"
     var name = "Lovart 极简"
     var icon = "🤍"

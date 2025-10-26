@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CyberpunkTemplate: PoemTemplate {
+struct CyberpunkTemplate: PoemTemplateRenderable {
     var id = "cyberpunk"
     var name = "赛博朋克"
     var icon = "🌃"

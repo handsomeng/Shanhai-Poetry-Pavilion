@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MountainSeaTemplate: PoemTemplate {
+struct MountainSeaTemplate: PoemTemplateRenderable {
     var id = "mountain_sea"
     var name = "山海国风"
     var icon = "🎨"

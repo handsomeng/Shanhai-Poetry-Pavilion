@@ -8,14 +8,16 @@
 import SwiftUI
 
 /// 诗歌模板协议
-protocol PoemTemplate {
+protocol PoemTemplateRenderable {
+    associatedtype Content: View
+    
     var id: String { get }
     var name: String { get }
     var icon: String { get }
     
     /// 渲染模板视图
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> some View
+    func render(poem: Poem, size: CGSize) -> Content
 }
 
 /// 模板类型枚举

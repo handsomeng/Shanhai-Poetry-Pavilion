@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct WarmJapaneseTemplate: PoemTemplate {
+struct WarmJapaneseTemplate: PoemTemplateRenderable {
     var id = "warm_japanese"
     var name = "暖系日系"
     var icon = "🌸"

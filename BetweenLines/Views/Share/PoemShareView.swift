@@ -288,13 +288,6 @@ extension PoemShareView {
     }
 }
 
-// MARK: - Poem Template
-
-enum PoemTemplate: String, CaseIterable {
-    case lovartMinimal = "Lovart 极简"
-    // 🚧 TODO: 后续添加更多模板
-}
-
 // MARK: - Preview
 
 #Preview {

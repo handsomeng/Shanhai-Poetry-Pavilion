@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DarkNightTemplate: PoemTemplate {
+struct DarkNightTemplate: PoemTemplateRenderable {
     var id = "dark_night"
     var name = "深夜暗黑"
     var icon = "🌙"

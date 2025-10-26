@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct HandwrittenTemplate: PoemTemplate {
+struct HandwrittenTemplate: PoemTemplateRenderable {
     var id = "handwritten"
     var name = "手写笔记"
     var icon = "✍️"
