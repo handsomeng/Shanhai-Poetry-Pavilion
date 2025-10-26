@@ -27,6 +27,7 @@ struct MyPoemDetailView: View {
     // UI 状态
     @State private var showingActionsMenu = false
     @State private var showingDeleteAlert = false
+    @State private var showingShareView = false
     
     enum Field {
         case title
@@ -135,6 +136,9 @@ struct MyPoemDetailView: View {
             Button("取消", role: .cancel) {}
         } message: {
             Text("删除后无法恢复")
+        }
+        .fullScreenCover(isPresented: $showingShareView) {
+            PoemShareView(poem: poem)
         }
     }
     
@@ -275,8 +279,7 @@ struct MyPoemDetailView: View {
     
     /// 分享诗歌
     private func sharePoem() {
-        // 🚧 TODO: 实现分享功能（待开发）
-        toastManager.showInfo("分享功能开发中...")
+        showingShareView = true
     }
     
     /// 复制诗歌
