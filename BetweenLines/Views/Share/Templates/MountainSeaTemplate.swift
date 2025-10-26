@@ -53,7 +53,7 @@ struct MountainSeaTemplate: PoemTemplateRenderable {
             HStack {
                 Spacer()
                 
-                VStack(alignment: .trailing, spacing: 12) {
+                VStack(alignment: .trailing, spacing: 8) {
                     Text(poem.authorName)
                         .font(.system(size: 13, weight: .light, design: .serif))
                         .foregroundColor(Color(hex: "8B7355"))
@@ -61,18 +61,6 @@ struct MountainSeaTemplate: PoemTemplateRenderable {
                     Text(poem.createdAt, style: .date)
                         .font(.system(size: 11, weight: .light))
                         .foregroundColor(Color(hex: "A89B88"))
-                    
-                    // 印章装饰
-                    ZStack {
-                        Rectangle()
-                            .fill(Color(hex: "CC3333"))
-                            .frame(width: 32, height: 32)
-                        
-                        Text("山海")
-                            .font(.system(size: 11, weight: .bold, design: .serif))
-                            .foregroundColor(.white)
-                    }
-                    .rotationEffect(.degrees(5))
                 }
             }
         }
