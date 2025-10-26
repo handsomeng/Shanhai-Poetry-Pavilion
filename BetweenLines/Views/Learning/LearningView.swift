@@ -342,11 +342,11 @@ struct ArticleDetailView: View {
         .alert("开始创作", isPresented: $showMimicPrompt) {
             Button("取消", role: .cancel) {}
             Button("前往写诗") {
-                // 切换到写诗 Tab
-                tabManager.switchTo(.writing)
+                // 切换到诗集 Tab
+                tabManager.switchTo(.collection)
             }
         } message: {
-            Text("将跳转到【写诗】模块，开始你的第一首诗。")
+            Text("将跳转到【诗集】模块，开始你的第一首诗。")
         }
     }
 }
