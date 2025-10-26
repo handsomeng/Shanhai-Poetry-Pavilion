@@ -53,165 +53,173 @@ struct PoemShareView: View {
     // MARK: - Poem Image Preview
     
     private var poemImagePreview: some View {
-        // 诗歌图片模板
-        VStack(alignment: .leading, spacing: 32) {
+        // 诗歌图片模板（参考 Flomo 风格）
+        VStack(alignment: .leading, spacing: 0) {
+            // 顶部：日期（左）和 logo（右）
+            HStack {
+                Text(poem.createdAt, style: .date)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(Color(hex: "999999"))
+                
+                Spacer()
+                
+                Text("山海诗馆")
+                    .font(.system(size: 11, weight: .regular, design: .serif))
+                    .foregroundColor(Color(hex: "CCCCCC"))
+                    .tracking(1)
+            }
+            .padding(.bottom, 24)
+            
             // 标题（如果有）
             if !poem.title.isEmpty {
                 Text(poem.title)
-                    .font(.system(size: 28, weight: .thin, design: .serif))
+                    .font(.system(size: 20, weight: .medium, design: .serif))
                     .foregroundColor(Color(hex: "0A0A0A"))
-                    .tracking(3)
+                    .tracking(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 16)
             }
             
             // 正文
             Text(poem.content)
-                .font(.system(size: 18, weight: .light, design: .serif))
-                .foregroundColor(Color(hex: "4A4A4A"))
-                .lineSpacing(16)
-                .tracking(1.5)
+                .font(.system(size: 15, weight: .regular, design: .serif))
+                .foregroundColor(Color(hex: "333333"))
+                .lineSpacing(10)
+                .tracking(0.5)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
             
             Spacer()
-                .frame(height: 40)
+                .frame(height: 32)
             
-            // 底部标识
-            VStack(alignment: .leading, spacing: 12) {
-                Rectangle()
-                    .frame(height: 0.5)
-                    .foregroundColor(Color(hex: "E5E5E5"))
-                
-                // 山海诗馆 · 作者名 · 日期
-                HStack(spacing: 4) {
-                    Text("山海诗馆")
-                        .font(.system(size: 12, weight: .light, design: .serif))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                        .tracking(2)
-                    
-                    Text("·")
-                        .font(.system(size: 12, weight: .ultraLight))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                    
-                    Text(poem.authorName)
-                        .font(.system(size: 12, weight: .ultraLight))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                    
-                    Text("·")
-                        .font(.system(size: 12, weight: .ultraLight))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                    
-                    Text(poem.createdAt, style: .date)
-                        .font(.system(size: 12, weight: .ultraLight))
-                        .foregroundColor(Color(hex: "ABABAB"))
-                }
+            // 底部标识：作者名
+            HStack(spacing: 0) {
+                Spacer()
+                Text("—— \(poem.authorName)")
+                    .font(.system(size: 12, weight: .light, design: .serif))
+                    .foregroundColor(Color(hex: "999999"))
             }
         }
-        .padding(.horizontal, 48)
-        .padding(.vertical, 64)
-        .frame(width: 360)
+        .padding(.horizontal, 32)
+        .padding(.vertical, 40)
+        .frame(width: 340)
         .background(Color.white)
-        .cornerRadius(CornerRadius.large)
-        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 4)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 2)
     }
     
     // MARK: - Bottom Actions
     
     private var bottomActions: some View {
-        VStack(spacing: Spacing.md) {
-            // 第一行：更换模板 + 保存图片
-            HStack(spacing: Spacing.sm) {
-                // 更换模板
-                Button(action: {
+        // 仿照 Flomo 的底部按钮布局
+        HStack(spacing: 0) {
+            // 更换模板
+            ActionButton(
+                icon: "circle.grid.2x2",
+                title: "更换模板",
+                action: {
                     showingTemplateSelector = true
-                }) {
-                    HStack {
-                        Image(systemName: "paintpalette")
-                            .font(.system(size: 14))
-                        Text("更换模板")
-                    }
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundColor(Colors.textInk)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
                 }
-                .scaleButtonStyle()
-                
-                // 保存图片
-                Button(action: saveToPhotos) {
-                    HStack {
-                        Image(systemName: "arrow.down.circle")
-                            .font(.system(size: 14))
-                        Text("保存图片")
-                    }
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundColor(Colors.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .background(Colors.accentTeal)
-                    .cornerRadius(CornerRadius.medium)
-                }
-                .scaleButtonStyle()
-            }
+            )
             
-            // 第二行：微信 + 朋友圈 + 更多
-            HStack(spacing: Spacing.sm) {
-                // 微信
-                Button(action: shareToWechat) {
-                    VStack(spacing: 6) {
-                        Image(systemName: "message.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(Color(hex: "09BB07"))
-                        Text("微信")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-                }
-                .scaleButtonStyle()
-                
-                // 朋友圈
-                Button(action: shareToMoments) {
-                    VStack(spacing: 6) {
-                        Image(systemName: "person.3.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(Color(hex: "09BB07"))
-                        Text("朋友圈")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-                }
-                .scaleButtonStyle()
-                
-                // 更多
-                Button(action: shareMore) {
-                    VStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 20))
-                            .foregroundColor(Colors.accentTeal)
-                        Text("更多")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(Colors.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.md)
-                    .background(Colors.white)
-                    .cornerRadius(CornerRadius.medium)
-                }
-                .scaleButtonStyle()
-            }
+            Divider()
+                .frame(height: 40)
+                .background(Color(hex: "E5E5E5"))
+            
+            // 保存图片
+            ActionButton(
+                icon: "arrow.down.circle",
+                title: "保存图片",
+                action: saveToPhotos
+            )
+            
+            Divider()
+                .frame(height: 40)
+                .background(Color(hex: "E5E5E5"))
+            
+            // 微信
+            ActionButton(
+                icon: "message",
+                title: "微信",
+                iconColor: Color(hex: "09BB07"),
+                action: shareToWechat
+            )
+            
+            Divider()
+                .frame(height: 40)
+                .background(Color(hex: "E5E5E5"))
+            
+            // 朋友圈
+            ActionButton(
+                icon: "person.3",
+                title: "朋友圈",
+                iconColor: Color(hex: "09BB07"),
+                action: shareToMoments
+            )
+            
+            Divider()
+                .frame(height: 40)
+                .background(Color(hex: "E5E5E5"))
+            
+            // 更多
+            ActionButton(
+                icon: "ellipsis.circle",
+                title: "更多",
+                action: shareMore
+            )
         }
-        .padding(Spacing.lg)
+        .frame(height: 70)
+        .background(Color.white)
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(Color(hex: "E5E5E5")),
+            alignment: .top
+        )
     }
+}
+
+// MARK: - Action Button
+
+struct ActionButton: View {
+    let icon: String
+    let title: String
+    var iconColor: Color = Color(hex: "666666")
+    let action: () -> Void
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundColor(iconColor)
+                
+                Text(title)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(Color(hex: "666666"))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 70)
+            .background(isPressed ? Color(hex: "F5F5F5") : Color.clear)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    isPressed = true
+                }
+                .onEnded { _ in
+                    isPressed = false
+                }
+        )
+    }
+}
+
+// MARK: - Poem Share View Extension
+
+extension PoemShareView {
     
     // MARK: - Actions
     
