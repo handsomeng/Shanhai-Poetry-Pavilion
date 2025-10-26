@@ -67,27 +67,19 @@ struct MyPoemDetailView: View {
                         Spacer()
                         PoemActionsMenu(
                             onShare: {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    showingActionsMenu = false
-                                }
+                                showingActionsMenu = false
                                 sharePoem()
                             },
                             onEdit: {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    showingActionsMenu = false
-                                }
+                                showingActionsMenu = false
                                 enterEditMode()
                             },
                             onCopy: {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    showingActionsMenu = false
-                                }
+                                showingActionsMenu = false
                                 copyPoem()
                             },
                             onDelete: {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    showingActionsMenu = false
-                                }
+                                showingActionsMenu = false
                                 showingDeleteAlert = true
                             }
                         )
@@ -243,13 +235,15 @@ struct MyPoemDetailView: View {
     
     /// 进入编辑模式
     private func enterEditMode() {
-        isEditing = true
         // 重置编辑内容为当前诗歌内容
         editedTitle = poem.title
         editedContent = poem.content
         
-        // 延迟一下，确保编辑视图已经渲染完成
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        // 同时设置编辑状态和焦点
+        isEditing = true
+        
+        // 使用 async 而不是 asyncAfter，更快响应
+        DispatchQueue.main.async {
             // 聚焦到内容输入框，光标会自动移到最后
             focusedField = .content
         }
