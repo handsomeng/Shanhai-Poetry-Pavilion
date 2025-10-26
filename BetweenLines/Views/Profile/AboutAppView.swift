@@ -50,8 +50,8 @@ struct AboutAppView: View {
                 }
                 .padding(.top, 32)
                 
-                // App介绍
-                infoCard(title: "关于应用") {
+                // 愿景
+                infoCard(title: "愿景") {
                     Text("山海诗馆是一款专为现代诗爱好者打造的写诗应用。\n\n我们相信，诗歌不应该是高不可攀的艺术，每个人心中都有属于自己的山海。\n\n在这里，你可以自由创作，记录灵感，学习技巧，让诗歌成为生活的一部分。")
                         .font(.system(size: 15, weight: .light))
                         .foregroundColor(Colors.textInk)

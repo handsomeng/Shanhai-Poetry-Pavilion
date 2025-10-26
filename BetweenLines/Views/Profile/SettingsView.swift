@@ -31,7 +31,7 @@ struct SettingsView: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 20) {
                         // 1. 个人信息区
                         personalInfoSection
                         
@@ -44,9 +44,9 @@ struct SettingsView: View {
                         // 4. 底部版本信息
                         versionInfo
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 32)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("设置")
@@ -195,8 +195,8 @@ struct SettingsView: View {
             .background(
                 LinearGradient(
                     colors: [
-                        Colors.accentTeal.opacity(0.05),
-                        Colors.accentTeal.opacity(0.02)
+                        Color(red: 1.0, green: 0.95, blue: 0.85),
+                        Color(red: 1.0, green: 0.98, blue: 0.92)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -205,7 +205,7 @@ struct SettingsView: View {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Colors.accentTeal.opacity(0.2), lineWidth: 1)
+                    .stroke(Color(red: 0.9, green: 0.8, blue: 0.6).opacity(0.3), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -329,19 +329,14 @@ struct SettingsView: View {
     private func restorePurchases() {
         toastManager.showInfo("正在恢复购买...")
         Task {
-            do {
-                try await AppTransaction.shared
-                await subscriptionManager.updateSubscriptionStatus()
-                DispatchQueue.main.async {
-                    if subscriptionManager.isSubscribed {
-                        toastManager.showSuccess("已恢复订阅")
-                    } else {
-                        toastManager.showInfo("未找到订阅记录")
-                    }
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    toastManager.showError("恢复失败：\(error.localizedDescription)")
+            // StoreKit 2 中，恢复购买就是重新检查订阅状态
+            await subscriptionManager.updateSubscriptionStatus()
+            
+            DispatchQueue.main.async {
+                if subscriptionManager.isSubscribed {
+                    toastManager.showSuccess("已恢复订阅")
+                } else {
+                    toastManager.showInfo("未找到订阅记录")
                 }
             }
         }
