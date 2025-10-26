@@ -22,7 +22,6 @@ struct MyPoemDetailView: View {
     
     @State private var showingDeleteAlert = false
     @State private var showingShareSheet = false
-    @State private var generatedImage: UIImage? = nil
     
     init(poem: Poem, isDraft: Bool = false) {
         self.poem = poem
@@ -62,14 +61,9 @@ struct MyPoemDetailView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showingShareSheet) {
-            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }),
-               let image = generatedImage {
-                PoemSuccessView(
-                    poem: latestPoem,
-                    poemImage: image,
-                    showWriteAgain: false
-                )
+        .sheet(isPresented: $showingShareSheet) {
+            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) {
+                ShareSheet(poem: latestPoem)
             }
         }
         .alert("确认删除", isPresented: $showingDeleteAlert) {
@@ -131,28 +125,8 @@ struct MyPoemDetailView: View {
         // 先保存当前编辑
         saveEdits()
         
-        // 获取最新的诗歌数据
-        guard let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) else {
-            ToastManager.shared.showError("诗歌数据加载失败")
-            return
-        }
-        
-        // 生成诗歌图片（使用纯模板，不包含导航栏）
-        Task {
-            let renderer = ImageRenderer(content: poemTemplateForImage(poem: latestPoem))
-            renderer.scale = 3.0 // 高清图片
-            
-            if let image = renderer.uiImage {
-                await MainActor.run {
-                    self.generatedImage = image
-                    self.showingShareSheet = true
-                }
-            } else {
-                await MainActor.run {
-                    ToastManager.shared.showError("图片生成失败")
-                }
-            }
-        }
+        // 显示分享界面
+        showingShareSheet = true
     }
     
     /// 诗歌图片模板（纯模板，用于生成图片）
@@ -225,6 +199,139 @@ struct MyPoemDetailView: View {
         poemManager.deletePoem(poem)
         ToastManager.shared.showSuccess("已删除")
         dismiss()
+    }
+}
+
+// MARK: - Share Sheet
+
+struct ShareSheet: View {
+    let poem: Poem
+    @Environment(\.dismiss) private var dismiss
+    @State private var generatedImage: UIImage?
+    @State private var isGenerating = true
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: Spacing.lg) {
+                if isGenerating {
+                    ProgressView("生成分享图片...")
+                        .padding()
+                } else if let image = generatedImage {
+                    // 图片预览
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 400)
+                        .cornerRadius(CornerRadius.medium)
+                        .shadow(color: .black.opacity(0.1), radius: 10)
+                    
+                    // 分享按钮
+                    Button(action: {
+                        shareImage(image)
+                    }) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("分享图片")
+                        }
+                        .font(Fonts.bodyRegular())
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Colors.accentTeal)
+                        .cornerRadius(CornerRadius.medium)
+                    }
+                    .padding(.horizontal, Spacing.lg)
+                } else {
+                    Text("图片生成失败")
+                        .foregroundColor(Colors.textSecondary)
+                }
+                
+                Spacer()
+            }
+            .padding(.top, Spacing.xl)
+            .background(Colors.backgroundCream)
+            .navigationTitle("分享诗歌")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("关闭") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .onAppear {
+            generateImage()
+        }
+    }
+    
+    private func generateImage() {
+        Task {
+            let renderer = ImageRenderer(content: poemImageTemplate())
+            renderer.scale = 3.0
+            
+            if let image = renderer.uiImage {
+                await MainActor.run {
+                    self.generatedImage = image
+                    self.isGenerating = false
+                }
+            } else {
+                await MainActor.run {
+                    self.isGenerating = false
+                }
+            }
+        }
+    }
+    
+    @MainActor
+    private func poemImageTemplate() -> some View {
+        VStack(alignment: .leading, spacing: 32) {
+            if !poem.title.isEmpty {
+                Text(poem.title)
+                    .font(.system(size: 28, weight: .bold, design: .serif))
+                    .foregroundColor(Colors.textInk)
+            }
+            
+            Text(poem.content)
+                .font(.system(size: 20, weight: .light, design: .serif))
+                .foregroundColor(Colors.textInk)
+                .lineSpacing(12)
+            
+            HStack {
+                Text(poem.authorName)
+                    .font(.system(size: 16, weight: .light))
+                    .foregroundColor(Colors.textSecondary)
+                Spacer()
+                Text("山海诗馆")
+                    .font(.system(size: 14, weight: .ultraLight))
+                    .foregroundColor(Colors.textTertiary)
+            }
+        }
+        .padding(48)
+        .frame(width: 400)
+        .background(Color.white)
+    }
+    
+    private func shareImage(_ image: UIImage) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first,
+              let rootViewController = window.rootViewController else {
+            return
+        }
+        
+        let activityVC = UIActivityViewController(
+            activityItems: [image],
+            applicationActivities: nil
+        )
+        
+        // iPad 支持
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = window
+            popover.sourceRect = CGRect(x: window.bounds.midX, y: window.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
+        rootViewController.present(activityVC, animated: true)
     }
 }
 
