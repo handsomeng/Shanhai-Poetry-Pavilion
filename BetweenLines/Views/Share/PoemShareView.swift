@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Photos
 
 struct PoemShareView: View {
     
@@ -195,10 +196,21 @@ extension PoemShareView {
                 return
             }
             
-            await MainActor.run {
-                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                toastManager.showSuccess("已保存到相册")
+            // 保存到相册
+            await saveImageToPhotos(image)
+        }
+    }
+    
+    /// 保存图片到相册（带回调）
+    @MainActor
+    private func saveImageToPhotos(_ image: UIImage) async {
+        do {
+            try await PHPhotoLibrary.shared().performChanges {
+                PHAssetChangeRequest.creationRequestForAsset(from: image)
             }
+            toastManager.showSuccess("已保存到相册")
+        } catch {
+            toastManager.showError("保存失败，请在设置中允许访问相册")
         }
     }
     
@@ -213,9 +225,12 @@ extension PoemShareView {
             }
             
             await MainActor.run {
-                // 🚧 TODO: 集成微信SDK后实现
-                // 目前先使用系统分享
-                presentSystemShare(with: image)
+                // 检查是否安装微信
+                if canOpenWeChat() {
+                    presentSystemShare(with: image, message: "选择"微信"分享给好友")
+                } else {
+                    toastManager.showError("未安装微信应用")
+                }
             }
         }
     }
@@ -231,11 +246,20 @@ extension PoemShareView {
             }
             
             await MainActor.run {
-                // 🚧 TODO: 集成微信SDK后实现
-                // 目前先使用系统分享
-                presentSystemShare(with: image)
+                // 检查是否安装微信
+                if canOpenWeChat() {
+                    presentSystemShare(with: image, message: "选择"微信"并长按图片分享到朋友圈")
+                } else {
+                    toastManager.showError("未安装微信应用")
+                }
             }
         }
+    }
+    
+    /// 检查是否可以打开微信
+    private func canOpenWeChat() -> Bool {
+        guard let url = URL(string: "weixin://") else { return false }
+        return UIApplication.shared.canOpenURL(url)
     }
     
     /// 更多分享方式（系统分享面板）
@@ -249,7 +273,7 @@ extension PoemShareView {
             }
             
             await MainActor.run {
-                presentSystemShare(with: image)
+                presentSystemShare(with: image, message: nil)
             }
         }
     }
@@ -264,9 +288,17 @@ extension PoemShareView {
     
     /// 调用系统分享面板
     @MainActor
-    private func presentSystemShare(with image: UIImage) {
+    private func presentSystemShare(with image: UIImage, message: String?) {
+        // 构建分享项
+        var activityItems: [Any] = [image]
+        
+        // 如果有提示消息，先显示 toast
+        if let message = message {
+            toastManager.showInfo(message)
+        }
+        
         let activityVC = UIActivityViewController(
-            activityItems: [image],
+            activityItems: activityItems,
             applicationActivities: nil
         )
         
