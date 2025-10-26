@@ -84,12 +84,6 @@ struct ProfileView: View {
         // 移除删除诗歌的 alert（诗歌管理已移到【诗集】Tab）
     }
     
-    // MARK: - Delete Poem
-    
-    private func deletePoem(_ poem: Poem) {
-        poemManager.deletePoem(poem)
-    }
-    
     // MARK: - Header Section
     
     private var headerSection: some View {
@@ -301,127 +295,12 @@ struct ProfileView: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    // MARK: - Tab Section (移除)
-    
-    private var tabSectionOld: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.md) {
-                ForEach(ProfileTab.allCases, id: \.self) { tab in
-                    Button(action: {
-                        selectedTab = tab
-                    }) {
-                        VStack(spacing: 4) {
-                            Text(tab.rawValue)
-                                .font(Fonts.bodyRegular())
-                                .foregroundColor(selectedTab == tab ? Colors.accentTeal : Colors.textSecondary)
-                            
-                            if selectedTab == tab {
-                                Rectangle()
-                                    .fill(Colors.accentTeal)
-                                    .frame(height: 2)
-                            }
-                        }
-                        .padding(.horizontal, Spacing.md)
-                    }
-                }
-            }
-            .padding(.horizontal, Spacing.lg)
-        }
-        .padding(.vertical, Spacing.md)  // 增加 tab 的上下间距，让布局更舒适
-    }
-    
-    // MARK: - Poems List
-    
-    private var poemsListSection: some View {
-        ScrollView {
-            LazyVStack(spacing: Spacing.md) {
-                ForEach(currentPoems) { poem in
-                    NavigationLink(destination: destinationView(for: poem)) {
-                        MyPoemCard(poem: poem)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button(role: .destructive) {
-                            poemToDelete = poem
-                            showingDeleteAlert = true
-                        } label: {
-                            Label("删除", systemImage: "trash")
-                        }
-                    }
-                }
-                
-                if currentPoems.isEmpty {
-                    emptyStateView
-                }
-            }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
-        }
-    }
-    
-    @ViewBuilder
-    private func destinationView(for poem: Poem) -> some View {
-        if selectedTab == .published {
-            // 已发布到广场的诗歌，跳转到广场详情页（可以看点赞等互动）
-            PoemDetailView(poem: poem)
-        } else {
-            // 诗集和草稿，跳转到编辑详情页
-            MyPoemDetailView(poem: poem, isDraft: selectedTab == .drafts)
-        }
-    }
-    
-    private var emptyStateView: some View {
-        VStack(spacing: Spacing.md) {
-            Image(systemName: emptyStateIcon)
-                .font(.system(size: 48))
-                .foregroundColor(Colors.textSecondary.opacity(0.5))
-            
-            Text(emptyStateText)
-                .font(Fonts.bodyRegular())
-                .foregroundColor(Colors.textSecondary)
-        }
-        .padding(.top, Spacing.xxl)
-    }
-    
     // MARK: - Computed Properties
-    
-    private var currentPoems: [Poem] {
-        switch selectedTab {
-        case .collection:
-            return poemManager.myCollection
-        case .drafts:
-            return poemManager.myDrafts
-        case .published:
-            return poemManager.myPublishedToSquare
-        }
-    }
-    
-    private var emptyStateIcon: String {
-        switch selectedTab {
-        case .collection: return "doc.text"
-        case .drafts: return "doc.plaintext"
-        case .published: return "square.and.arrow.up"
-        }
-    }
-    
-    private var emptyStateText: String {
-        switch selectedTab {
-        case .collection: return "还没有保存作品"
-        case .drafts: return "没有草稿"
-        case .published: return "还没有发布到广场"
-        }
-    }
     
     /// 当前诗人称号
     private var currentPoetTitle: String {
         let poemCount = poemManager.myStats.totalPoems
         return PoetTitle.title(forPoemCount: poemCount).displayName
-    }
-    
-    /// 统计文本
-    private var statsText: String {
-        let stats = poemManager.myStats
-        return "已写 \(stats.totalPoems) 首诗，获得 \(stats.totalLikes) 个赞"
     }
 }
 
