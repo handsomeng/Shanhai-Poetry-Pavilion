@@ -78,7 +78,7 @@ struct CreateModeSelectorView: View {
             .padding(.bottom, 50)  // 增加底部间距，避免被 Tab 挡住
         }
         .background(Colors.backgroundCream)
-        .presentationDetents([.medium])
+        .presentationDetents([.height(520)])  // 固定高度，确保内容完整显示
         .presentationDragIndicator(.visible)
     }
 }
