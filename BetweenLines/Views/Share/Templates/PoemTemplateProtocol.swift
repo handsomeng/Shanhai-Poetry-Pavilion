@@ -22,7 +22,7 @@ protocol PoemTemplateRenderable {
 
 /// 模板类型枚举
 enum PoemTemplateType: String, CaseIterable, Identifiable {
-    case lovartMinimal = "Lovart 极简"
+    case lovartMinimal = "极简风格"
     case mountainSea = "山海国风"
     case warmJapanese = "暖系日系"
     case darkNight = "深夜暗黑"
