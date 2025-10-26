@@ -133,6 +133,8 @@ struct ModeButton: View {
 // MARK: - Preview
 
 #Preview {
-    CreateModeSelectorView()
+    CreateModeSelectorView { mode in
+        print("Selected mode: \(mode)")
+    }
 }
 
