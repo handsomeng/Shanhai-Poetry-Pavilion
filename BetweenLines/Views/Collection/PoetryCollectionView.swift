@@ -45,9 +45,9 @@ struct PoetryCollectionView: View {
                 }
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showCreateModeSelector) {
+            .fullScreenCover(isPresented: $showCreateModeSelector) {
                 CreateModeSelectorView { mode in
-                    // 延迟一点，等半屏弹窗关闭后再打开全屏
+                    // 关闭模式选择器后立即打开写诗页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         switch mode {
                         case .theme:
