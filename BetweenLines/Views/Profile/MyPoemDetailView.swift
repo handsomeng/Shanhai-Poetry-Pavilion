@@ -151,18 +151,18 @@ struct MyPoemDetailView: View {
                         .padding(.top, Spacing.lg)
                 }
                 
-                // 正文
-                Text(poem.content)
-                    .font(.system(size: 18, design: .serif))
-                    .foregroundColor(Colors.textInk)
-                    .lineSpacing(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Spacer()
-                    .frame(height: Spacing.xl)
-                
-                // 底部信息
-                poemMetadata
+            // 正文
+            Text(poem.content)
+                .font(.system(size: 18, design: .serif))
+                .foregroundColor(Colors.textInk)
+                .lineSpacing(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Spacer()
+                .frame(height: Spacing.lg) // 缩短留白
+            
+            // 底部信息
+            poemMetadata
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.bottom, Spacing.xl)
