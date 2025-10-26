@@ -56,8 +56,8 @@ struct MyPoemDetailView: View {
                         }
                     }
                 
-                VStack {
-                    HStack {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
                         Spacer()
                         PoemActionsMenu(
                             onShare: {
@@ -85,10 +85,10 @@ struct MyPoemDetailView: View {
                                 showingDeleteAlert = true
                             }
                         )
-                        .padding(.trailing, 16)
-                        .padding(.top, 60) // 从导航栏下方弹出
+                        .padding(.trailing, 8) // 距离右边缘稍微一点距离
+                        .padding(.top, 8) // 紧贴按钮下方
                         .transition(.asymmetric(
-                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                            insertion: .scale(scale: 0.95, anchor: .topTrailing).combined(with: .opacity),
                             removal: .opacity
                         ))
                     }
