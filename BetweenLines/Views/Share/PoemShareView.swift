@@ -27,36 +27,49 @@ struct PoemShareView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Colors.backgroundCream
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    // 图片预览区域
-                    ScrollView {
-                        poemImagePreview
-                            .padding(.vertical, Spacing.xl)
-                    }
+        ZStack {
+            NavigationView {
+                ZStack {
+                    Colors.backgroundCream
+                        .ignoresSafeArea()
                     
-                    // 底部操作按钮
-                    bottomActions
-                        .background(Colors.backgroundCream)
-                }
-            }
-            .navigationTitle("分享")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
-                        dismiss()
+                    VStack(spacing: 0) {
+                        // 图片预览区域
+                        ScrollView {
+                            poemImagePreview
+                                .padding(.vertical, Spacing.xl)
+                        }
+                        
+                        // 底部操作按钮
+                        bottomActions
+                            .background(Colors.backgroundCream)
                     }
-                    .foregroundColor(Colors.textSecondary)
+                }
+                .navigationTitle("分享")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("完成") {
+                            dismiss()
+                        }
+                        .foregroundColor(Colors.textSecondary)
+                    }
+                }
+                .fullScreenCover(isPresented: $showingTemplateSelector) {
+                    TemplateSelector(selectedTemplate: $selectedTemplate, poem: poem)
                 }
             }
-            .fullScreenCover(isPresented: $showingTemplateSelector) {
-                TemplateSelector(selectedTemplate: $selectedTemplate, poem: poem)
+            
+            // Toast 显示层（确保在最上层）
+            VStack {
+                if let toast = toastManager.currentToast {
+                    ToastView(toast: toast)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 50)
+                    Spacer()
+                }
             }
+            .animation(.spring(response: 0.3), value: toastManager.currentToast != nil)
         }
     }
     
