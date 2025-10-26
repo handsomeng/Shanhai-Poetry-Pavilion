@@ -15,6 +15,9 @@ struct LearningView: View {
     /// 所有大主题
     @State private var topics: [LearningTopic] = LearningContentManager.shared.getAllTopics()
     
+    /// 显示设置页面
+    @State private var showingSettings = false
+    
     // MARK: - Body
     
     var body: some View {
@@ -54,6 +57,18 @@ struct LearningView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingSettings = true }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 18, weight: .ultraLight))
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showingSettings) {
+                SettingsView()
+            }
         }
     }
 }

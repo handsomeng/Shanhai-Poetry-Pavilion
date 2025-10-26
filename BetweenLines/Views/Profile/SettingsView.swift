@@ -10,277 +10,348 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var identityService = UserIdentityService()
-    @AppStorage("penName") private var penName: String = ""
+    @StateObject private var poemManager = PoemManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    @StateObject private var toastManager = ToastManager.shared
+    
+    // 状态
+    @State private var showingEditName = false
+    @State private var showingPoetTitle = false
+    @State private var showingMembershipDetail = false
+    @State private var showingSubscription = false
+    @State private var showingAboutApp = false
+    @State private var showingAboutDeveloper = false
     @State private var showResetAlert = false
-    @State private var showSuccessToast = false
     
     var body: some View {
         NavigationView {
             ZStack {
-                Colors.backgroundCream.ignoresSafeArea()
+                Colors.backgroundCream
+                    .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: Spacing.lg) {
-                        // 顶部留白（减少）
-                        Spacer()
-                            .frame(height: Spacing.sm)
+                    VStack(spacing: 16) {
+                        // 1. 个人信息区
+                        personalInfoSection
                         
-                        // 个人设置区域
-                        settingsSection(title: "个人信息") {
-                            settingRow(
-                                label: "笔名",
-                                value: $penName,
-                                placeholder: "给自己起个富有诗意的名字"
-                            )
-                        }
+                        // 2. 会员状态卡片
+                        membershipCard
                         
-                        // 法律与政策
-                        settingsSection(title: "法律与政策") {
-                            NavigationLink(destination: PrivacyPolicyView()) {
-                                navigationRow(label: "隐私政策")
-                            }
-                            
-                            Divider()
-                                .padding(.horizontal, Spacing.md)
-                            
-                            NavigationLink(destination: TermsOfServiceView()) {
-                                navigationRow(label: "用户协议")
-                            }
-                        }
+                        // 3. 设置列表
+                        settingsList
                         
-                        // 关于区域（直接显示内容）
-                        settingsSection(title: "关于") {
-                            VStack(spacing: 0) {
-                                infoRow(label: "应用名称", value: "山海诗馆")
-                                
-                                Divider()
-                                    .padding(.horizontal, Spacing.md)
-                                
-                                infoRow(label: "版本", value: "v1.0.0")
-                                
-                                Divider()
-                                    .padding(.horizontal, Spacing.md)
-                                
-                                // 开发者（可点击）
-                                Button(action: {
-                                    if let url = URL(string: "https://www.handsomeng.com") {
-                                        UIApplication.shared.open(url)
-                                    }
-                                }) {
-                                    HStack {
-                                        Text("开发者")
-                                            .font(Fonts.bodyRegular())
-                                            .foregroundColor(Colors.textSecondary)
-                                        Spacer()
-                                        Text("HandsomeMeng")
-                                            .font(Fonts.bodyRegular())
-                                            .foregroundColor(Colors.accentTeal)
-                                        Image(systemName: "arrow.up.right.square")
-                                            .font(.system(size: 12, weight: .light))
-                                            .foregroundColor(Colors.accentTeal)
-                                    }
-                                    .padding(.vertical, Spacing.md)
-                                    .padding(.horizontal, Spacing.md)
-                                }
-                                
-                                Divider()
-                                    .padding(.horizontal, Spacing.md)
-                                
-                                // 特别感谢
-                                VStack(alignment: .leading, spacing: Spacing.sm) {
-                                    Text("特别感谢")
-                                        .font(Fonts.bodyRegular())
-                                        .foregroundColor(Colors.textSecondary)
-                                    
-                                    Text("Cursor、Claude、DeepSeek 和所有山海诗馆的诗人们")
-                                        .font(.system(size: 13, weight: .light))
-                                        .foregroundColor(Colors.textInk)
-                                        .lineSpacing(4)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, Spacing.md)
-                                .padding(.horizontal, Spacing.md)
-                            }
-                        }
-                        
-                        // 数据管理区域
-                        settingsSection(title: "数据管理") {
-                            // 重置本地数据
-                            Button(action: {
-                                showResetAlert = true
-                            }) {
-                                HStack {
-                                    Text("重置所有数据")
-                                        .font(Fonts.bodyRegular())
-                                        .foregroundColor(Colors.error)
-                                    Spacer()
-                                    Image(systemName: "trash")
-                                        .font(.system(size: 14, weight: .ultraLight))
-                                        .foregroundColor(Colors.error)
-                                }
-                                .padding(.vertical, Spacing.md)
-                                .padding(.horizontal, Spacing.md)
-                            }
-                        }
-                        
-                        // 底部留白（减少）
-                        Spacer()
-                            .frame(height: Spacing.lg)
+                        // 4. 底部版本信息
+                        versionInfo
                     }
-                    .padding(.horizontal, Spacing.lg)
-                }
-                
-                // 成功提示
-                if showSuccessToast {
-                    VStack {
-                        Spacer()
-                        Text("保存成功")
-                            .font(Fonts.bodyRegular())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, Spacing.lg)
-                            .padding(.vertical, Spacing.md)
-                            .background(Colors.accentTeal)
-                            .cornerRadius(CornerRadius.medium)
-                            .padding(.bottom, Spacing.xxl)
-                    }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 32)
                 }
             }
             .navigationTitle("设置")
-            .navigationBarTitleDisplayMode(.inline)  // 改为 inline，更简洁
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Colors.textInk)
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("完成") {
-                        saveSettings()
                         dismiss()
                     }
-                    .font(Fonts.bodyLight())
-                    .foregroundColor(Colors.textInk)
+                    .foregroundColor(Colors.textSecondary)
                 }
             }
-            .alert("重置所有数据", isPresented: $showResetAlert) {
-                Button("取消", role: .cancel) {}
-                Button("确认重置", role: .destructive) {
-                    resetAllData()
-                }
-            } message: {
-                Text("此操作将删除所有诗歌、草稿、个人信息和云端数据，且不可恢复。确定要继续吗？")
+        }
+        .sheet(isPresented: $showingEditName) {
+            EditPenNameView(currentName: identityService.penName) { newName in
+                identityService.setPenName(newName)
+                toastManager.showSuccess("已保存")
             }
         }
-    }
-    
-    // MARK: - 设置区域组件
-    
-    @ViewBuilder
-    private func settingsSection<Content: View>(
-        title: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(title.uppercased())
-                .font(.system(size: 13, weight: .light))
-                .foregroundColor(Colors.textSecondary)
-                .tracking(3)
-                .padding(.horizontal, Spacing.md)
-            
-            VStack(spacing: 0) {
-                content()
-            }
-            .background(Colors.white)
-            .cornerRadius(CornerRadius.card)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.card)
-                    .stroke(Colors.border.opacity(0.3), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
+        .sheet(isPresented: $showingPoetTitle) {
+            PoetTitleView(poemCount: poemManager.allPoems.count)
         }
-    }
-    
-    // MARK: - 可编辑行
-    
-    @ViewBuilder
-    private func settingRow(
-        label: String,
-        value: Binding<String>,
-        placeholder: String,
-        isSecure: Bool = false
-    ) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text(label)
-                .font(.system(size: 13, weight: .light))
-                .foregroundColor(Colors.textSecondary)
-            
-            if isSecure {
-                SecureField(placeholder, text: value)
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .textFieldStyle(.plain)
+        .fullScreenCover(isPresented: $showingMembershipDetail) {
+            if subscriptionManager.isSubscribed {
+                MembershipDetailView()
             } else {
-                TextField(placeholder, text: value)
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                    .textFieldStyle(.plain)
+                SubscriptionView()
             }
         }
-        .padding(.vertical, Spacing.md)
-        .padding(.horizontal, Spacing.md)
+        .sheet(isPresented: $showingAboutDeveloper) {
+            AboutDeveloperView()
+        }
+        .alert("重置所有数据", isPresented: $showResetAlert) {
+            Button("取消", role: .cancel) {}
+            Button("确认重置", role: .destructive) {
+                resetAllData()
+            }
+        } message: {
+            Text("此操作将删除所有诗歌、草稿、个人信息和云端数据，且不可恢复。确定要继续吗？")
+        }
     }
     
-    // MARK: - 只读信息行
+    // MARK: - 个人信息区
     
-    @ViewBuilder
-    private func infoRow(label: String, value: String) -> some View {
+    private var personalInfoSection: some View {
         HStack {
-            Text(label)
-                .font(Fonts.bodyRegular())
+            // 笔名（可点击编辑）
+            Button(action: { showingEditName = true }) {
+                HStack(spacing: 4) {
+                    Text(identityService.penName.isEmpty ? "山海诗人" : identityService.penName)
+                        .font(.system(size: 24, weight: .medium, design: .serif))
+                        .foregroundColor(Colors.textInk)
+                    
+                    Image(systemName: "pencil")
+                        .font(.system(size: 14, weight: .light))
+                        .foregroundColor(Colors.textSecondary)
+                }
+            }
+            .buttonStyle(.plain)
+            .scaleEffect(showingEditName ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: showingEditName)
+            
+            // 称号标签（纯展示）
+            Text(currentPoetTitle.displayName)
+                .font(.system(size: 12))
                 .foregroundColor(Colors.textSecondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Colors.textSecondary.opacity(0.08))
+                .cornerRadius(5)
+            
             Spacer()
-            Text(value)
-                .font(Fonts.bodyRegular())
-                .foregroundColor(Colors.textInk)
         }
-        .padding(.vertical, Spacing.md)
-        .padding(.horizontal, Spacing.md)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(Colors.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
     }
     
-    // MARK: - 导航行
+    // MARK: - 会员状态卡片
+    
+    private var membershipCard: some View {
+        Button(action: {
+            showingMembershipDetail = true
+        }) {
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    if subscriptionManager.isSubscribed {
+                        // 已订阅状态
+                        HStack(spacing: 4) {
+                            Text("👑")
+                            Text("山海已在你心间")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Colors.textInk)
+                        }
+                        
+                        if let expiration = subscriptionManager.expirationDate {
+                            Text("\(subscriptionType) · 到期 \(formattedDate(expiration))")
+                                .font(.system(size: 13))
+                                .foregroundColor(Colors.textSecondary)
+                        } else {
+                            Text(subscriptionType)
+                                .font(.system(size: 13))
+                                .foregroundColor(Colors.textSecondary)
+                        }
+                    } else {
+                        // 未订阅状态
+                        HStack(spacing: 4) {
+                            Text("👑")
+                            Text("升级会员")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Colors.textInk)
+                        }
+                        
+                        Text("山海在眼前 · 免费试用7天")
+                            .font(.system(size: 13))
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                if subscriptionManager.isSubscribed {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .light))
+                        .foregroundColor(Colors.textTertiary)
+                } else {
+                    Text("立即订阅")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Colors.accentTeal)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Colors.accentTeal)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Colors.accentTeal.opacity(0.05),
+                        Colors.accentTeal.opacity(0.02)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Colors.accentTeal.opacity(0.2), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - 设置列表
+    
+    private var settingsList: some View {
+        VStack(spacing: 0) {
+            // 诗人等级
+            Button(action: { showingPoetTitle = true }) {
+                settingRow(label: "诗人等级", showArrow: true)
+            }
+            
+            Divider()
+                .padding(.horizontal, 20)
+            
+            // 恢复购买
+            Button(action: { restorePurchases() }) {
+                settingRow(label: "恢复购买", showArrow: true)
+            }
+            
+            Divider()
+                .padding(.horizontal, 20)
+            
+            // 关于山海诗馆
+            NavigationLink(destination: AboutAppView()) {
+                settingRow(label: "关于山海诗馆", showArrow: true)
+            }
+            .buttonStyle(.plain)
+            
+            Divider()
+                .padding(.horizontal, 20)
+            
+            // 关于 HandsoMeng
+            Button(action: { showingAboutDeveloper = true }) {
+                settingRow(label: "关于 HandsoMeng", showArrow: true)
+            }
+            
+            Divider()
+                .padding(.horizontal, 20)
+            
+            // 用户协议
+            NavigationLink(destination: TermsOfServiceView()) {
+                settingRow(label: "用户协议", showArrow: true)
+            }
+            .buttonStyle(.plain)
+            
+            Divider()
+                .padding(.horizontal, 20)
+            
+            // 隐私政策
+            NavigationLink(destination: PrivacyPolicyView()) {
+                settingRow(label: "隐私政策", showArrow: true)
+            }
+            .buttonStyle(.plain)
+        }
+        .background(Colors.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
+    }
+    
+    // MARK: - 设置行
     
     @ViewBuilder
-    private func navigationRow(label: String) -> some View {
+    private func settingRow(label: String, showArrow: Bool = false) -> some View {
         HStack {
             Text(label)
-                .font(Fonts.bodyRegular())
+                .font(.system(size: 16))
                 .foregroundColor(Colors.textInk)
             Spacer()
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .light))
-                .foregroundColor(Colors.textTertiary)
+            if showArrow {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .light))
+                    .foregroundColor(Colors.textTertiary)
+            }
         }
-        .padding(.vertical, Spacing.md)
-        .padding(.horizontal, Spacing.md)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
         .contentShape(Rectangle())
     }
     
-    // MARK: - 保存设置
+    // MARK: - 底部版本信息
     
-    private func saveSettings() {
-        // 所有设置都通过 @AppStorage 自动保存
-        // 这里可以添加额外的验证逻辑
-        
-        showSuccessToast = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            showSuccessToast = false
+    private var versionInfo: some View {
+        Text("版本 1.0.0")
+            .font(.system(size: 13))
+            .foregroundColor(Colors.textTertiary)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 16)
+    }
+    
+    // MARK: - 辅助方法
+    
+    /// 当前诗人等级
+    private var currentPoetTitle: PoetTitle {
+        let count = poemManager.allPoems.count
+        return PoetTitle.title(forPoemCount: count)
+    }
+    
+    /// 订阅类型文本
+    private var subscriptionType: String {
+        guard let type = subscriptionManager.currentSubscription else {
+            return "未订阅"
+        }
+        switch type {
+        case .monthly: return "月度订阅"
+        case .quarterly: return "季度订阅"
+        case .yearly: return "年度订阅"
         }
     }
     
-    // MARK: - 重置数据
+    /// 格式化日期
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
     
+    /// 恢复购买
+    private func restorePurchases() {
+        toastManager.showInfo("正在恢复购买...")
+        Task {
+            do {
+                try await AppStore.sync()
+                await subscriptionManager.updateSubscriptionStatus()
+                DispatchQueue.main.async {
+                    if subscriptionManager.isSubscribed {
+                        toastManager.showSuccess("已恢复订阅")
+                    } else {
+                        toastManager.showInfo("未找到订阅记录")
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    toastManager.showError("恢复失败：\(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    /// 重置所有数据
     private func resetAllData() {
         // 1. 清除本地所有诗歌数据
-        PoemManager.shared.deleteAll()
+        poemManager.deleteAll()
         
         // 2. 清空笔名
-        penName = ""
         identityService.setPenName("")
         
         // 3. 清除所有 UserDefaults 数据
@@ -295,14 +366,184 @@ struct SettingsView: View {
         }
         iCloudStore.synchronize()
         
-        ToastManager.shared.showSuccess("所有数据已重置")
+        toastManager.showSuccess("所有数据已重置")
         
         // 关闭设置页
         dismiss()
     }
 }
 
+// MARK: - 编辑笔名视图
+
+struct EditPenNameView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    let currentName: String
+    let onSave: (String) -> Void
+    
+    @State private var editedName: String
+    @FocusState private var isFocused: Bool
+    
+    init(currentName: String, onSave: @escaping (String) -> Void) {
+        self.currentName = currentName
+        self.onSave = onSave
+        _editedName = State(initialValue: currentName.isEmpty ? "" : currentName)
+    }
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                // 输入框
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("笔名")
+                        .font(.system(size: 14))
+                        .foregroundColor(Colors.textSecondary)
+                    
+                    TextField("给自己起个富有诗意的名字", text: $editedName)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Colors.textInk)
+                        .padding()
+                        .background(Colors.white)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Colors.border.opacity(0.3), lineWidth: 1)
+                        )
+                        .focused($isFocused)
+                    
+                    // 字数统计
+                    HStack {
+                        Spacer()
+                        Text("\(editedName.count)/10")
+                            .font(.system(size: 13))
+                            .foregroundColor(editedName.count > 10 ? Colors.error : Colors.textTertiary)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                
+                Spacer()
+            }
+            .background(Colors.backgroundCream)
+            .navigationTitle("编辑笔名")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        dismiss()
+                    }
+                    .foregroundColor(Colors.textSecondary)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("保存") {
+                        saveAndDismiss()
+                    }
+                    .foregroundColor(Colors.accentTeal)
+                    .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || editedName.count > 10)
+                }
+            }
+            .onAppear {
+                isFocused = true
+            }
+        }
+    }
+    
+    private func saveAndDismiss() {
+        let trimmedName = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedName.isEmpty && trimmedName.count <= 10 {
+            onSave(trimmedName)
+            dismiss()
+        }
+    }
+}
+
+// MARK: - 诗人等级视图
+
+struct PoetTitleView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    let poemCount: Int
+    
+    private var currentTitle: PoetTitle {
+        PoetTitle.title(forPoemCount: poemCount)
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(PoetTitle.allCases, id: \.self) { title in
+                        titleRow(title: title, isUnlocked: poemCount >= title.requiredCount, isCurrent: title == currentTitle)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+            }
+            .background(Colors.backgroundCream)
+            .navigationTitle("诗人等级")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("完成") {
+                        dismiss()
+                    }
+                    .foregroundColor(Colors.textSecondary)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func titleRow(title: PoetTitle, isUnlocked: Bool, isCurrent: Bool) -> some View {
+        HStack(spacing: 12) {
+            // 图标
+            Text(title.icon)
+                .font(.system(size: 24))
+            
+            // 称号信息
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(title.displayName)
+                        .font(.system(size: 16, weight: isCurrent ? .medium : .regular))
+                        .foregroundColor(isCurrent ? Colors.accentTeal : Colors.textInk)
+                    
+                    if isCurrent {
+                        Text("当前")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Colors.accentTeal)
+                            .cornerRadius(4)
+                    }
+                }
+                
+                Text(title.description)
+                    .font(.system(size: 13))
+                    .foregroundColor(Colors.textSecondary)
+            }
+            
+            Spacer()
+            
+            // 解锁状态
+            Text(isUnlocked ? "已解锁" : "\(title.requiredCount)首")
+                .font(.system(size: 13))
+                .foregroundColor(isUnlocked ? Colors.accentTeal : Colors.textTertiary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(isCurrent ? Colors.accentTeal.opacity(0.05) : Colors.white)
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(isCurrent ? Colors.accentTeal.opacity(0.3) : Colors.border.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Preview
+
 #Preview {
     SettingsView()
 }
-
