@@ -103,7 +103,7 @@ struct PoetryCollectionView: View {
                 ScrollView {
                     LazyVStack(spacing: Spacing.sm) {
                         ForEach(currentPoems) { poem in
-                            NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: poem.isDraft)) {
+                            NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: isDraft(poem))) {
                                 PoemCard(poem: poem, isNew: isNewPoem(poem))
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -167,6 +167,11 @@ struct PoetryCollectionView: View {
     /// 判断是否是新诗（5秒内创建）
     private func isNewPoem(_ poem: Poem) -> Bool {
         Date().timeIntervalSince(poem.createdAt) < 5
+    }
+    
+    /// 判断是否是草稿
+    private func isDraft(_ poem: Poem) -> Bool {
+        !poem.inMyCollection && !poem.inSquare
     }
 }
 

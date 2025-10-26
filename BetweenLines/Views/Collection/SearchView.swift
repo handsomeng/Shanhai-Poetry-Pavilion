@@ -122,7 +122,7 @@ struct SearchView: View {
         ScrollView {
             LazyVStack(spacing: Spacing.sm) {
                 ForEach(filteredPoems) { poem in
-                    NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: poem.isDraft)) {
+                    NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: isDraft(poem))) {
                         PoemCard(poem: poem, isNew: false)
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -141,6 +141,11 @@ struct SearchView: View {
             poem.content.lowercased().contains(lowercasedQuery)
         }
         .sorted { $0.createdAt > $1.createdAt }
+    }
+    
+    /// 判断是否是草稿
+    private func isDraft(_ poem: Poem) -> Bool {
+        !poem.inMyCollection && !poem.inSquare
     }
 }
 
