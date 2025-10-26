@@ -95,41 +95,49 @@ struct ModeCard: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.md) {
-                // 图标背景圆形
-                ZStack {
-                    Circle()
-                        .fill(Colors.accentTeal.opacity(0.1))
-                        .frame(width: 48, height: 48)
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                // 顶部：图标和标题
+                HStack(spacing: Spacing.lg) {
+                    // 图标背景圆形
+                    ZStack {
+                        Circle()
+                            .fill(Colors.accentTeal.opacity(0.1))
+                            .frame(width: 64, height: 64)
+                        
+                        Text(icon)
+                            .font(.system(size: 32))
+                    }
                     
-                    Text(icon)
-                        .font(.system(size: 24))
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(title)
+                            .font(.system(size: 20, weight: .semibold, design: .serif))
+                            .foregroundColor(Colors.textInk)
+                        
+                        Text(subtitle)
+                            .font(.system(size: 14))
+                            .foregroundColor(Colors.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Colors.textTertiary)
                 }
                 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .semibold, design: .serif))
-                        .foregroundColor(Colors.textInk)
-                    
-                    Text(description)
-                        .font(.system(size: 13))
-                        .foregroundColor(Colors.textSecondary)
-                        .lineLimit(1)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Colors.textTertiary)
+                // 描述文字
+                Text(description)
+                    .font(.system(size: 15))
+                    .foregroundColor(Colors.textSecondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
+            .padding(Spacing.xl)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Colors.white)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
-            .scaleEffect(isPressed ? 0.97 : 1.0)
+            .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)
+            .scaleEffect(isPressed ? 0.98 : 1.0)
         }
         .buttonStyle(PlainButtonStyle())
         .simultaneousGesture(
