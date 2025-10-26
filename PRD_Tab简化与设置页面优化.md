@@ -78,7 +78,7 @@
 │                             │
 │  【个人信息区】              │
 │  ┌─────────────────────┐   │
-│  │ 郭瀚森  [初见诗人]   │   │ ← 笔名 + 称号（可点击编辑）
+│  │ 郭瀚森  [初见诗人]   │   │ ← 笔名（可点击编辑） + 称号（纯展示）
 │  └─────────────────────┘   │
 │                             │
 │  【会员状态卡片】            │
@@ -123,26 +123,34 @@
 ### 1. 个人信息区
 
 **布局**：
-- 左侧：笔名（大字号）
-- 右侧：诗人称号标签（小标签，可点击）
-- 整体可点击，进入编辑笔名页面
+- 左侧：笔名（大字号，可点击编辑）
+- 右侧：诗人称号标签（小标签，纯展示）
 
 **样式**：
 ```swift
 HStack {
-    Text("郭瀚森")
-        .font(.system(size: 24, weight: .medium, design: .serif))
-        .foregroundColor(Colors.textInk)
-    
-    Button(action: { showPoetTitle = true }) {
-        Text("初见诗人")
-            .font(.system(size: 12))
-            .foregroundColor(Colors.textSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(Colors.textSecondary.opacity(0.08))
-            .cornerRadius(5)
+    // 笔名（可点击编辑）
+    Button(action: { showEditName = true }) {
+        HStack(spacing: 4) {
+            Text("郭瀚森")
+                .font(.system(size: 24, weight: .medium, design: .serif))
+                .foregroundColor(Colors.textInk)
+            
+            Image(systemName: "pencil")
+                .font(.system(size: 14, weight: .light))
+                .foregroundColor(Colors.textSecondary)
+        }
     }
+    .buttonStyle(.plain)
+    
+    // 称号标签（纯展示）
+    Text("初见诗人")
+        .font(.system(size: 12))
+        .foregroundColor(Colors.textSecondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(Colors.textSecondary.opacity(0.08))
+        .cornerRadius(5)
     
     Spacer()
 }
@@ -281,47 +289,60 @@ HStack {
 
 ### 2. 编辑笔名
 
-**入口**：设置页面 → 个人信息区（整体可点击）
+**入口**：设置页面 → 点击笔名
 
 **交互流程**：
 ```
-点击【个人信息区】
+点击【笔名】（郭瀚森 + 铅笔图标）
    ↓
-弹出【编辑笔名】弹窗
-   ├─ TextField 输入框
+弹出【编辑笔名】弹窗（Sheet）
+   ├─ TextField 输入框（预填充当前笔名）
+   ├─ 实时字数统计（X/10）
    ├─ [取消] 按钮
    └─ [保存] 按钮
    ↓
 输入新笔名 → 点击【保存】
+   ↓
+验证：
+   - 不能为空
+   - 最多10个字符
    ↓
 UserDefaults 保存 → 刷新界面 → Toast提示"已保存"
 ```
 
 **限制**：
 - 最多 10 个字符
-- 不能为空（默认"山海诗人"）
+- 不能为空（为空时保持原值）
 - 实时字数统计
+- 自动去除首尾空格
+
+**视觉反馈**：
+- 笔名旁边有铅笔图标提示可编辑
+- 点击时笔名有轻微缩放效果（0.97）
 
 ---
 
 ### 3. 查看诗人等级
 
-**入口1**：个人信息区右侧的称号标签
-**入口2**：设置列表中的"诗人等级"
+**入口**：设置列表中的"诗人等级"
 
 **交互**：
 ```
-点击【诗人称号标签】或【诗人等级】
+点击【诗人等级】列表项
    ↓
-弹出【诗人等级】页面（半屏弹窗）
+弹出【诗人等级】页面（Sheet）
    ↓
 显示等级体系表格：
    初见诗人（0-9首）
    墨痕诗人（10-29首）
    行吟诗人（30-99首）
-   ...
+   游吟诗人（100-299首）
+   诗境诗人（300-999首）
+   诗仙诗人（1000首+）
    ↓
-点击外部或【完成】关闭
+当前等级高亮显示
+   ↓
+点击【完成】关闭
 ```
 
 ---
@@ -509,7 +530,7 @@ let penName = UserDefaults.standard.string(forKey: "penName") ?? "山海诗人"
 ├─────────────────────────────┤
 │                             │
 │  ┌─────────────────────┐   │
-│  │ 郭瀚森  [初见诗人]   │   │ ← 个人信息（可点击编辑）
+│  │ 郭瀚森  [初见诗人]   │   │ ← 笔名（可点击编辑） + 称号（纯展示）
 │  └─────────────────────┘   │
 │                             │
 │  ┌─────────────────────┐   │
@@ -548,9 +569,11 @@ let penName = UserDefaults.standard.string(forKey: "penName") ?? "山海诗人"
 - [ ] 设置页面显示个人信息（笔名+称号）
 - [ ] 设置页面显示会员状态卡片
 - [ ] 设置页面显示设置列表（6个项目）
-- [ ] 点击个人信息可编辑笔名
+- [ ] 点击笔名可编辑（有铅笔图标提示）
+- [ ] 称号标签纯展示，不可点击
+- [ ] 笔名编辑功能正常（验证、保存、Toast提示）
 - [ ] 点击会员卡片可进入订阅/详情页面
-- [ ] 点击诗人等级可查看等级体系
+- [ ] 点击设置列表的"诗人等级"可查看等级体系
 - [ ] 点击"关于 HandsoMeng"可查看开发者信息
 - [ ] 恢复购买功能正常工作
 
