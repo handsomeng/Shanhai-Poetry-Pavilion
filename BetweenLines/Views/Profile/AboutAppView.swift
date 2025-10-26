@@ -65,7 +65,45 @@ struct AboutAppView: View {
                         featureRow(icon: "📚", title: "系统学习", description: "从零开始学习诗歌创作")
                         featureRow(icon: "🎨", title: "精美模板", description: "一键生成分享图片")
                         featureRow(icon: "☁️", title: "iCloud同步", description: "所有设备无缝同步")
+                        featureRow(icon: "🏔️", title: "诗人等级体系", description: "从初见到谪仙，记录成长")
                     }
+                }
+                
+                // 设计理念
+                infoCard(title: "设计理念") {
+                    VStack(alignment: .leading, spacing: 16) {
+                        philosophyRow(title: "简洁优雅", description: "界面设计遵循现代审美，去除一切繁杂，只留下诗歌与你。")
+                        philosophyRow(title: "专注创作", description: "没有社交压力，没有点赞焦虑，只有纯粹的创作体验。")
+                        philosophyRow(title: "尊重创作者", description: "你的诗歌属于你自己，我们保护你的隐私和创作权益。")
+                    }
+                }
+                
+                // 会员权益
+                infoCard(title: "会员权益") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("升级会员后，你将解锁更多创作可能：")
+                            .font(.system(size: 14, weight: .light))
+                            .foregroundColor(Colors.textInk)
+                            .padding(.bottom, 8)
+                        
+                        benefitRow(text: "无限次AI点评（免费用户每日3次）")
+                        benefitRow(text: "所有精美模板")
+                        benefitRow(text: "优先体验新功能")
+                        benefitRow(text: "支持独立开发者")
+                        
+                        Text("山海在眼前，免费试用7天")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Colors.accentTeal)
+                            .padding(.top, 8)
+                    }
+                }
+                
+                // 致谢
+                infoCard(title: "致谢") {
+                    Text("感谢所有使用山海诗馆的诗人们，是你们让这个应用充满生命力。\n\n感谢 Cursor、Claude、DeepSeek 在开发过程中的帮助。")
+                        .font(.system(size: 14, weight: .light))
+                        .foregroundColor(Colors.textInk)
+                        .lineSpacing(6)
                 }
                 
                 // 联系我们
@@ -80,11 +118,17 @@ struct AboutAppView: View {
                 }
                 
                 // 版权信息
-                Text("© 2025 山海诗馆. All rights reserved.")
-                    .font(.system(size: 12))
-                    .foregroundColor(Colors.textTertiary)
-                    .padding(.top, 16)
-                    .padding(.bottom, 32)
+                VStack(spacing: 4) {
+                    Text("© 2025 山海诗馆. All rights reserved.")
+                        .font(.system(size: 12))
+                        .foregroundColor(Colors.textTertiary)
+                    
+                    Text("Between Lines - 在字里行间，发现诗意人生")
+                        .font(.system(size: 11, design: .serif))
+                        .foregroundColor(Colors.textTertiary.opacity(0.8))
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 32)
             }
             .padding(.horizontal, 20)
         }
@@ -136,6 +180,36 @@ struct AboutAppView: View {
                     .foregroundColor(Colors.textSecondary)
             }
             
+            Spacer()
+        }
+    }
+    
+    // MARK: - 设计理念行
+    
+    @ViewBuilder
+    private func philosophyRow(title: String, description: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(Colors.textInk)
+            Text(description)
+                .font(.system(size: 14, weight: .light))
+                .foregroundColor(Colors.textSecondary)
+                .lineSpacing(4)
+        }
+    }
+    
+    // MARK: - 会员权益行
+    
+    @ViewBuilder
+    private func benefitRow(text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("•")
+                .font(.system(size: 14))
+                .foregroundColor(Colors.accentTeal)
+            Text(text)
+                .font(.system(size: 14, weight: .light))
+                .foregroundColor(Colors.textInk)
             Spacer()
         }
     }
