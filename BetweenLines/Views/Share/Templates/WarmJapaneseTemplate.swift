@@ -13,21 +13,16 @@ struct WarmJapaneseTemplate: PoemTemplateRenderable {
     var icon = "🌸"
     
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> some View {
+    func render(poem: Poem, poemIndex: Int, size: CGSize) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 角落装饰（小花朵）
-            HStack {
-                Text("✿")
-                    .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "E8A59C").opacity(0.6))
-                Spacer()
-            }
-            .padding(.bottom, 20)
+            // 顶部留白
+            Spacer()
+                .frame(height: 24)
             
             // 标题（如果有）
             if !poem.title.isEmpty {
                 Text(poem.title)
-                    .font(.system(size: 22, weight: .medium, design: .rounded))
+                    .font(.system(size: 20, weight: .medium, design: .rounded))
                     .foregroundColor(Color(hex: "8B7355"))
                     .tracking(1.5)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -44,30 +39,15 @@ struct WarmJapaneseTemplate: PoemTemplateRenderable {
                 .fixedSize(horizontal: false, vertical: true)
             
             Spacer()
-                .frame(height: 28)
+                .frame(height: 32)
             
-            // 波浪线分隔
-            HStack(spacing: 4) {
-                ForEach(0..<8, id: \.self) { _ in
-                    Text("~")
-                        .font(.system(size: 12, weight: .light))
-                        .foregroundColor(Color(hex: "D4C4B0"))
-                }
-            }
-            .padding(.bottom, 16)
-            
-            // 底部：日期 + 作者名
-            HStack {
-                Text(poem.createdAt, style: .date)
-                    .font(.system(size: 11, weight: .light))
-                    .foregroundColor(Color(hex: "A89B88"))
-                
-                Spacer()
-                
-                Text(poem.authorName)
-                    .font(.system(size: 12, weight: .regular, design: .rounded))
-                    .foregroundColor(Color(hex: "8B7355"))
-            }
+            // 统一底部信息
+            PoemBottomInfo(
+                poem: poem,
+                poemIndex: poemIndex,
+                textColor: Color(hex: "8B7355"),
+                dividerColor: Color(hex: "E8DCC8")
+            )
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 40)

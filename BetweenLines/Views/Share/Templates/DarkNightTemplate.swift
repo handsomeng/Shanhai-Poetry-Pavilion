@@ -13,22 +13,11 @@ struct DarkNightTemplate: PoemTemplateRenderable {
     var icon = "🌙"
     
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> some View {
+    func render(poem: Poem, poemIndex: Int, size: CGSize) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 顶部：日期（左）和 logo（右）
-            HStack {
-                Text(poem.createdAt, style: .date)
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundColor(Color(hex: "6C6C70"))
-                
-                Spacer()
-                
-                Text("山海诗馆")
-                    .font(.system(size: 11, weight: .regular, design: .serif))
-                    .foregroundColor(Color(hex: "48484A"))
-                    .tracking(1)
-            }
-            .padding(.bottom, 24)
+            // 顶部留白
+            Spacer()
+                .frame(height: 24)
             
             // 标题（如果有）
             if !poem.title.isEmpty {
@@ -52,13 +41,13 @@ struct DarkNightTemplate: PoemTemplateRenderable {
             Spacer()
                 .frame(height: 32)
             
-            // 底部标识：作者名
-            HStack(spacing: 0) {
-                Spacer()
-                Text("—— \(poem.authorName)")
-                    .font(.system(size: 12, weight: .light, design: .serif))
-                    .foregroundColor(Color(hex: "6C6C70"))
-            }
+            // 统一底部信息
+            PoemBottomInfo(
+                poem: poem,
+                poemIndex: poemIndex,
+                textColor: Color(hex: "8E8E93"),
+                dividerColor: Color(hex: "3A3A3C")
+            )
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 40)

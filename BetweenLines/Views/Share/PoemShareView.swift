@@ -19,6 +19,12 @@ struct PoemShareView: View {
     @State private var showingTemplateSelector = false
     @State private var selectedTemplate: PoemTemplateType = .lovartMinimal
     
+    // 计算这是第几首诗
+    private var poemIndex: Int {
+        // 获取用户所有诗歌（包括诗集和草稿）的总数
+        poemManager.allPoems.count
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -59,6 +65,7 @@ struct PoemShareView: View {
         // 使用当前选择的模板渲染
         selectedTemplate.render(
             poem: poem,
+            poemIndex: poemIndex,
             size: CGSize(width: 340, height: 0)
         )
     }

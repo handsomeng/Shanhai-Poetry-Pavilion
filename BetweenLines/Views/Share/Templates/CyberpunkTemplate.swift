@@ -13,7 +13,7 @@ struct CyberpunkTemplate: PoemTemplateRenderable {
     var icon = "🌃"
     
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> some View {
+    func render(poem: Poem, poemIndex: Int, size: CGSize) -> some View {
         ZStack {
             // 背景渐变
             LinearGradient(
@@ -33,44 +33,14 @@ struct CyberpunkTemplate: PoemTemplateRenderable {
             
             // 主内容
             VStack(alignment: .leading, spacing: 0) {
-                // 顶部：日期 + 时间
-                HStack {
-                    Text(poem.createdAt, format: .dateTime.year().month().day())
-                        .font(.system(size: 11, weight: .regular, design: .monospaced))
-                        .foregroundColor(Color(hex: "0FF4C6"))
-                    
-                    Spacer()
-                    
-                    Text("BETWEENLINES")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundColor(Color(hex: "0FF4C6").opacity(0.6))
-                        .tracking(2)
-                }
-                .padding(.bottom, 24)
-                
-                // 边角装饰
-                HStack {
-                    VStack {
-                        Rectangle()
-                            .fill(Color(hex: "0FF4C6"))
-                            .frame(width: 2, height: 16)
-                        Spacer()
-                    }
-                    Spacer()
-                    VStack {
-                        Rectangle()
-                            .fill(Color(hex: "0FF4C6"))
-                            .frame(width: 2, height: 16)
-                        Spacer()
-                    }
-                }
-                .frame(height: 20)
-                .padding(.bottom, 16)
+                // 顶部留白
+                Spacer()
+                    .frame(height: 24)
                 
                 // 标题（如果有）
                 if !poem.title.isEmpty {
                     Text(poem.title)
-                        .font(.system(size: 22, weight: .bold, design: .monospaced))
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
                         .foregroundColor(Color(hex: "0FF4C6"))
                         .tracking(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -87,16 +57,15 @@ struct CyberpunkTemplate: PoemTemplateRenderable {
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Spacer()
-                    .frame(height: 28)
+                    .frame(height: 32)
                 
-                // 底部：作者名
-                HStack {
-                    Text("> \(poem.authorName)")
-                        .font(.system(size: 12, weight: .regular, design: .monospaced))
-                        .foregroundColor(Color(hex: "0FF4C6"))
-                    
-                    Spacer()
-                }
+                // 统一底部信息
+                PoemBottomInfo(
+                    poem: poem,
+                    poemIndex: poemIndex,
+                    textColor: Color(hex: "0FF4C6"),
+                    dividerColor: Color(hex: "0FF4C6").opacity(0.3)
+                )
             }
             .padding(.horizontal, 32)
             .padding(.vertical, 40)

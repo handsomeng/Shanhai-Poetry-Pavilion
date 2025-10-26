@@ -13,28 +13,20 @@ struct MountainSeaTemplate: PoemTemplateRenderable {
     var icon = "🎨"
     
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> some View {
+    func render(poem: Poem, poemIndex: Int, size: CGSize) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 顶部云纹装饰
-            HStack {
-                Text("〜")
-                    .font(.system(size: 16, weight: .ultraLight))
-                    .foregroundColor(Color(hex: "C8B8A0"))
-                Spacer()
-                Text("〜")
-                    .font(.system(size: 16, weight: .ultraLight))
-                    .foregroundColor(Color(hex: "C8B8A0"))
-            }
-            .padding(.bottom, 20)
+            // 顶部留白
+            Spacer()
+                .frame(height: 24)
             
             // 标题（如果有）
             if !poem.title.isEmpty {
                 Text(poem.title)
-                    .font(.system(size: 24, weight: .semibold, design: .serif))
+                    .font(.system(size: 22, weight: .semibold, design: .serif))
                     .foregroundColor(Color(hex: "2C2C2C"))
                     .tracking(2)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 20)
             }
             
             // 正文
@@ -49,20 +41,13 @@ struct MountainSeaTemplate: PoemTemplateRenderable {
             Spacer()
                 .frame(height: 32)
             
-            // 底部：竖排作者名 + 日期
-            HStack {
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 8) {
-                    Text(poem.authorName)
-                        .font(.system(size: 13, weight: .light, design: .serif))
-                        .foregroundColor(Color(hex: "8B7355"))
-                    
-                    Text(poem.createdAt, style: .date)
-                        .font(.system(size: 11, weight: .light))
-                        .foregroundColor(Color(hex: "A89B88"))
-                }
-            }
+            // 统一底部信息
+            PoemBottomInfo(
+                poem: poem,
+                poemIndex: poemIndex,
+                textColor: Color(hex: "8B7355"),
+                dividerColor: Color(hex: "C8B8A0")
+            )
         }
         .padding(.horizontal, 36)
         .padding(.vertical, 44)

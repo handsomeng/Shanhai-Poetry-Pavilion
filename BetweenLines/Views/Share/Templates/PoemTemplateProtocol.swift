@@ -17,7 +17,7 @@ protocol PoemTemplateRenderable {
     
     /// 渲染模板视图
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> Content
+    func render(poem: Poem, poemIndex: Int, size: CGSize) -> Content
 }
 
 /// 模板类型枚举
@@ -41,19 +41,56 @@ enum PoemTemplateType: String, CaseIterable, Identifiable {
     }
     
     @ViewBuilder
-    func render(poem: Poem, size: CGSize) -> some View {
+    func render(poem: Poem, poemIndex: Int, size: CGSize) -> some View {
         switch self {
         case .lovartMinimal:
-            LovartMinimalTemplate().render(poem: poem, size: size)
+            LovartMinimalTemplate().render(poem: poem, poemIndex: poemIndex, size: size)
         case .mountainSea:
-            MountainSeaTemplate().render(poem: poem, size: size)
+            MountainSeaTemplate().render(poem: poem, poemIndex: poemIndex, size: size)
         case .warmJapanese:
-            WarmJapaneseTemplate().render(poem: poem, size: size)
+            WarmJapaneseTemplate().render(poem: poem, poemIndex: poemIndex, size: size)
         case .darkNight:
-            DarkNightTemplate().render(poem: poem, size: size)
+            DarkNightTemplate().render(poem: poem, poemIndex: poemIndex, size: size)
         case .cyberpunk:
-            CyberpunkTemplate().render(poem: poem, size: size)
+            CyberpunkTemplate().render(poem: poem, poemIndex: poemIndex, size: size)
         }
     }
 }
+
+// MARK: - 统一底部信息组件
+
+struct PoemBottomInfo: View {
+    let poem: Poem
+    let poemIndex: Int
+    let textColor: Color
+    let dividerColor: Color
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // 分割线
+            Rectangle()
+                .fill(dividerColor)
+                .frame(height: 1)
+            
+            // 信息行
+            HStack(spacing: 0) {
+                Text("山海诗馆")
+                Text(" · ")
+                Text(poem.authorName)
+            }
+            .font(.system(size: 12, weight: .regular))
+            .foregroundColor(textColor)
+            
+            // 第几首诗 + 日期
+            HStack(spacing: 0) {
+                Text("第 \(poemIndex) 首诗")
+                Text(" · ")
+                Text(poem.createdAt, format: .dateTime.year().month().day())
+            }
+            .font(.system(size: 11, weight: .light))
+            .foregroundColor(textColor.opacity(0.7))
+        }
+    }
+}
+
 

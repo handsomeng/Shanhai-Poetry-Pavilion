@@ -11,7 +11,13 @@ struct TemplateSelector: View {
     
     @Binding var selectedTemplate: PoemTemplateType
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var poemManager = PoemManager.shared
     let poem: Poem
+    
+    // 计算这是第几首诗
+    private var poemIndex: Int {
+        poemManager.allPoems.count
+    }
     
     var body: some View {
         NavigationView {
@@ -20,6 +26,7 @@ struct TemplateSelector: View {
                 ScrollView(showsIndicators: false) {
                     selectedTemplate.render(
                         poem: poem,
+                        poemIndex: poemIndex,
                         size: CGSize(width: 340, height: 0)
                     )
                     .padding(.vertical, Spacing.xl)
