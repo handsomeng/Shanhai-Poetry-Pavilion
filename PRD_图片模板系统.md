@@ -48,32 +48,119 @@
 
 ### 1. 模板选择界面
 
-#### 1.1 入口位置
-- **写诗成功页**：`PoemSuccessView` 中，在图片预览区域增加"更换模板"按钮
-- **诗集分享页**：`MyPoemDetailView` 点击分享后，弹出的 `PoemSuccessView` 中同样支持
+#### 1.1 入口位置和时机
+- **写诗场景**：写诗完成保存后，`PoemSuccessView` 中**默认使用 Lovart 极简模板**，**不显示模板选择按钮**
+- **分享场景**：点击分享按钮（写诗成功页的"分享"按钮 或 诗集详情页的右上角"分享"按钮）后，才显示**【选择模板】**按钮
 
-#### 1.2 交互流程
+#### 1.2 核心交互流程
+
+**场景 1：写诗完成（默认模板，无需选择）**
 ```
-用户点击"更换模板"
+写诗 → 保存
     ↓
-弹出模板选择器（底部抽屉或半屏弹窗）
+PoemSuccessView（默认 Lovart 极简模板）
+    ├─ 图片预览（默认模板）
+    ├─ AI 点评
+    ├─ 保存图片
+    ├─ 分享（点击后进入场景 2）
+    ├─ 发布到广场
+    └─ 再写一首
+```
+
+**场景 2：分享时选择模板**
+```
+点击"分享"按钮
     ↓
-横向滑动浏览所有模板缩略图
+进入模板选择模式
+    ├─ 顶部：图片预览区域（显示当前选中模板效果）
+    ├─ 中部：【选择模板】按钮（青色，醒目）
+    └─ 底部：模板选择器（初始隐藏）
     ↓
-点击某个模板
+点击【选择模板】按钮
     ↓
-实时预览切换效果（流畅过渡动画）
+底部弹出横向滑动的模板缩略图列表
+    ├─ 显示 5-8 个模板缩略图
+    ├─ 当前选中模板有青色边框高亮
+    └─ 横向滑动浏览所有模板
     ↓
-确认选择 / 继续切换
+点击某个模板缩略图
     ↓
-返回主界面，图片更新为新模板
+实时切换图片预览（流畅动画）
+    ├─ 顶部图片预览区域立即更新为新模板样式
+    ├─ 按钮文字变为【确认】（青色高亮）
+    └─ 底部模板选择器保持展开（可继续切换）
+    ↓
+点击【确认】按钮
+    ↓
+关闭模板选择器，返回上一页
+    └─ 图片已更新为新模板
+    ↓
+用户可以：
+    ├─ 重新点击【选择模板】再次修改
+    ├─ 点击"保存图片"保存到相册
+    ├─ 点击"分享"打开系统分享面板
+    └─ 点击"发布到广场"发布
 ```
 
 #### 1.3 UI 设计要点
-- **模板缩略图**：小卡片展示，带模板名称
-- **当前选中**：青色边框高亮
-- **流畅动画**：切换时使用淡入淡出或滑动效果
-- **一键关闭**：点击"完成"或空白区域关闭选择器
+
+##### 主界面布局
+```
+┌─────────────────────────────────────┐
+│  ✕ 关闭                              │ ← 顶部关闭按钮
+├─────────────────────────────────────┤
+│                                     │
+│     ┌─────────────────────┐         │
+│     │                     │         │
+│     │   诗歌图片预览       │         │ ← 图片预览区域
+│     │   （当前选中模板）   │         │   （可滚动）
+│     │                     │         │
+│     └─────────────────────┘         │
+│                                     │
+├─────────────────────────────────────┤
+│                                     │
+│  ┌──────────────────────────────┐   │
+│  │  【选择模板】 或 【确认】    │   │ ← 模板选择/确认按钮
+│  └──────────────────────────────┘   │   （青色，醒目）
+│                                     │
+│  ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐    │
+│  │ 极│ │山海│ │赛博│ │和风│ │莫兰│   │ ← 模板缩略图列表
+│  │ 简│ │   │ │   │ │   │ │迪 │   │   （横向滑动）
+│  └───┘ └───┘ └───┘ └───┘ └───┘    │   （点击【选择模板】后显示）
+│                                     │
+├─────────────────────────────────────┤
+│  ┌───┐  ┌──────┐  ┌───┐            │
+│  │AI │  │保存  │  │分享│            │ ← 操作按钮
+│  │点评│  │图片  │  │   │            │
+│  └───┘  └──────┘  └───┘            │
+└─────────────────────────────────────┘
+```
+
+##### 模板缩略图卡片
+- **尺寸**：80x120pt（竖版小卡片）
+- **内容**：模板预览效果 + 模板名称
+- **选中状态**：青色边框（2pt）+ 轻微放大效果
+- **未选中状态**：灰色边框（0.5pt）
+- **间距**：12pt
+- **滚动**：横向滑动，支持惯性
+
+##### 按钮状态
+- **【选择模板】**：
+  - 背景：青色 `Colors.accentTeal`
+  - 文字：白色
+  - 图标：`square.grid.2x2`（模板图标）
+  
+- **【确认】**：
+  - 背景：青色 `Colors.accentTeal`
+  - 文字：白色
+  - 图标：`checkmark`（确认图标）
+  - 轻微动画效果（吸引注意力）
+
+#### 1.4 动画效果
+- **模板选择器展开**：从底部滑入（0.3s ease-out）
+- **模板选择器收起**：向底部滑出（0.3s ease-in）
+- **图片切换**：淡入淡出（0.4s）+ 轻微缩放（scale: 0.95 → 1.0）
+- **按钮切换**：文字颜色渐变（0.2s）
 
 ---
 
@@ -235,40 +322,240 @@ struct PoemTemplateFactory {
 ```
 BetweenLines/
 ├── Views/
+│   ├── Writing/
+│   │   └── PoemSuccessView.swift              // 写诗成功页（已存在，需修改）
+│   ├── Profile/
+│   │   └── MyPoemDetailView.swift             // 诗集详情页（已存在，需修改）
 │   └── Shared/
-│       ├── PoemImageView.swift                 // 主界面（已存在）
-│       ├── PoemTemplateSelector.swift          // 模板选择器（新增）
-│       └── Templates/                          // 模板文件夹（新增）
-│           ├── PoemTemplateProtocol.swift      // 模板协议
-│           ├── PoemTemplateFactory.swift       // 模板工厂
-│           ├── LovartMinimalTemplate.swift     // Lovart 极简
-│           ├── ChineseInkTemplate.swift        // 山海国风
-│           ├── CyberpunkTemplate.swift         // 赛博朋克
-│           ├── WarmJapaneseTemplate.swift      // 暖系日系
-│           ├── MorandiTemplate.swift           // 莫兰迪色
-│           ├── VintageRepublicTemplate.swift   // 复古民国
-│           ├── NaturalPlantTemplate.swift      // 自然植物
-│           └── StarryUniverseTemplate.swift    // 星空宇宙
+│       ├── PoemImageView.swift                // 诗歌图片预览（已存在，无需修改）
+│       ├── TemplateShareView.swift            // 模板选择分享界面（新增）
+│       ├── PoemTemplateSelector.swift         // 模板选择器组件（新增）
+│       └── Templates/                         // 模板文件夹（新增）
+│           ├── PoemTemplateProtocol.swift     // 模板协议
+│           ├── PoemTemplateFactory.swift      // 模板工厂
+│           ├── LovartMinimalTemplate.swift    // Lovart 极简
+│           ├── ChineseInkTemplate.swift       // 山海国风
+│           ├── CyberpunkTemplate.swift        // 赛博朋克
+│           ├── WarmJapaneseTemplate.swift     // 暖系日系
+│           ├── MorandiTemplate.swift          // 莫兰迪色
+│           ├── VintageRepublicTemplate.swift  // 复古民国
+│           ├── NaturalPlantTemplate.swift     // 自然植物
+│           └── StarryUniverseTemplate.swift   // 星空宇宙
 └── Models/
-    └── PoemImageTemplate.swift                 // 模板枚举（新增）
+    └── PoemImageTemplate.swift                // 模板枚举（新增）
 ```
 
 ### 2. 核心代码改动
 
-#### 2.1 `PoemSuccessView.swift`
-- 添加 `@State private var selectedTemplate: PoemImageTemplate = .lovartMinimal`
-- 添加 `@State private var showTemplatePicker = false`
-- 图片预览区域添加"更换模板"按钮
-- 使用 `selectedTemplate` 动态生成图片
+#### 2.1 `PoemSuccessView.swift`（写诗成功页）
+**修改内容**：
+- ✅ 保持原有功能不变
+- ✅ 移除"分享"按钮的直接分享逻辑
+- ✅ 点击"分享"按钮时，弹出新的 `TemplateShareView`（全屏）
+- ✅ 传递当前诗歌和默认生成的图片
 
-#### 2.2 `PoemImageView.swift`
-- 重构：从硬编码模板改为支持动态模板选择
-- 接收 `selectedTemplate` 参数
-- 调用 `PoemTemplateFactory` 生成对应模板视图
+**代码示例**：
+```swift
+struct PoemSuccessView: View {
+    @State private var showTemplateShareView = false
+    
+    var body: some View {
+        // ... 原有代码 ...
+        
+        Button(action: {
+            showTemplateShareView = true  // 点击分享后弹出模板选择界面
+        }) {
+            // 分享按钮 UI
+        }
+        .fullScreenCover(isPresented: $showTemplateShareView) {
+            TemplateShareView(poem: poem, poemImage: poemImage)
+        }
+    }
+}
+```
 
-#### 2.3 `MyPoemDetailView.swift`
-- 在 `sharePoem()` 中使用新的模板系统
-- 支持用户在分享前选择模板
+#### 2.2 `TemplateShareView.swift`（新增，模板选择分享界面）
+**核心功能**：
+- ✅ 顶部：图片预览区域（`ScrollView` 包裹，支持长图滚动）
+- ✅ 中部：【选择模板】/【确认】按钮
+- ✅ 底部：模板选择器（`PoemTemplateSelector`）
+- ✅ 操作按钮：AI点评、保存图片、分享（使用系统 `UIActivityViewController`）
+
+**状态管理**：
+```swift
+struct TemplateShareView: View {
+    let poem: Poem
+    let poemImage: UIImage  // 默认模板图片
+    
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedTemplate: PoemImageTemplate = .lovartMinimal
+    @State private var currentImage: UIImage
+    @State private var showTemplateSelector = false
+    @State private var isGeneratingImage = false
+    
+    init(poem: Poem, poemImage: UIImage) {
+        self.poem = poem
+        self.poemImage = poemImage
+        self._currentImage = State(initialValue: poemImage)
+    }
+    
+    var body: some View {
+        VStack {
+            // 图片预览
+            ScrollView {
+                Image(uiImage: currentImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            }
+            
+            // 选择模板/确认按钮
+            Button(action: toggleTemplateSelector) {
+                HStack {
+                    Image(systemName: showTemplateSelector ? "checkmark" : "square.grid.2x2")
+                    Text(showTemplateSelector ? "确认" : "选择模板")
+                }
+            }
+            
+            // 模板选择器（条件显示）
+            if showTemplateSelector {
+                PoemTemplateSelector(
+                    selectedTemplate: $selectedTemplate,
+                    onTemplateSelected: { template in
+                        generateImage(for: template)
+                    }
+                )
+            }
+            
+            // 操作按钮
+            actionButtons
+        }
+    }
+    
+    private func toggleTemplateSelector() {
+        withAnimation {
+            showTemplateSelector.toggle()
+        }
+    }
+    
+    private func generateImage(for template: PoemImageTemplate) {
+        Task {
+            isGeneratingImage = true
+            let templateView = PoemTemplateFactory.createTemplate(for: template, poem: poem)
+            let renderer = ImageRenderer(content: templateView)
+            renderer.scale = 3.0
+            
+            if let image = renderer.uiImage {
+                await MainActor.run {
+                    withAnimation {
+                        currentImage = image
+                    }
+                    isGeneratingImage = false
+                }
+            }
+        }
+    }
+}
+```
+
+#### 2.3 `PoemTemplateSelector.swift`（新增，模板选择器组件）
+**核心功能**：
+- ✅ 横向滑动的模板缩略图列表
+- ✅ 当前选中模板高亮（青色边框）
+- ✅ 点击缩略图触发回调，更新图片
+
+**代码示例**：
+```swift
+struct PoemTemplateSelector: View {
+    @Binding var selectedTemplate: PoemImageTemplate
+    let onTemplateSelected: (PoemImageTemplate) -> Void
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(PoemImageTemplate.allCases) { template in
+                    TemplateThumbnail(
+                        template: template,
+                        isSelected: selectedTemplate == template,
+                        onTap: {
+                            selectedTemplate = template
+                            onTemplateSelected(template)
+                        }
+                    )
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+        .frame(height: 140)
+    }
+}
+
+struct TemplateThumbnail: View {
+    let template: PoemImageTemplate
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            // 模板缩略图（简化版）
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.white)
+                    .frame(width: 80, height: 100)
+                
+                Image(systemName: template.thumbnail)
+                    .font(.system(size: 24))
+                    .foregroundColor(Colors.textInk)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Colors.accentTeal : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 0.5)
+            )
+            
+            // 模板名称
+            Text(template.displayName)
+                .font(Fonts.captionSmall())
+                .foregroundColor(isSelected ? Colors.accentTeal : Colors.textSecondary)
+        }
+        .scaleEffect(isSelected ? 1.05 : 1.0)
+        .onTapGesture(perform: onTap)
+    }
+}
+```
+
+#### 2.4 `MyPoemDetailView.swift`（诗集详情页）
+**修改内容**：
+- ✅ 点击右上角"分享"按钮时，弹出 `TemplateShareView`
+- ✅ 不再直接生成图片，而是传递诗歌对象
+- ✅ `TemplateShareView` 负责生成默认模板图片
+
+**代码示例**：
+```swift
+struct MyPoemDetailView: View {
+    @State private var showTemplateShareView = false
+    
+    var body: some View {
+        // ... 原有代码 ...
+        
+        .fullScreenCover(isPresented: $showTemplateShareView) {
+            if let latestPoem = poemManager.allPoems.first(where: { $0.id == poem.id }) {
+                // 先生成默认模板图片
+                let defaultImage = generateDefaultTemplateImage(for: latestPoem)
+                TemplateShareView(poem: latestPoem, poemImage: defaultImage)
+            }
+        }
+    }
+    
+    private func sharePoem() {
+        saveEdits()
+        showTemplateShareView = true
+    }
+    
+    private func generateDefaultTemplateImage(for poem: Poem) -> UIImage {
+        let renderer = ImageRenderer(content: poemTemplateForImage(poem: poem))
+        renderer.scale = 3.0
+        return renderer.uiImage ?? UIImage()
+    }
+}
 
 ### 3. 性能优化
 
@@ -285,38 +572,121 @@ BetweenLines/
 
 ## 🎬 用户体验流程
 
-### 流程 1：写诗后分享
+### 流程 1：写诗完成（默认模板）
 ```
-写诗 → 保存 → PoemSuccessView
+写诗 → 保存
     ↓
-查看图片预览（默认 Lovart 极简）
-    ↓
-点击"更换模板"按钮
-    ↓
-底部弹出模板选择器
-    ↓
-横向滑动浏览 8 种模板
-    ↓
-点击"山海国风"
-    ↓
-图片实时切换为国风模板（带动画）
-    ↓
-满意！点击"保存图片" / "分享" / "发布到广场"
+PoemSuccessView（Lovart 极简模板）
+    ├─ 图片预览（默认模板，无法更改）
+    ├─ AI 点评
+    ├─ 保存图片
+    ├─ 分享 → （进入流程 2）
+    ├─ 发布到广场
+    └─ 再写一首
 ```
 
-### 流程 2：诗集中分享
+**说明**：写诗完成后直接展示默认模板，不提供模板选择功能。用户只能通过"分享"按钮进入模板选择流程。
+
+---
+
+### 流程 2：写诗成功页点击"分享"
 ```
-诗集详情页 → 点击右上角"分享"
+PoemSuccessView → 点击"分享"按钮
     ↓
-弹出 PoemSuccessView（包含图片预览）
+进入模板选择界面
+    ├─ 顶部：图片预览（当前为默认 Lovart 极简模板）
+    ├─ 中部：【选择模板】按钮（青色）
+    └─ 底部：操作按钮（AI点评、保存图片、分享）
     ↓
-点击"更换模板"
+点击【选择模板】按钮
     ↓
-选择"赛博朋克"模板
+底部弹出横向模板缩略图列表
+    ├─ 显示 5-8 种模板缩略图
+    ├─ 当前选中"极简"（青色边框）
+    └─ 横向滑动浏览
     ↓
-图片切换为赛博风格
+点击"山海国风"缩略图
+    ↓
+图片预览立即切换为国风模板（带动画）
+    ├─ 按钮变为【确认】
+    └─ 模板选择器保持展开（可继续切换）
+    ↓
+（可选）继续点击其他模板，实时预览
+    ↓
+满意后，点击【确认】按钮
+    ↓
+关闭模板选择器，返回上一页
+    └─ 图片已更新为"山海国风"模板
+    ↓
+用户可以：
+    ├─ 重新点击【选择模板】修改模板
+    ├─ 点击"保存图片"保存到相册
+    ├─ 点击"分享"打开系统分享面板（分享选中的模板图片）
+    └─ 返回上一页（诗歌成功页）
+```
+
+---
+
+### 流程 3：诗集详情页点击"分享"
+```
+诗集详情页 → 点击右上角"分享"图标
+    ↓
+弹出 PoemSuccessView（全屏）
+    ├─ 顶部：图片预览（默认 Lovart 极简模板）
+    ├─ 中部：【选择模板】按钮
+    └─ 底部：操作按钮（AI点评、保存图片、分享、发布到广场）
+    ↓
+点击【选择模板】按钮
+    ↓
+底部弹出模板缩略图列表
+    ↓
+点击"赛博朋克"模板
+    ↓
+图片预览切换为赛博风格
+    ├─ 按钮变为【确认】
+    └─ 模板选择器保持展开
+    ↓
+点击【确认】按钮
+    ↓
+关闭模板选择器
+    ↓
+点击"分享"按钮
+    ↓
+打开系统分享面板（分享赛博朋克模板图片）
     ↓
 分享到朋友圈 🎉
+```
+
+---
+
+### 流程 4：模板切换详细交互
+```
+【选择模板】按钮（初始状态）
+    ↓
+点击按钮
+    ↓
+底部滑入模板缩略图列表（0.3s 动画）
+    ├─ 5-8 个模板横向排列
+    ├─ 当前选中模板有青色边框
+    └─ 可左右滑动浏览
+    ↓
+点击任意模板缩略图
+    ↓
+触发两个变化：
+    ├─ 图片预览区域淡出旧模板 → 淡入新模板（0.4s）
+    └─ 按钮文字变为【确认】（0.2s）
+    ↓
+（可选）继续点击其他模板
+    ↓
+每次点击都会实时更新图片预览
+    ↓
+满意后，点击【确认】按钮
+    ↓
+模板选择器向下滑出（0.3s 动画）
+    ↓
+返回主界面
+    ├─ 按钮恢复为【选择模板】
+    └─ 图片保持选中的模板
 ```
 
 ---
