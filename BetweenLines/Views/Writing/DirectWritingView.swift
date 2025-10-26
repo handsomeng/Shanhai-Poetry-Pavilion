@@ -16,12 +16,8 @@ struct DirectWritingView: View {
     // 编辑状态
     @State private var title: String = ""
     @State private var content: String = ""
-    @State private var currentPoem: Poem?
-    
     // UI 状态
     @State private var showingCancelConfirm = false
-    @State private var showSuccessView = false
-    @State private var generatedImage: UIImage?
     @State private var hasSaved = false  // 跟踪是否已保存
     @State private var autoSaveTimer: Timer?  // 自动保存定时器
     
@@ -102,11 +98,6 @@ struct DirectWritingView: View {
         .onAppear {
             loadExistingPoem()
         }
-        .fullScreenCover(isPresented: $showSuccessView) {
-            if let poem = currentPoem, let image = generatedImage {
-                PoemSuccessView(poem: poem, poemImage: image)
-            }
-        }
     }
     
     // MARK: - Bottom Buttons
@@ -149,7 +140,6 @@ struct DirectWritingView: View {
         if let poem = existingPoem {
             title = poem.title
             content = poem.content
-            currentPoem = poem
         }
     }
     

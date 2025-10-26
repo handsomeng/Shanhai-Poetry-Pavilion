@@ -23,10 +23,7 @@ struct MimicWritingView: View {
     // 创作内容
     @State private var title = ""
     @State private var content = ""
-    @State private var currentPoem: Poem?
     @State private var showingSubscription = false
-    @State private var showSuccessView = false
-    @State private var generatedImage: UIImage?
     @State private var showingCancelConfirm = false
     @State private var hasSaved = false  // 跟踪是否已保存
     @State private var autoSaveTimer: Timer?  // 自动保存定时器
@@ -71,11 +68,7 @@ struct MimicWritingView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showSuccessView) {
-            if let poem = currentPoem, let image = generatedImage {
-                PoemSuccessView(poem: poem, poemImage: image)
-            }
-        }
+        // 移除 PoemSuccessView，保存后直接返回诗集
         .alert("确认取消", isPresented: $showingCancelConfirm) {
             Button("放弃", role: .destructive) {
                 dismiss()
