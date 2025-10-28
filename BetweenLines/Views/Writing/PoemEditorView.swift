@@ -79,48 +79,32 @@ struct PoemEditorView: View {
     // MARK: - Content Editor
     
     private var contentEditor: some View {
-        ScrollViewReader { proxy in
-            ZStack(alignment: .topLeading) {
-                // 占位符（在背景层，完全不影响交互）
-                if content.isEmpty {
-                    Text(placeholder)
-                        .font(Fonts.bodyPoem())
-                        .foregroundColor(Colors.textSecondary.opacity(0.5))
-                        .lineSpacing(8)  // 增加行间距
-                        .padding(.horizontal, Spacing.lg + 4)
-                        .padding(.vertical, Spacing.md + 8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .allowsHitTesting(false)
-                }
-                
-                // 文本编辑器 - 可滚动，可点击任意位置
-                VStack(spacing: 0) {
-                    TextEditor(text: $content)
-                        .font(Fonts.bodyPoem())
-                        .foregroundColor(Colors.textInk)
-                        .lineSpacing(8)  // 增加行间距
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.vertical, Spacing.md)
-                        .scrollContentBackground(.hidden)
-                        .focused($isContentFocused)
-                        .scrollDismissesKeyboard(.interactively)
-                    
-                    // 底部锚点 - 用于自动滚动到光标位置
-                    Color.clear
-                        .frame(height: 1)
-                        .id("bottom")
-                }
-                .onChange(of: content) { oldValue, newValue in
-                    // 当内容增加时，自动滚动到底部
-                    if newValue.count > oldValue.count {
-                        withAnimation(.easeOut(duration: 0.1)) {
-                            proxy.scrollTo("bottom", anchor: .bottom)
-                        }
-                    }
-                }
+        ZStack(alignment: .topLeading) {
+            // 占位符（在背景层，完全不影响交互）
+            if content.isEmpty {
+                Text(placeholder)
+                    .font(Fonts.bodyPoem())
+                    .foregroundColor(Colors.textSecondary.opacity(0.5))
+                    .lineSpacing(8)  // 增加行间距
+                    .padding(.horizontal, Spacing.lg + 4)
+                    .padding(.vertical, Spacing.md + 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .allowsHitTesting(false)
             }
-            .background(Colors.white)
+            
+            // 文本编辑器 - 使用 UITextView 的原生滚动行为
+            TextEditor(text: $content)
+                .font(Fonts.bodyPoem())
+                .foregroundColor(Colors.textInk)
+                .lineSpacing(8)  // 增加行间距
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.md)
+                .padding(.bottom, 300)  // 关键：大量底部内边距，确保光标永远不会被键盘挡住
+                .scrollContentBackground(.hidden)
+                .focused($isContentFocused)
+                .scrollDismissesKeyboard(.interactively)
         }
+        .background(Colors.white)
     }
     
     // MARK: - Bottom Toolbar
