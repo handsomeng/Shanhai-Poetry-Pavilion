@@ -35,7 +35,7 @@ struct LearningView: View {
                 }
             }
             .navigationBarHidden(true)
-            .fullScreenCover(isPresented: $showingSettings) {
+            .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
         }

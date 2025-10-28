@@ -76,7 +76,7 @@ struct SettingsView: View {
         .sheet(isPresented: $showingPoetTitle) {
             PoetTitleView(poemCount: poemManager.allPoems.count)
         }
-        .fullScreenCover(isPresented: $showingMembershipDetail) {
+        .sheet(isPresented: $showingMembershipDetail) {
             if subscriptionManager.isSubscribed {
                 MembershipDetailView()
             } else {
