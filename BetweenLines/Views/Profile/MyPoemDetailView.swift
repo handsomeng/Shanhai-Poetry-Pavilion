@@ -37,7 +37,7 @@ struct MyPoemDetailView: View {
     
     enum Field {
         case title
-        case content
+        // content 现在使用 UITextViewWrapper，不需要焦点管理
     }
     
     init(poem: Poem, isDraft: Bool = false) {
@@ -201,28 +201,27 @@ struct MyPoemDetailView: View {
     // MARK: - Editing View (编辑模式)
     
     private var editingView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.md) {
-                // 标题输入
-                TextField("标题（选填）", text: $editedTitle)
-                    .font(.system(size: 24, weight: .medium, design: .serif))
-                    .foregroundColor(Colors.textInk)
-                    .padding(.top, Spacing.lg)
-                    .focused($focusedField, equals: .title)
-                
-                // 内容输入
-                TextEditor(text: $editedContent)
-                    .font(.system(size: 18, design: .serif))
-                    .foregroundColor(Colors.textInk)
-                    .scrollContentBackground(.hidden)
-                    .scrollDisabled(true)
-                    .lineSpacing(8)
-                    .frame(minHeight: 300)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .focused($focusedField, equals: .content)
-            }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.xl)
+        VStack(spacing: 0) {
+            // 标题输入
+            TextField("标题（选填）", text: $editedTitle)
+                .font(.system(size: 24, weight: .medium, design: .serif))
+                .foregroundColor(Colors.textInk)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.lg)
+                .padding(.bottom, Spacing.md)
+                .focused($focusedField, equals: .title)
+            
+            Divider()
+                .padding(.horizontal, Spacing.lg)
+            
+            // 内容输入 - 使用修复后的 UITextViewWrapper
+            UITextViewWrapper(
+                text: $editedContent,
+                placeholder: "在这里编辑你的诗...",
+                font: UIFont.systemFont(ofSize: 18),
+                textColor: UIColor(Colors.textInk),
+                placeholderColor: UIColor(Colors.textSecondary.opacity(0.5))
+            )
         }
     }
     
@@ -280,14 +279,10 @@ struct MyPoemDetailView: View {
         editedTitle = poem.title
         editedContent = poem.content
         
-        // 同时设置编辑状态和焦点
+        // 进入编辑状态
         isEditing = true
         
-        // 使用 async 而不是 asyncAfter，更快响应
-        DispatchQueue.main.async {
-            // 聚焦到内容输入框，光标会自动移到最后
-            focusedField = .content
-        }
+        // UITextViewWrapper 会自动处理焦点，无需手动设置
     }
     
     /// 取消编辑
