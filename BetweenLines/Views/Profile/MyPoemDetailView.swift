@@ -190,6 +190,12 @@ struct MyPoemDetailView: View {
             .padding(.horizontal, Spacing.lg)
             .padding(.bottom, Spacing.xl)
         }
+        .onTapGesture(count: 2) {
+            // 🔑 双击进入编辑模式
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                enterEditMode()
+            }
+        }
     }
     
     // MARK: - Editing View (编辑模式)
@@ -251,6 +257,18 @@ struct MyPoemDetailView: View {
             Text(poem.createdAt, style: .date)
                 .font(.system(size: 12, weight: .light))
                 .foregroundColor(Colors.textTertiary)
+            
+            Spacer()
+                .frame(height: 16)
+            
+            // 双击编辑提示
+            HStack(spacing: 4) {
+                Image(systemName: "hand.tap")
+                    .font(.system(size: 11))
+                Text("双击屏幕快速编辑")
+                    .font(.system(size: 11, weight: .light))
+            }
+            .foregroundColor(Colors.textTertiary.opacity(0.6))
         }
     }
     
