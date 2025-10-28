@@ -19,6 +19,9 @@ struct PoemEditorView: View {
     // 焦点管理
     @FocusState private var isContentFocused: Bool
     
+    // 键盘高度监听
+    @State private var keyboardHeight: CGFloat = 0
+    
     init(
         title: Binding<String>,
         content: Binding<String>,
@@ -46,6 +49,9 @@ struct PoemEditorView: View {
             if showWordCount {
                 bottomToolbar
             }
+        }
+        .onAppear {
+            startObservingKeyboard()
         }
     }
     
@@ -92,14 +98,14 @@ struct PoemEditorView: View {
                     .allowsHitTesting(false)
             }
             
-            // 文本编辑器 - 使用 UITextView 的原生滚动行为
+            // 文本编辑器 - 根据键盘高度动态调整底部内边距
             TextEditor(text: $content)
                 .font(Fonts.bodyPoem())
                 .foregroundColor(Colors.textInk)
                 .lineSpacing(8)  // 增加行间距
                 .padding(.horizontal, Spacing.lg)
                 .padding(.top, Spacing.md)
-                .padding(.bottom, 300)  // 关键：大量底部内边距，确保光标永远不会被键盘挡住
+                .padding(.bottom, max(keyboardHeight - 100, 20))  // 🔑 根据键盘高度动态调整
                 .scrollContentBackground(.hidden)
                 .focused($isContentFocused)
                 .scrollDismissesKeyboard(.interactively)
@@ -142,6 +148,35 @@ struct PoemEditorView: View {
         content.components(separatedBy: .newlines)
             .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
             .count
+    }
+    
+    // MARK: - Keyboard Handling
+    
+    /// 开始监听键盘事件
+    private func startObservingKeyboard() {
+        NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardWillShowNotification,
+            object: nil,
+            queue: .main
+        ) { notification in
+            guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+                return
+            }
+            
+            withAnimation(.easeOut(duration: 0.25)) {
+                keyboardHeight = keyboardFrame.height
+            }
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardWillHideNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            withAnimation(.easeOut(duration: 0.25)) {
+                keyboardHeight = 0
+            }
+        }
     }
 }
 
