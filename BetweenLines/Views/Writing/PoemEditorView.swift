@@ -76,7 +76,7 @@ struct PoemEditorView: View {
     // MARK: - Content Editor
     
     private var contentEditor: some View {
-        // 使用原生 UITextView 包装器 - 完美处理键盘避让
+        // 使用原生 UITextView 包装器
         UITextViewWrapper(
             text: $content,
             placeholder: placeholder,
@@ -85,6 +85,7 @@ struct PoemEditorView: View {
             placeholderColor: UIColor(Colors.textSecondary.opacity(0.5))
         )
         .background(Colors.white)
+        .avoidKeyboard()  // 🔑 自动避让键盘
     }
     
     // MARK: - Bottom Toolbar

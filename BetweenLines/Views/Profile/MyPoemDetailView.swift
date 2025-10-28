@@ -222,6 +222,7 @@ struct MyPoemDetailView: View {
                 textColor: UIColor(Colors.textInk),
                 placeholderColor: UIColor(Colors.textSecondary.opacity(0.5))
             )
+            .avoidKeyboard()  // 🔑 自动避让键盘
         }
     }
     

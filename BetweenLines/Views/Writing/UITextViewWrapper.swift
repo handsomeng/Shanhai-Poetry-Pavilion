@@ -38,12 +38,12 @@ struct UITextViewWrapper: UIViewRepresentable {
         textView.font = font
         textView.textColor = textColor
         textView.backgroundColor = .clear
-        textView.textContainerInset = UIEdgeInsets(top: 16, left: 20, bottom: 300, right: 20)  // 🔑 大量底部内边距
+        textView.textContainerInset = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
         
         // 键盘设置
         textView.keyboardDismissMode = .interactive
-        textView.autocorrectionType = .default  // 允许自动纠错
-        textView.autocapitalizationType = .sentences  // 句子首字母大写
+        textView.autocorrectionType = .default
+        textView.autocapitalizationType = .sentences
         
         // 初始文本设置
         if text.isEmpty {
@@ -53,21 +53,6 @@ struct UITextViewWrapper: UIViewRepresentable {
             textView.text = text
             textView.textColor = textColor
         }
-        
-        // 🔑 监听键盘事件
-        NotificationCenter.default.addObserver(
-            context.coordinator,
-            selector: #selector(Coordinator.keyboardWillShow(_:)),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            context.coordinator,
-            selector: #selector(Coordinator.keyboardWillHide(_:)),
-            name: UIResponder.keyboardWillHideNotification,
-            object: nil
-        )
         
         return textView
     }
@@ -91,14 +76,12 @@ struct UITextViewWrapper: UIViewRepresentable {
     class Coordinator: NSObject, UITextViewDelegate {
         var parent: UITextViewWrapper
         var isEditing = false
-        weak var textView: UITextView?
         
         init(_ parent: UITextViewWrapper) {
             self.parent = parent
         }
         
         func textViewDidBeginEditing(_ textView: UITextView) {
-            self.textView = textView
             isEditing = true
             
             // 清除占位符
@@ -113,40 +96,16 @@ struct UITextViewWrapper: UIViewRepresentable {
             DispatchQueue.main.async {
                 self.parent.text = textView.text
             }
-            
-            // UITextView 会自动处理光标跟随，无需手动干预
         }
         
         func textViewDidEndEditing(_ textView: UITextView) {
             isEditing = false
-            self.textView = nil
             
             // 恢复占位符
             if textView.text.isEmpty {
                 textView.text = parent.placeholder
                 textView.textColor = parent.placeholderColor
             }
-        }
-        
-        // 🔑 键盘显示时，调整内边距
-        @objc func keyboardWillShow(_ notification: Notification) {
-            guard let textView = textView,
-                  let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
-                return
-            }
-            
-            // 调整 contentInset，为键盘留出空间
-            let keyboardHeight = keyboardFrame.height
-            textView.contentInset.bottom = keyboardHeight
-            textView.verticalScrollIndicatorInsets.bottom = keyboardHeight
-        }
-        
-        @objc func keyboardWillHide(_ notification: Notification) {
-            guard let textView = textView else { return }
-            
-            // 恢复原始 contentInset
-            textView.contentInset.bottom = 300
-            textView.verticalScrollIndicatorInsets.bottom = 0
         }
     }
 }
