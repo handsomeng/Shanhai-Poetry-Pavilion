@@ -114,11 +114,7 @@ struct UITextViewWrapper: UIViewRepresentable {
                 self.parent.text = textView.text
             }
             
-            // 🔑 自动滚动到光标位置
-            if let selectedRange = textView.selectedTextRange {
-                let caretRect = textView.caretRect(for: selectedRange.end)
-                textView.scrollRectToVisible(caretRect, animated: true)
-            }
+            // UITextView 会自动处理光标跟随，无需手动干预
         }
         
         func textViewDidEndEditing(_ textView: UITextView) {
@@ -132,7 +128,7 @@ struct UITextViewWrapper: UIViewRepresentable {
             }
         }
         
-        // 🔑 键盘显示时，确保光标可见
+        // 🔑 键盘显示时，调整内边距
         @objc func keyboardWillShow(_ notification: Notification) {
             guard let textView = textView,
                   let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
@@ -141,14 +137,8 @@ struct UITextViewWrapper: UIViewRepresentable {
             
             // 调整 contentInset，为键盘留出空间
             let keyboardHeight = keyboardFrame.height
-            textView.contentInset.bottom = keyboardHeight - 100
-            textView.verticalScrollIndicatorInsets.bottom = keyboardHeight - 100
-            
-            // 滚动到光标位置
-            if let selectedRange = textView.selectedTextRange {
-                let caretRect = textView.caretRect(for: selectedRange.end)
-                textView.scrollRectToVisible(caretRect, animated: true)
-            }
+            textView.contentInset.bottom = keyboardHeight
+            textView.verticalScrollIndicatorInsets.bottom = keyboardHeight
         }
         
         @objc func keyboardWillHide(_ notification: Notification) {
