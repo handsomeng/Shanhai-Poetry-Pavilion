@@ -16,6 +16,20 @@ struct UITextViewWrapper: UIViewRepresentable {
     let textColor: UIColor
     let placeholderColor: UIColor
     
+    init(
+        text: Binding<String>,
+        placeholder: String = "在这里写下你的诗...",
+        font: UIFont = .systemFont(ofSize: 17),
+        textColor: UIColor = UIColor(Colors.textInk),
+        placeholderColor: UIColor = UIColor(Colors.textSecondary.opacity(0.5))
+    ) {
+        self._text = text
+        self.placeholder = placeholder
+        self.font = font
+        self.textColor = textColor
+        self.placeholderColor = placeholderColor
+    }
+    
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
         textView.delegate = context.coordinator
@@ -78,23 +92,6 @@ struct UITextViewWrapper: UIViewRepresentable {
                 textView.textColor = parent.placeholderColor
             }
         }
-    }
-}
-
-extension UITextViewWrapper {
-    /// 便捷初始化方法
-    init(
-        text: Binding<String>,
-        placeholder: String = "在这里写下你的诗...",
-        font: UIFont = .systemFont(ofSize: 17),
-        textColor: UIColor = UIColor(Colors.textInk),
-        placeholderColor: UIColor = UIColor(Colors.textSecondary.opacity(0.5))
-    ) {
-        self._text = text
-        self.placeholder = placeholder
-        self.font = font
-        self.textColor = textColor
-        self.placeholderColor = placeholderColor
     }
 }
 
