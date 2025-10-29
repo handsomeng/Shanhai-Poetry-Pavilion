@@ -34,6 +34,7 @@ struct MyPoemDetailView: View {
     @State private var showingAIComment = false
     @State private var isLoadingAIComment = false
     @State private var aiCommentText: String = ""
+    @State private var showingMembership = false // 会员付费页面
     
     enum Field {
         case title
@@ -155,6 +156,14 @@ struct MyPoemDetailView: View {
                     showingAIComment = false
                 }
             )
+        }
+        .sheet(isPresented: $showingMembership) {
+            // 根据订阅状态显示不同页面
+            if subscriptionManager.isSubscribed {
+                MembershipDetailView()
+            } else {
+                SubscriptionView()
+            }
         }
         .fullScreenCover(isPresented: $showingShareView) {
             PoemShareView(poem: poem)
@@ -318,12 +327,8 @@ struct MyPoemDetailView: View {
     private func requestAIComment() {
         // 检查权限
         if !subscriptionManager.canUseAIComment() {
-            let remaining = subscriptionManager.remainingAIComments()
-            if remaining == 0 {
-                toastManager.showInfo("今日AI点评次数已用完，明天再来吧")
-            } else {
-                toastManager.showInfo("今日还剩 \(remaining) 次AI点评")
-            }
+            // 次数不够，直接弹出会员付费页面
+            showingMembership = true
             return
         }
         

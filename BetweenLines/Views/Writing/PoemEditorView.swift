@@ -17,6 +17,9 @@ struct PoemEditorView: View {
     let placeholder: String
     let showWordCount: Bool
     
+    @State private var showingMembership = false
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
+    
     init(
         title: Binding<String>,
         content: Binding<String>,
@@ -35,12 +38,23 @@ struct PoemEditorView: View {
             PoemTextEditor(
                 title: $title,
                 content: $content,
-                placeholder: placeholder
+                placeholder: placeholder,
+                onShowMembership: {
+                    showingMembership = true
+                }
             )
             
             // 底部工具栏（可选）
             if showWordCount {
                 bottomToolbar
+            }
+        }
+        .sheet(isPresented: $showingMembership) {
+            // 根据订阅状态显示不同页面
+            if subscriptionManager.isSubscribed {
+                MembershipDetailView()
+            } else {
+                SubscriptionView()
             }
         }
     }

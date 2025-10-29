@@ -18,6 +18,8 @@ class PoemTextEditorViewController: UIViewController {
     var onTitleChange: ((String) -> Void)?
     /// 内容回调
     var onContentChange: ((String) -> Void)?
+    /// 显示会员页面回调
+    var onShowMembership: (() -> Void)?
     
     private var initialTitle: String
     private var initialContent: String
@@ -238,14 +240,8 @@ class PoemTextEditorViewController: UIViewController {
     }
     
     private func showUpgradeHint() {
-        // 简单提示（可以后续改为跳转到订阅页面）
-        let alert = UIAlertController(
-            title: "💡 提示",
-            message: "请前往【设置】页面升级会员",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "好的", style: .default))
-        present(alert, animated: true)
+        // 直接弹出会员付费页面
+        onShowMembership?()
     }
     
     private func showConfirmationAlert() {
@@ -377,6 +373,7 @@ struct PoemTextEditor: UIViewControllerRepresentable {
     @Binding var title: String
     @Binding var content: String
     let placeholder: String
+    var onShowMembership: (() -> Void)? // 显示会员页面回调
     
     func makeUIViewController(context: Context) -> PoemTextEditorViewController {
         let vc = PoemTextEditorViewController(
@@ -397,6 +394,8 @@ struct PoemTextEditor: UIViewControllerRepresentable {
                 content = newContent
             }
         }
+        
+        vc.onShowMembership = onShowMembership
         
         return vc
     }
