@@ -31,7 +31,7 @@ struct SettingsView: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 22) {
                         // 1. 个人信息区
                         personalInfoSection
                         
@@ -44,9 +44,9 @@ struct SettingsView: View {
                         // 4. 底部版本信息
                         versionInfo
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 24)
-                    .padding(.bottom, 40)
+                    .padding(.horizontal, 26)
+                    .padding(.top, 26)
+                    .padding(.bottom, 44)
                 }
             }
             .navigationTitle("设置")
@@ -207,58 +207,86 @@ struct SettingsView: View {
     // MARK: - 设置列表
     
     private var settingsList: some View {
-        VStack(spacing: 0) {
-            // 诗人等级
-            Button(action: { showingPoetTitle = true }) {
-                settingRow(label: "诗人等级", showArrow: true)
+        VStack(spacing: 16) {
+            // 分组1: 账号与内容
+            VStack(spacing: 0) {
+                // 诗人等级
+                Button(action: { showingPoetTitle = true }) {
+                    settingRow(label: "诗人等级", showArrow: true)
+                }
+                
+                Divider()
+                    .padding(.horizontal, 20)
+                
+                // 恢复购买
+                Button(action: { restorePurchases() }) {
+                    settingRow(label: "恢复购买", showArrow: true)
+                }
             }
+            .background(Colors.white)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
             
-            Divider()
-                .padding(.horizontal, 20)
-            
-            // 恢复购买
-            Button(action: { restorePurchases() }) {
-                settingRow(label: "恢复购买", showArrow: true)
+            // 分组2: 关于
+            VStack(spacing: 0) {
+                // 关于山海诗馆
+                NavigationLink(destination: AboutAppView()) {
+                    settingRow(label: "关于山海诗馆", showArrow: true)
+                }
+                .buttonStyle(.plain)
+                
+                Divider()
+                    .padding(.horizontal, 20)
+                
+                // 关于 HandsoMeng
+                Button(action: { showingAboutDeveloper = true }) {
+                    settingRow(label: "关于 HandsoMeng", showArrow: true)
+                }
+                
+                Divider()
+                    .padding(.horizontal, 20)
+                
+                // 用户协议
+                NavigationLink(destination: TermsOfServiceView()) {
+                    settingRow(label: "用户协议", showArrow: true)
+                }
+                .buttonStyle(.plain)
+                
+                Divider()
+                    .padding(.horizontal, 20)
+                
+                // 隐私政策
+                NavigationLink(destination: PrivacyPolicyView()) {
+                    settingRow(label: "隐私政策", showArrow: true)
+                }
+                .buttonStyle(.plain)
             }
+            .background(Colors.white)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
             
-            Divider()
-                .padding(.horizontal, 20)
-            
-            // 关于山海诗馆
-            NavigationLink(destination: AboutAppView()) {
-                settingRow(label: "关于山海诗馆", showArrow: true)
+            // 分组3: 危险区域
+            VStack(spacing: 0) {
+                // 重置所有数据
+                Button(action: { showResetAlert = true }) {
+                    HStack {
+                        Text("重置所有数据")
+                            .font(.system(size: 16))
+                            .foregroundColor(.red)
+                        Spacer()
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 14, weight: .light))
+                            .foregroundColor(.red)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .contentShape(Rectangle())
+                }
             }
-            .buttonStyle(.plain)
-            
-            Divider()
-                .padding(.horizontal, 20)
-            
-            // 关于 HandsoMeng
-            Button(action: { showingAboutDeveloper = true }) {
-                settingRow(label: "关于 HandsoMeng", showArrow: true)
-            }
-            
-            Divider()
-                .padding(.horizontal, 20)
-            
-            // 用户协议
-            NavigationLink(destination: TermsOfServiceView()) {
-                settingRow(label: "用户协议", showArrow: true)
-            }
-            .buttonStyle(.plain)
-            
-            Divider()
-                .padding(.horizontal, 20)
-            
-            // 隐私政策
-            NavigationLink(destination: PrivacyPolicyView()) {
-                settingRow(label: "隐私政策", showArrow: true)
-            }
-            .buttonStyle(.plain)
+            .background(Colors.white)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
         }
-        .background(Colors.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
     }
     
     // MARK: - 设置行
