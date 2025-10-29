@@ -214,7 +214,7 @@ struct MyPoemDetailView: View {
             Divider()
                 .padding(.horizontal, Spacing.lg)
             
-            // 内容输入 - 使用修复后的 UITextViewWrapper
+            // 内容输入 - 使用 UITextViewWrapper（自己处理键盘）
             UITextViewWrapper(
                 text: $editedContent,
                 placeholder: "在这里编辑你的诗...",
@@ -222,7 +222,6 @@ struct MyPoemDetailView: View {
                 textColor: UIColor(Colors.textInk),
                 placeholderColor: UIColor(Colors.textSecondary.opacity(0.5))
             )
-            .avoidKeyboard()  // 🔑 自动避让键盘
         }
     }
     

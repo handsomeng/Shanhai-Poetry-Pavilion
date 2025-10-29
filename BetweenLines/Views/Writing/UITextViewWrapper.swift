@@ -2,11 +2,18 @@
 //  UITextViewWrapper.swift
 //  山海诗馆
 //
-//  UITextView 包装器 - 解决 SwiftUI TextEditor 键盘遮挡问题
+//  UITextView 包装器 - iOS 原生的优雅键盘处理方案
+//
+//  核心原理：
+//  1. UITextView 本身就是 UIScrollView，可以自己滚动
+//  2. 监听键盘通知，调整 contentInset.bottom
+//  3. UITextView 会自动滚动到光标位置
+//  4. 不需要外层处理任何逻辑
 //
 
 import SwiftUI
 import UIKit
+import Combine
 
 /// UITextView 的 SwiftUI 包装器
 struct UITextViewWrapper: UIViewRepresentable {
@@ -34,18 +41,17 @@ struct UITextViewWrapper: UIViewRepresentable {
         let textView = UITextView()
         textView.delegate = context.coordinator
         
-        // 样式设置
+        // 📝 样式设置
         textView.font = font
-        textView.textColor = textColor
         textView.backgroundColor = .clear
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20)
         
-        // 键盘设置
-        textView.keyboardDismissMode = .interactive
+        // ⌨️ 键盘设置
+        textView.keyboardDismissMode = .interactive  // 可以拖动键盘关闭
         textView.autocorrectionType = .default
         textView.autocapitalizationType = .sentences
         
-        // 初始文本设置
+        // 🎨 初始文本
         if text.isEmpty {
             textView.text = placeholder
             textView.textColor = placeholderColor
@@ -54,16 +60,19 @@ struct UITextViewWrapper: UIViewRepresentable {
             textView.textColor = textColor
         }
         
+        // 🔑 关键：监听键盘通知
+        context.coordinator.setupKeyboardObservers(for: textView)
+        
         return textView
     }
     
     func updateUIView(_ textView: UITextView, context: Context) {
-        // 避免循环更新
+        // 避免在编辑时更新，防止光标跳动
         if context.coordinator.isEditing {
             return
         }
         
-        // 更新文本（如果来自外部）
+        // 只有在文本真正不同时才更新
         if textView.textColor == textColor && textView.text != text {
             textView.text = text
         }
@@ -73,13 +82,62 @@ struct UITextViewWrapper: UIViewRepresentable {
         Coordinator(self)
     }
     
+    // MARK: - Coordinator
+    
     class Coordinator: NSObject, UITextViewDelegate {
         var parent: UITextViewWrapper
         var isEditing = false
         
+        private var keyboardWillShowCancellable: AnyCancellable?
+        private var keyboardWillHideCancellable: AnyCancellable?
+        
         init(_ parent: UITextViewWrapper) {
             self.parent = parent
         }
+        
+        // 🔑 设置键盘监听器
+        func setupKeyboardObservers(for textView: UITextView) {
+            // 键盘即将显示
+            keyboardWillShowCancellable = NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillShowNotification)
+                .compactMap { notification -> CGFloat? in
+                    guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+                        return nil
+                    }
+                    return keyboardFrame.height
+                }
+                .sink { [weak textView] keyboardHeight in
+                    guard let textView = textView else { return }
+                    
+                    // 🎯 核心：调整 contentInset，为键盘留出空间
+                    var contentInset = textView.contentInset
+                    contentInset.bottom = keyboardHeight
+                    textView.contentInset = contentInset
+                    
+                    // 同时调整滚动条位置
+                    var scrollIndicatorInsets = textView.verticalScrollIndicatorInsets
+                    scrollIndicatorInsets.bottom = keyboardHeight
+                    textView.verticalScrollIndicatorInsets = scrollIndicatorInsets
+                }
+            
+            // 键盘即将隐藏
+            keyboardWillHideCancellable = NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillHideNotification)
+                .sink { [weak textView] _ in
+                    guard let textView = textView else { return }
+                    
+                    // 恢复原始 inset
+                    var contentInset = textView.contentInset
+                    contentInset.bottom = 0
+                    textView.contentInset = contentInset
+                    
+                    var scrollIndicatorInsets = textView.verticalScrollIndicatorInsets
+                    scrollIndicatorInsets.bottom = 0
+                    textView.verticalScrollIndicatorInsets = scrollIndicatorInsets
+                }
+        }
+        
+        // MARK: - UITextViewDelegate
         
         func textViewDidBeginEditing(_ textView: UITextView) {
             isEditing = true
@@ -92,10 +150,8 @@ struct UITextViewWrapper: UIViewRepresentable {
         }
         
         func textViewDidChange(_ textView: UITextView) {
-            // 实时更新绑定的文本
-            DispatchQueue.main.async {
-                self.parent.text = textView.text
-            }
+            // 实时更新 SwiftUI 绑定
+            parent.text = textView.text
         }
         
         func textViewDidEndEditing(_ textView: UITextView) {
@@ -107,6 +163,11 @@ struct UITextViewWrapper: UIViewRepresentable {
                 textView.textColor = parent.placeholderColor
             }
         }
+        
+        deinit {
+            // 清理订阅
+            keyboardWillShowCancellable?.cancel()
+            keyboardWillHideCancellable?.cancel()
+        }
     }
 }
-
