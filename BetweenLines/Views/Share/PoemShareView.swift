@@ -75,12 +75,20 @@ struct PoemShareView: View {
     
     // MARK: - Poem Image Preview
     
+    // 根据设备尺寸计算图片宽度（iPad 适配）
+    private var imageWidth: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width
+        // iPhone: 使用340px; iPad: 使用屏幕宽度的70%，最大500px
+        return UIDevice.current.userInterfaceIdiom == .pad
+            ? min(screenWidth * 0.7, 500)
+            : min(screenWidth - 40, 340)
+    }
+    
     private var poemImagePreview: some View {
-        // 使用当前选择的模板渲染
         selectedTemplate.render(
             poem: poem,
             poemIndex: poemIndex,
-            size: CGSize(width: 340, height: 0)
+            size: CGSize(width: imageWidth, height: 0)
         )
     }
     

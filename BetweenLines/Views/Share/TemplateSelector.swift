@@ -19,6 +19,15 @@ struct TemplateSelector: View {
         poemManager.allPoems.count
     }
     
+    // 根据设备尺寸计算图片宽度（iPad 适配）
+    private var imageWidth: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width
+        // iPhone: 使用340px; iPad: 使用屏幕宽度的70%，最大500px
+        return UIDevice.current.userInterfaceIdiom == .pad
+            ? min(screenWidth * 0.7, 500)
+            : min(screenWidth - 40, 340)
+    }
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -27,7 +36,7 @@ struct TemplateSelector: View {
                     selectedTemplate.render(
                         poem: poem,
                         poemIndex: poemIndex,
-                        size: CGSize(width: 340, height: 0)
+                        size: CGSize(width: imageWidth, height: 0)
                     )
                     .padding(.vertical, Spacing.xl)
                 }
