@@ -260,9 +260,7 @@ struct ArticleDetailView: View {
     
     let article: LearningArticle
     
-    // MARK: - 环境对象
-    
-    @EnvironmentObject var tabManager: TabManager
+    @Environment(\.dismiss) private var dismiss
     
     // MARK: - 状态
     
@@ -348,11 +346,11 @@ struct ArticleDetailView: View {
         .alert("开始创作", isPresented: $showMimicPrompt) {
             Button("取消", role: .cancel) {}
             Button("前往写诗") {
-                // 切换到诗集 Tab
-                tabManager.switchTo(.collection)
+                // 关闭学习页面，回到诗集
+                dismiss()
             }
         } message: {
-            Text("将跳转到【诗集】模块，开始你的第一首诗。")
+            Text("将关闭学习页面，回到诗集。点击「写诗」按钮即可开始创作。")
         }
     }
 }
