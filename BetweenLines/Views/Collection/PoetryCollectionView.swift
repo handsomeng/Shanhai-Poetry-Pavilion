@@ -105,13 +105,13 @@ struct PoetryCollectionView: View {
             } message: {
                 Text("诗人画像分析每周只能使用 1 次哦\n\n下次可用时间：\(nextAvailableDate)")
             }
-            .alert("让 AI 读你的诗？", isPresented: $showingConfirmAlert) {
+            .alert("恭喜！你发现了彩蛋功能！", isPresented: $showingConfirmAlert) {
                 Button("取消", role: .cancel) {}
                 Button("好的") {
                     analyzePoetProfile()
                 }
             } message: {
-                Text("AI 将阅读你最近的 10 首诗，并给出一份诗人画像分析")
+                Text("如果你允许，AI 将阅读你最近的诗，并为你分析诗人画像，彩蛋功能每周只有 1 次哦，会员与否都可以使用～")
             }
         }
     }
