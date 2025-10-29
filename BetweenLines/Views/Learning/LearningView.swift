@@ -54,11 +54,10 @@ struct LearningView: View {
                 Spacer()
                 
                 // 设置按钮
-                Button(action: { showingSettings = true }) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 18, weight: .ultraLight))
-                        .foregroundColor(Colors.textSecondary)
+                Button("设置") {
+                    showingSettings = true
                 }
+                .foregroundColor(Colors.textSecondary)
             }
             
             // 副标题

@@ -96,11 +96,10 @@ struct PoetryCollectionView: View {
             Spacer()
             
             // 设置按钮
-            Button(action: { showingSettings = true }) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 20, weight: .regular))
-                    .foregroundColor(Colors.textSecondary)
+            Button("设置") {
+                showingSettings = true
             }
+            .foregroundColor(Colors.textSecondary)
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.md)
