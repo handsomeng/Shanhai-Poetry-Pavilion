@@ -130,7 +130,9 @@ struct ModeCard: View {
                         .font(.system(size: 13))
                         .foregroundColor(Colors.textSecondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
+                .layoutPriority(1)
                 
                 Spacer()
                 
