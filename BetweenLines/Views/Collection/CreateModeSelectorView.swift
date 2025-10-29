@@ -116,29 +116,29 @@ struct ModeCard: View {
                     Circle()
                         .fill(Colors.accentTeal.opacity(0.1))
                         .frame(width: 52, height: 52)
-                    
+                }
+                .overlay(
                     Text(icon)
                         .font(.system(size: 26))
-                }
+                )
                 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.system(size: 17, weight: .semibold, design: .serif))
                         .foregroundColor(Colors.textInk)
+                        .lineLimit(1)
                     
                     Text(description)
                         .font(.system(size: 13))
                         .foregroundColor(Colors.textSecondary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
-                .layoutPriority(1)
-                
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Colors.textTertiary)
+                    .padding(.leading, 8)
             }
             .padding(Spacing.lg)
             .frame(maxWidth: .infinity, alignment: .leading)
