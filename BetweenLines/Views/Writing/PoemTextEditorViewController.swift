@@ -70,6 +70,39 @@ class PoemTextEditorViewController: UIViewController {
         return label
     }()
     
+    /// AI 灵感按钮（悬浮在右下角）
+    private lazy var inspirationButton: UIButton = {
+        let button = UIButton(type: .system)
+        
+        // 使用 SF Symbol
+        let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
+        let image = UIImage(systemName: "lightbulb.fill", withConfiguration: config)
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        
+        // 背景和样式
+        button.backgroundColor = UIColor(red: 0.38, green: 0.62, blue: 0.62, alpha: 1.0) // Colors.accentTeal
+        button.layer.cornerRadius = 28
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.15
+        button.layer.shadowOffset = CGSize(width: 0, height: 4)
+        button.layer.shadowRadius = 8
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(inspirationButtonTapped), for: .touchUpInside)
+        
+        return button
+    }()
+    
+    /// 加载指示器（在按钮内）
+    private lazy var loadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.color = .white
+        indicator.hidesWhenStopped = true
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        return indicator
+    }()
+    
     // MARK: - Initialization
     
     init(title: String, content: String, placeholder: String) {
@@ -102,6 +135,8 @@ class PoemTextEditorViewController: UIViewController {
         view.addSubview(dividerView)
         view.addSubview(contentTextView)
         contentTextView.addSubview(placeholderLabel)
+        view.addSubview(inspirationButton)
+        inspirationButton.addSubview(loadingIndicator)
         
         // 布局约束
         NSLayoutConstraint.activate([
@@ -126,6 +161,16 @@ class PoemTextEditorViewController: UIViewController {
             // 占位符
             placeholderLabel.topAnchor.constraint(equalTo: contentTextView.topAnchor, constant: 16 + 8),
             placeholderLabel.leadingAnchor.constraint(equalTo: contentTextView.leadingAnchor, constant: 20 + 5),
+            
+            // AI 灵感按钮（悬浮在右下角）
+            inspirationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            inspirationButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            inspirationButton.widthAnchor.constraint(equalToConstant: 56),
+            inspirationButton.heightAnchor.constraint(equalToConstant: 56),
+            
+            // 加载指示器（居中在按钮内）
+            loadingIndicator.centerXAnchor.constraint(equalTo: inspirationButton.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: inspirationButton.centerYAnchor),
         ])
     }
     
@@ -151,6 +196,78 @@ class PoemTextEditorViewController: UIViewController {
             contentTextView.text = content
             updatePlaceholderVisibility()
         }
+    }
+    
+    // MARK: - AI Inspiration
+    
+    @objc private func inspirationButtonTapped() {
+        // 触觉反馈
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
+        // 开始加载
+        setInspirationButtonLoading(true)
+        
+        // 异步调用 AI
+        Task { @MainActor in
+            do {
+                let inspiration = try await AIService.shared.getWritingInspiration(
+                    currentContent: contentTextView.text ?? "",
+                    title: titleTextField.text ?? ""
+                )
+                
+                // 停止加载
+                setInspirationButtonLoading(false)
+                
+                // 展示灵感
+                showInspirationAlert(inspiration: inspiration)
+                
+            } catch {
+                // 停止加载
+                setInspirationButtonLoading(false)
+                
+                // 展示错误
+                showErrorAlert(error: error)
+            }
+        }
+    }
+    
+    private func setInspirationButtonLoading(_ loading: Bool) {
+        if loading {
+            inspirationButton.setImage(nil, for: .normal)
+            loadingIndicator.startAnimating()
+            inspirationButton.isEnabled = false
+        } else {
+            let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
+            let image = UIImage(systemName: "lightbulb.fill", withConfiguration: config)
+            inspirationButton.setImage(image, for: .normal)
+            loadingIndicator.stopAnimating()
+            inspirationButton.isEnabled = true
+        }
+    }
+    
+    private func showInspirationAlert(inspiration: String) {
+        let alert = UIAlertController(
+            title: "✨ 创作灵感",
+            message: inspiration,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "知道了", style: .default))
+        
+        present(alert, animated: true)
+    }
+    
+    private func showErrorAlert(error: Error) {
+        let alert = UIAlertController(
+            title: "获取灵感失败",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "确定", style: .default))
+        
+        present(alert, animated: true)
     }
 }
 
