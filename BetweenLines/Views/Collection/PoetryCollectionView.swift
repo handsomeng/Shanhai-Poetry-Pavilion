@@ -20,6 +20,13 @@ struct PoetryCollectionView: View {
     @State private var showDirectWriting = false
     @State private var showingSettings = false
     
+    // 隐藏彩蛋：连续点击5次触发AI诗人画像分析
+    @State private var tapCount = 0
+    @State private var lastTapTime = Date()
+    @State private var showingPoetProfile = false
+    @State private var isLoadingPoetProfile = false
+    @State private var poetProfileText = ""
+    
     enum CollectionTab: String, CaseIterable, Identifiable {
         case collection = "诗集"
         case drafts = "草稿"
@@ -81,6 +88,12 @@ struct PoetryCollectionView: View {
                     DirectWritingView()
                 }
             }
+            .sheet(isPresented: $showingPoetProfile) {
+                PoetProfileView(
+                    profileText: poetProfileText,
+                    isLoading: isLoadingPoetProfile
+                )
+            }
         }
     }
     
@@ -88,9 +101,13 @@ struct PoetryCollectionView: View {
     
     private var headerSection: some View {
         HStack(alignment: .center) {
+            // 诗集标题（可点击的彩蛋）
             Text("诗集")
                 .font(Fonts.titleLarge())
                 .foregroundColor(Colors.textInk)
+                .onTapGesture {
+                    handleTitleTap()
+                }
             
             Spacer()
             
@@ -267,6 +284,71 @@ struct PoetryCollectionView: View {
                 .shadow(color: Colors.accentTeal.opacity(0.3), radius: 12, x: 0, y: 6)
             }
             .padding(.bottom, 24)
+        }
+    }
+    
+    // MARK: - Easter Egg: Poet Profile Analysis
+    
+    /// 处理标题点击（隐藏彩蛋）
+    private func handleTitleTap() {
+        let now = Date()
+        let timeSinceLastTap = now.timeIntervalSince(lastTapTime)
+        
+        // 如果距离上次点击超过2秒，重置计数
+        if timeSinceLastTap > 2.0 {
+            tapCount = 1
+        } else {
+            tapCount += 1
+        }
+        
+        lastTapTime = now
+        
+        // 震动反馈
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+        
+        // 连续点击5次触发
+        if tapCount >= 5 {
+            tapCount = 0
+            analyzePoetProfile()
+        }
+    }
+    
+    /// 分析诗人画像（获取最近10首诗，AI分析）
+    private func analyzePoetProfile() {
+        // 获取最近10首已完成的诗
+        let recentPoems = poemManager.poems
+            .filter { !$0.isDraft }
+            .sorted { $0.createdAt > $1.createdAt }
+            .prefix(10)
+        
+        // 检查是否有足够的诗
+        guard !recentPoems.isEmpty else {
+            poetProfileText = "你还没有创作诗歌哦，多写几首诗，我就能更了解你了~"
+            showingPoetProfile = true
+            return
+        }
+        
+        // 显示加载状态
+        isLoadingPoetProfile = true
+        poetProfileText = ""
+        showingPoetProfile = true
+        
+        // 调用 AI 分析
+        Task {
+            do {
+                let analysis = try await AIService.shared.analyzePoetProfile(poems: Array(recentPoems))
+                
+                await MainActor.run {
+                    poetProfileText = analysis
+                    isLoadingPoetProfile = false
+                }
+            } catch {
+                await MainActor.run {
+                    poetProfileText = "AI 分析出错了，可能是我太想了解你了~ 稍后再试试吧！"
+                    isLoadingPoetProfile = false
+                }
+            }
         }
     }
 }

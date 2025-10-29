@@ -336,6 +336,69 @@ class AIService {
         
         return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+    
+    // MARK: - Poet Profile Analysis (Easter Egg)
+    
+    /// 分析诗人画像（隐藏彩蛋功能）
+    /// - Parameter poems: 最近的诗歌列表（最多10首）
+    /// - Returns: AI 生成的诗人画像分析
+    func analyzePoetProfile(poems: [Poem]) async throws -> String {
+        try validateAPIKey()
+        
+        // 如果诗歌太少
+        if poems.count < 3 {
+            return "你已经开始创作了，这很好！再多写几首诗，我就能更准确地了解你的创作风格和内心世界了。每一首诗都是你心灵的映射，期待看到更多作品~"
+        }
+        
+        // 构建诗歌内容
+        var poemsText = ""
+        for (index, poem) in poems.enumerated() {
+            poemsText += "【诗歌 \(index + 1)】\n"
+            if !poem.title.isEmpty {
+                poemsText += "标题：\(poem.title)\n"
+            }
+            poemsText += "\(poem.content)\n\n"
+        }
+        
+        let prompt = """
+        你是一位温暖、善解人意的诗歌心理分析师。用户通过连续点击 5 次标题触发了这个隐藏彩蛋，你需要基于 TA 最近创作的 \(poems.count) 首诗，给出一份诗人画像分析。
+        
+        **分析框架**：
+        1. **创作风格**：TA 是什么类型的诗人？（如观察者、思考者、浪漫主义者、现实主义者等）
+        2. **情感基调**：最近的心境如何？是平静、忧郁、喜悦、迷茫还是复杂交织？
+        3. **关注主题**：TA 最常写什么？（自然、人际关系、孤独、成长、时间等）
+        4. **内心洞察**：从诗歌中能看到 TA 可能没有意识到的内心活动或特质
+        5. **正向反馈**：委婉、真诚地给予鼓励和肯定
+        
+        **语气要求**：
+        - 像朋友般温暖、真诚，不要像心理医生或老师
+        - 用第二人称"你"，拉近距离
+        - 委婉表达，避免直白的判断
+        - 多用"似乎"、"可能"、"或许"等柔和词汇
+        - 即使看到消极情绪，也要正向引导
+        - 200-300 字，不要太长
+        - 不要用 markdown 格式
+        - 自然分段，但不要用符号
+        
+        **诗歌内容**：
+        \(poemsText)
+        
+        **示例风格**：
+        
+        你是一位细腻的观察者，善于从平凡的日常中捕捉诗意。你的诗里常常出现雨、窗、夜晚这些意象，它们像是你内心世界的投影——安静、沉思，偶尔带着一点孤独。
+        
+        最近你似乎在思考时间和记忆，你在用诗记录那些容易被遗忘的瞬间。这说明你是个珍惜当下的人，也可能正在经历某种内心的成长或转变。
+        
+        你的文字很真诚，不刻意雕琢，这种自然流露的情感反而更打动人。继续保持这份真实，你的诗会越写越好的。
+        """
+        
+        return try await callAI(
+            prompt: prompt,
+            systemMessage: "你是一位温暖、善解人意的诗歌心理分析师，擅长从诗歌中洞察创作者的内心世界，并给予真诚、正向的反馈。你说话自然、亲切，像朋友一样。",
+            temperature: 0.8,
+            maxTokens: 600
+        )
+    }
 }
 
 // MARK: - Poem Theme Result
