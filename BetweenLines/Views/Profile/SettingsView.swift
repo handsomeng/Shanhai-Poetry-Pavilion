@@ -457,7 +457,7 @@ struct EditPenNameView: View {
                         saveAndDismiss()
                     }
                     .foregroundColor(Colors.accentTeal)
-                    .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || editedName.count > 10)
+                    .disabled(editedName.count > 10)  // 允许空字符串（会自动保存为"山海诗人"）
                 }
             }
             .onAppear {
@@ -467,9 +467,9 @@ struct EditPenNameView: View {
     }
     
     private func saveAndDismiss() {
-        let trimmedName = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedName.isEmpty && trimmedName.count <= 10 {
-            onSave(trimmedName)
+        // 允许空字符串（会在 setPenName 中自动转换为"山海诗人"）
+        if editedName.count <= 10 {
+            onSave(editedName)
             dismiss()
         }
     }

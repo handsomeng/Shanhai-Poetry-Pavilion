@@ -520,7 +520,7 @@ class PoemManager: ObservableObject {
     
     /// 加载当前用户名
     private func loadCurrentUserName() {
-        currentUserName = UserDefaults.standard.string(forKey: UserDefaultsKeys.penName) ?? "诗人"
+        currentUserName = UserDefaults.standard.string(forKey: UserDefaultsKeys.penName) ?? "山海诗人"
     }
     
     /// 监听笔名变化

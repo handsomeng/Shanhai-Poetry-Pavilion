@@ -21,8 +21,8 @@ class UserIdentityService: ObservableObject {
     /// 设备唯一标识（永久保存）
     @AppStorage("deviceUserId") private var storedUserId: String?
     
-    /// 笔名存储
-    @AppStorage("userPenName") private var storedPenName: String = ""
+    /// 笔名存储（统一使用 UserDefaultsKeys.penName）
+    @AppStorage(UserDefaultsKeys.penName) private var storedPenName: String = "山海诗人"
     
     // MARK: - Computed Properties
     
@@ -48,7 +48,7 @@ class UserIdentityService: ObservableObject {
     
     init() {
         // 先初始化 penName（必须在访问 storedPenName 前）
-        let localPenName = UserDefaults.standard.string(forKey: "userPenName") ?? ""
+        let localPenName = UserDefaults.standard.string(forKey: UserDefaultsKeys.penName) ?? "山海诗人"
         
         // 从 iCloud 恢复笔名（跨设备同步）
         if let cloudPenName = NSUbiquitousKeyValueStore.default.string(forKey: "penName"),
@@ -73,22 +73,23 @@ class UserIdentityService: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// 设置笔名
+    /// 设置笔名（如果为空，则使用默认笔名"山海诗人"）
     func setPenName(_ name: String) {
-        penName = name
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        penName = trimmedName.isEmpty ? "山海诗人" : trimmedName
     }
     
     /// 重置用户数据（用于测试或重置功能）
     func resetUserData() {
         storedUserId = nil
-        storedPenName = ""
-        penName = ""
+        storedPenName = "山海诗人"
+        penName = "山海诗人"
         
-        // 清除 iCloud 数据
-        NSUbiquitousKeyValueStore.default.removeObject(forKey: "penName")
+        // 同步到 iCloud
+        NSUbiquitousKeyValueStore.default.set("山海诗人", forKey: "penName")
         NSUbiquitousKeyValueStore.default.synchronize()
         
-        print("🔄 [UserIdentityService] 用户数据已重置")
+        print("🔄 [UserIdentityService] 用户数据已重置，笔名恢复为：山海诗人")
     }
     
     // MARK: - Private Methods
