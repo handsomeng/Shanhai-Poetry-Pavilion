@@ -253,13 +253,14 @@ struct MimicWritingView: View {
     // MARK: - Actions
     
     private func handleStart() {
-        // 检查是否有会员权限
-        guard subscriptionManager.isSubscribed else {
+        // 检查是否可以使用临摹写诗（非会员每天1次，会员无限）
+        guard subscriptionManager.canUseMimicWriting() else {
+            // 次数用完，弹出会员页面
             showingSubscription = true
             return
         }
         
-        // 会员用户，开始生成示例
+        // 可以使用，开始生成示例
         generateExample()
     }
     
@@ -272,6 +273,9 @@ struct MimicWritingView: View {
                 await MainActor.run {
                     aiExamplePoem = example
                     isLoadingExample = false
+                    
+                    // 生成成功，消耗一次额度
+                    subscriptionManager.useMimicWriting()
                 }
             } catch {
                 await MainActor.run {

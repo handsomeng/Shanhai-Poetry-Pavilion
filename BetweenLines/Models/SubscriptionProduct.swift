@@ -58,9 +58,9 @@ enum SubscriptionType: String, Codable {
 /// 会员权益
 enum MemberBenefit: String, CaseIterable {
     case unlimitedAI = "AI 点评无限次"
-    case aiInspiration = "AI 续写思路"
-    case aiTemplates = "AI 生成写诗模板"
-    case aiThemes = "AI 推荐每日主题"
+    case aiInspiration = "AI 续写思路无限次"
+    case aiTemplates = "临摹写诗无限次"
+    case aiThemes = "主题写诗无限次"
     case imageStyles = "多种图片模板"
     case noAds = "无广告体验"
     case exclusiveBadge = "会员专属标识"

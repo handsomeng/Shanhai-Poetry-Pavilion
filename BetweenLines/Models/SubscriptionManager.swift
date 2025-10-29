@@ -30,6 +30,14 @@ class SubscriptionManager: ObservableObject {
     @Published private(set) var dailyInspirationCount: Int = 0
     private let maxFreeInspirations = 2
     
+    // 主题写诗限额（免费用户）
+    @Published private(set) var dailyThemeWritingCount: Int = 0
+    private let maxFreeThemeWriting = 1
+    
+    // 临摹写诗限额（免费用户）
+    @Published private(set) var dailyMimicWritingCount: Int = 0
+    private let maxFreeMimicWriting = 1
+    
     private var updateListenerTask: Task<Void, Error>?
     
     // MARK: - UserDefaults Keys
@@ -37,6 +45,8 @@ class SubscriptionManager: ObservableObject {
     private let lastResetDateKey = "lastAICommentResetDate"
     private let aiCommentCountKey = "dailyAICommentCount"
     private let inspirationCountKey = "dailyInspirationCount"
+    private let themeWritingCountKey = "dailyThemeWritingCount"
+    private let mimicWritingCountKey = "dailyMimicWritingCount"
     private let subscriptionTypeKey = "subscriptionType"
     
     // MARK: - Initialization
@@ -207,20 +217,30 @@ class SubscriptionManager: ObservableObject {
                 // 新的一天，重置计数
                 dailyAICommentCount = 0
                 dailyInspirationCount = 0
+                dailyThemeWritingCount = 0
+                dailyMimicWritingCount = 0
                 UserDefaults.standard.set(0, forKey: aiCommentCountKey)
                 UserDefaults.standard.set(0, forKey: inspirationCountKey)
+                UserDefaults.standard.set(0, forKey: themeWritingCountKey)
+                UserDefaults.standard.set(0, forKey: mimicWritingCountKey)
                 UserDefaults.standard.set(today, forKey: lastResetDateKey)
             } else {
                 // 同一天，读取计数
                 dailyAICommentCount = UserDefaults.standard.integer(forKey: aiCommentCountKey)
                 dailyInspirationCount = UserDefaults.standard.integer(forKey: inspirationCountKey)
+                dailyThemeWritingCount = UserDefaults.standard.integer(forKey: themeWritingCountKey)
+                dailyMimicWritingCount = UserDefaults.standard.integer(forKey: mimicWritingCountKey)
             }
         } else {
             // 首次运行
             dailyAICommentCount = 0
             dailyInspirationCount = 0
+            dailyThemeWritingCount = 0
+            dailyMimicWritingCount = 0
             UserDefaults.standard.set(0, forKey: aiCommentCountKey)
             UserDefaults.standard.set(0, forKey: inspirationCountKey)
+            UserDefaults.standard.set(0, forKey: themeWritingCountKey)
+            UserDefaults.standard.set(0, forKey: mimicWritingCountKey)
             UserDefaults.standard.set(today, forKey: lastResetDateKey)
         }
     }
@@ -253,6 +273,66 @@ class SubscriptionManager: ObservableObject {
             return -1  // -1 表示无限
         }
         return max(0, maxFreeInspirations - dailyInspirationCount)
+    }
+    
+    // MARK: - Theme Writing Limit
+    
+    /// 检查是否可以使用主题写诗
+    func canUseThemeWriting() -> Bool {
+        if isSubscribed {
+            return true  // 会员无限次
+        }
+        
+        checkAndResetDailyLimit()
+        return dailyThemeWritingCount < maxFreeThemeWriting
+    }
+    
+    /// 使用一次主题写诗
+    func useThemeWriting() {
+        if isSubscribed {
+            return  // 会员不计数
+        }
+        
+        dailyThemeWritingCount += 1
+        UserDefaults.standard.set(dailyThemeWritingCount, forKey: themeWritingCountKey)
+    }
+    
+    /// 获取剩余主题写诗次数
+    func remainingThemeWriting() -> Int {
+        if isSubscribed {
+            return -1  // -1 表示无限
+        }
+        return max(0, maxFreeThemeWriting - dailyThemeWritingCount)
+    }
+    
+    // MARK: - Mimic Writing Limit
+    
+    /// 检查是否可以使用临摹写诗
+    func canUseMimicWriting() -> Bool {
+        if isSubscribed {
+            return true  // 会员无限次
+        }
+        
+        checkAndResetDailyLimit()
+        return dailyMimicWritingCount < maxFreeMimicWriting
+    }
+    
+    /// 使用一次临摹写诗
+    func useMimicWriting() {
+        if isSubscribed {
+            return  // 会员不计数
+        }
+        
+        dailyMimicWritingCount += 1
+        UserDefaults.standard.set(dailyMimicWritingCount, forKey: mimicWritingCountKey)
+    }
+    
+    /// 获取剩余临摹写诗次数
+    func remainingMimicWriting() -> Int {
+        if isSubscribed {
+            return -1  // -1 表示无限
+        }
+        return max(0, maxFreeMimicWriting - dailyMimicWritingCount)
     }
     
     // MARK: - Premium Features
