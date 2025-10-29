@@ -34,7 +34,16 @@ struct LearningView: View {
                     topicsList
                 }
             }
-            .navigationBarHidden(true)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("设置") {
+                        showingSettings = true
+                    }
+                    .foregroundColor(Colors.textSecondary)
+                }
+            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
@@ -45,26 +54,17 @@ struct LearningView: View {
     
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                // 标题
-                Text("学诗")
-                    .font(Fonts.titleLarge())
-                    .foregroundColor(Colors.textInk)
-                
-                Spacer()
-                
-                // 设置按钮
-                Button("设置") {
-                    showingSettings = true
-                }
-                .foregroundColor(Colors.textSecondary)
-            }
+            // 标题
+            Text("学诗")
+                .font(Fonts.titleLarge())
+                .foregroundColor(Colors.textInk)
             
             // 副标题
             Text("从零开始，了解现代诗的创作技巧与美学")
                 .font(Fonts.caption())
                 .foregroundColor(Colors.textSecondary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.md)
         .padding(.bottom, Spacing.sm)

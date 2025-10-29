@@ -47,7 +47,16 @@ struct PoetryCollectionView: View {
                 // 悬浮创作按钮（底部中央）
                 floatingCreateButton
             }
-            .navigationBarHidden(true)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("设置") {
+                        showingSettings = true
+                    }
+                    .foregroundColor(Colors.textSecondary)
+                }
+            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
@@ -87,24 +96,14 @@ struct PoetryCollectionView: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        HStack {
-            // 标题
-            Text("诗集")
-                .font(Fonts.titleLarge())
-                .foregroundColor(Colors.textInk)
-            
-            Spacer()
-            
-            // 设置按钮
-            Button("设置") {
-                showingSettings = true
-            }
-            .foregroundColor(Colors.textSecondary)
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.sm)
-        .background(Colors.backgroundCream)
+        Text("诗集")
+            .font(Fonts.titleLarge())
+            .foregroundColor(Colors.textInk)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.top, Spacing.md)
+            .padding(.bottom, Spacing.sm)
+            .background(Colors.backgroundCream)
     }
     
     // MARK: - Tab Switcher
