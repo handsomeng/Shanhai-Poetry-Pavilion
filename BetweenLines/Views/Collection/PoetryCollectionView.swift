@@ -438,13 +438,11 @@ struct PoemCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // 标题（如果有）
-            if !poem.title.isEmpty {
-                Text(poem.title)
-                    .font(.system(size: 17, weight: .medium, design: .serif))
-                    .foregroundColor(Colors.textInk)
-                    .lineLimit(1)
-            }
+            // 标题（带书名号）
+            Text(poem.displayTitle)
+                .font(.system(size: 17, weight: .medium, design: .serif))
+                .foregroundColor(Colors.textInk)
+                .lineLimit(1)
             
             // 内容预览
             Text(poem.content)

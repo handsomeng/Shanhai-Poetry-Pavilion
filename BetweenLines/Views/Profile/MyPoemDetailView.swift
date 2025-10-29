@@ -176,12 +176,10 @@ struct MyPoemDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 // 标题
-                if !poem.title.isEmpty {
-                    Text(poem.title)
-                        .font(.system(size: 24, weight: .medium, design: .serif))
-                        .foregroundColor(Colors.textInk)
-                        .padding(.top, Spacing.lg)
-                }
+                Text(poem.displayTitle)
+                    .font(.system(size: 24, weight: .medium, design: .serif))
+                    .foregroundColor(Colors.textInk)
+                    .padding(.top, Spacing.lg)
                 
             // 正文
             Text(poem.content)

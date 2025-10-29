@@ -113,6 +113,20 @@ struct Poem: Identifiable, Equatable {
         formatter.unitsStyle = .short
         return formatter.localizedString(for: createdAt, relativeTo: Date())
     }
+    
+    /// 带书名号的标题（用于显示）
+    var displayTitle: String {
+        if title.isEmpty {
+            return "《无题》"
+        } else {
+            // 如果标题已经包含《》，不重复添加
+            if title.hasPrefix("《") && title.hasSuffix("》") {
+                return title
+            } else {
+                return "《\(title)》"
+            }
+        }
+    }
 }
 
 // MARK: - Codable

@@ -19,15 +19,13 @@ struct MountainSeaTemplate: PoemTemplateRenderable {
             Spacer()
                 .frame(height: 24)
             
-            // 标题（如果有）
-            if !poem.title.isEmpty {
-                Text(poem.title)
-                    .font(.system(size: 22, weight: .semibold, design: .serif))
-                    .foregroundColor(Color(hex: "2C2C2C"))
-                    .tracking(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 20)
-            }
+            // 标题（带书名号）
+            Text(poem.displayTitle)
+                .font(.system(size: 22, weight: .semibold, design: .serif))
+                .foregroundColor(Color(hex: "2C2C2C"))
+                .tracking(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 20)
             
             // 正文
             Text(poem.content)

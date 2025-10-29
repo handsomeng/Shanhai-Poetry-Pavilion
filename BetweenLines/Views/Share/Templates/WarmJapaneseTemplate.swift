@@ -19,15 +19,13 @@ struct WarmJapaneseTemplate: PoemTemplateRenderable {
             Spacer()
                 .frame(height: 24)
             
-            // 标题（如果有）
-            if !poem.title.isEmpty {
-                Text(poem.title)
-                    .font(.system(size: 20, weight: .medium, design: .rounded))
-                    .foregroundColor(Color(hex: "8B7355"))
-                    .tracking(1.5)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.bottom, 20)
-            }
+            // 标题（带书名号）
+            Text(poem.displayTitle)
+                .font(.system(size: 20, weight: .medium, design: .rounded))
+                .foregroundColor(Color(hex: "8B7355"))
+                .tracking(1.5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 20)
             
             // 正文
             Text(poem.content)

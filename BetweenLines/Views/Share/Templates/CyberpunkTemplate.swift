@@ -37,15 +37,13 @@ struct CyberpunkTemplate: PoemTemplateRenderable {
                 Spacer()
                     .frame(height: 24)
                 
-                // 标题（如果有）
-                if !poem.title.isEmpty {
-                    Text(poem.title)
-                        .font(.system(size: 20, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color(hex: "0FF4C6"))
-                        .tracking(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.bottom, 16)
-                }
+                // 标题（带书名号）
+                Text(poem.displayTitle)
+                    .font(.system(size: 20, weight: .bold, design: .monospaced))
+                    .foregroundColor(Color(hex: "0FF4C6"))
+                    .tracking(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 16)
                 
                 // 正文
                 Text(poem.content)
