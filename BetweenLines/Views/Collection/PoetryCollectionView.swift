@@ -317,7 +317,7 @@ struct PoetryCollectionView: View {
     /// 分析诗人画像（获取最近10首诗，AI分析）
     private func analyzePoetProfile() {
         // 获取最近10首已完成的诗
-        let recentPoems = poemManager.poems
+        let recentPoems = poemManager.allPoems
             .filter { !$0.isDraft }
             .sorted { $0.createdAt > $1.createdAt }
             .prefix(10)
