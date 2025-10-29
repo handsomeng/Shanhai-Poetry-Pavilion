@@ -75,18 +75,20 @@ class PoemTextEditorViewController: UIViewController {
         let button = UIButton(type: .system)
         
         // 使用 SF Symbol
-        let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
-        let image = UIImage(systemName: "lightbulb.fill", withConfiguration: config)
+        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+        let image = UIImage(systemName: "lightbulb", withConfiguration: config)
         button.setImage(image, for: .normal)
-        button.tintColor = .white
+        button.tintColor = UIColor(red: 0.38, green: 0.62, blue: 0.62, alpha: 1.0) // Colors.accentTeal
         
-        // 背景和样式
-        button.backgroundColor = UIColor(red: 0.38, green: 0.62, blue: 0.62, alpha: 1.0) // Colors.accentTeal
-        button.layer.cornerRadius = 28
+        // 白色背景 + 线条
+        button.backgroundColor = .white
+        button.layer.cornerRadius = 24
+        button.layer.borderWidth = 1.0
+        button.layer.borderColor = UIColor(red: 0.9, green: 0.88, blue: 0.85, alpha: 1.0).cgColor
         button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOpacity = 0.15
-        button.layer.shadowOffset = CGSize(width: 0, height: 4)
-        button.layer.shadowRadius = 8
+        button.layer.shadowOpacity = 0.08
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.shadowRadius = 4
         
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(inspirationButtonTapped), for: .touchUpInside)
@@ -97,7 +99,7 @@ class PoemTextEditorViewController: UIViewController {
     /// 加载指示器（在按钮内）
     private lazy var loadingIndicator: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .medium)
-        indicator.color = .white
+        indicator.color = UIColor(red: 0.38, green: 0.62, blue: 0.62, alpha: 1.0) // Colors.accentTeal
         indicator.hidesWhenStopped = true
         indicator.translatesAutoresizingMaskIntoConstraints = false
         return indicator
@@ -165,8 +167,8 @@ class PoemTextEditorViewController: UIViewController {
             // AI 灵感按钮（悬浮在右下角）
             inspirationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             inspirationButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            inspirationButton.widthAnchor.constraint(equalToConstant: 56),
-            inspirationButton.heightAnchor.constraint(equalToConstant: 56),
+            inspirationButton.widthAnchor.constraint(equalToConstant: 48),
+            inspirationButton.heightAnchor.constraint(equalToConstant: 48),
             
             // 加载指示器（居中在按钮内）
             loadingIndicator.centerXAnchor.constraint(equalTo: inspirationButton.centerXAnchor),
@@ -202,9 +204,29 @@ class PoemTextEditorViewController: UIViewController {
     
     @objc private func inspirationButtonTapped() {
         // 触觉反馈
-        let generator = UIImpactFeedbackGenerator(style: .medium)
+        let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
         
+        // 先弹窗确认
+        showConfirmationAlert()
+    }
+    
+    private func showConfirmationAlert() {
+        let alert = UIAlertController(
+            title: "💡 寻求灵感",
+            message: "让 AI 帮你打开思路？",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
+        alert.addAction(UIAlertAction(title: "好的", style: .default) { [weak self] _ in
+            self?.requestInspiration()
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func requestInspiration() {
         // 开始加载
         setInspirationButtonLoading(true)
         
@@ -238,8 +260,8 @@ class PoemTextEditorViewController: UIViewController {
             loadingIndicator.startAnimating()
             inspirationButton.isEnabled = false
         } else {
-            let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
-            let image = UIImage(systemName: "lightbulb.fill", withConfiguration: config)
+            let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+            let image = UIImage(systemName: "lightbulb", withConfiguration: config)
             inspirationButton.setImage(image, for: .normal)
             loadingIndicator.stopAnimating()
             inspirationButton.isEnabled = true
