@@ -99,6 +99,12 @@ struct PoetryCollectionView: View {
                 showingSettings = true
             }
             .foregroundColor(Colors.textSecondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.gray.opacity(0.1))
+            )
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.md)
