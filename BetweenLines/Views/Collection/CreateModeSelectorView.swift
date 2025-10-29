@@ -31,7 +31,7 @@ struct CreateModeSelectorView: View {
                 ModeCard(
                     icon: "🎨",
                     title: "主题写诗",
-                    description: "让 AI 为你生成创作主题，激发灵感",
+                    description: "为你推荐创作的主题",
                     action: {
                         onSelectMode(.theme)
                         dismiss()
@@ -42,7 +42,7 @@ struct CreateModeSelectorView: View {
                 ModeCard(
                     icon: "🖼️",
                     title: "临摹写诗",
-                    description: "学习古典诗词的韵律与意境",
+                    description: "从模仿入手开始创作",
                     action: {
                         onSelectMode(.mimic)
                         dismiss()
@@ -53,7 +53,7 @@ struct CreateModeSelectorView: View {
                 ModeCard(
                     icon: "✍️",
                     title: "直接写诗",
-                    description: "随心所欲，记录此刻的心情与感悟",
+                    description: "随心所欲，自由创作",
                     action: {
                         onSelectMode(.direct)
                         dismiss()

@@ -164,18 +164,42 @@ struct PoetryCollectionView: View {
         VStack(spacing: Spacing.lg) {
             Spacer()
             
-            Image(systemName: "doc.text")
-                .font(.system(size: 60))
-                .foregroundColor(Colors.textTertiary)
+            // 插画：组合图标
+            ZStack {
+                Circle()
+                    .fill(Colors.textTertiary.opacity(0.08))
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: emptyStateIcon)
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundColor(Colors.textSecondary)
+            }
+            .padding(.bottom, Spacing.sm)
             
-            Text(emptyStateText)
+            // 主标题
+            Text(emptyStateTitle)
+                .font(.system(size: 20, weight: .medium, design: .serif))
+                .foregroundColor(Colors.textInk)
+            
+            // 副标题
+            Text(emptyStateSubtitle)
                 .font(Fonts.bodyRegular())
                 .foregroundColor(Colors.textSecondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.xl)
             
-            Text("点击右上角 + 开始创作")
-                .font(Fonts.caption())
-                .foregroundColor(Colors.textTertiary)
+            // 操作提示（带下箭头）
+            VStack(spacing: 8) {
+                Image(systemName: "arrow.down")
+                    .font(.system(size: 16, weight: .light))
+                    .foregroundColor(Colors.accentTeal)
+                    .opacity(0.6)
+                
+                Text("点击下方「写诗」按钮开始创作")
+                    .font(Fonts.caption())
+                    .foregroundColor(Colors.textTertiary)
+            }
+            .padding(.top, Spacing.md)
             
             Spacer()
         }
@@ -183,12 +207,30 @@ struct PoetryCollectionView: View {
         .padding(Spacing.xl)
     }
     
-    private var emptyStateText: String {
+    private var emptyStateIcon: String {
         switch selectedTab {
         case .collection:
-            return "还没有诗歌"
+            return "doc.text.fill"
+        case .drafts:
+            return "square.and.pencil"
+        }
+    }
+    
+    private var emptyStateTitle: String {
+        switch selectedTab {
+        case .collection:
+            return "还没有诗歌哦"
         case .drafts:
             return "还没有草稿"
+        }
+    }
+    
+    private var emptyStateSubtitle: String {
+        switch selectedTab {
+        case .collection:
+            return "开始创作你的第一首诗\n记录此刻的心情与感悟"
+        case .drafts:
+            return "暂无未完成的草稿\n开始新的创作吧"
         }
     }
     
