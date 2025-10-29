@@ -164,6 +164,7 @@ struct SubscriptionView: View {
             
             comparisonRow(feature: "会员标识", free: "—", premium: "👑", isPremiumHighlighted: true)
         }
+        .frame(maxWidth: .infinity)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
@@ -220,6 +221,7 @@ struct SubscriptionView: View {
                 .padding(.bottom, Spacing.md)
                 .padding(.top, Spacing.xs)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
