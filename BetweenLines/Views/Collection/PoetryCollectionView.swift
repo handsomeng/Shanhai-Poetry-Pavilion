@@ -26,6 +26,11 @@ struct PoetryCollectionView: View {
     @State private var showingPoetProfile = false
     @State private var isLoadingPoetProfile = false
     @State private var poetProfileText = ""
+    @State private var showingWeeklyLimitAlert = false
+    @State private var nextAvailableDate = ""
+    
+    // UserDefaults Key
+    private let lastPoetProfileAnalysisKey = "lastPoetProfileAnalysisDate"
     
     enum CollectionTab: String, CaseIterable, Identifiable {
         case collection = "诗集"
@@ -93,6 +98,11 @@ struct PoetryCollectionView: View {
                     profileText: poetProfileText,
                     isLoading: isLoadingPoetProfile
                 )
+            }
+            .alert("本周已使用", isPresented: $showingWeeklyLimitAlert) {
+                Button("知道了", role: .cancel) {}
+            } message: {
+                Text("诗人画像分析每周只能使用 1 次哦\n\n下次可用时间：\(nextAvailableDate)")
             }
         }
     }
@@ -316,6 +326,12 @@ struct PoetryCollectionView: View {
     
     /// 分析诗人画像（获取最近10首诗，AI分析）
     private func analyzePoetProfile() {
+        // 检查每周限制
+        if !canUsePoetProfileAnalysis() {
+            showingWeeklyLimitAlert = true
+            return
+        }
+        
         // 获取最近10首已完成的诗（在诗集中的诗）
         let recentPoems = poemManager.myCollection
             .prefix(10)
@@ -340,6 +356,9 @@ struct PoetryCollectionView: View {
                 await MainActor.run {
                     poetProfileText = analysis
                     isLoadingPoetProfile = false
+                    
+                    // 记录本次使用时间
+                    recordPoetProfileAnalysisUsage()
                 }
             } catch {
                 await MainActor.run {
@@ -348,6 +367,41 @@ struct PoetryCollectionView: View {
                 }
             }
         }
+    }
+    
+    /// 检查是否可以使用诗人画像分析（每周一次）
+    private func canUsePoetProfileAnalysis() -> Bool {
+        guard let lastUsedDate = UserDefaults.standard.object(forKey: lastPoetProfileAnalysisKey) as? Date else {
+            // 从未使用过
+            return true
+        }
+        
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // 获取本周一的0点
+        let thisMonday = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
+        
+        // 检查上次使用是否在本周一之前
+        if lastUsedDate < thisMonday {
+            // 上周或更早使用的，本周可以再用
+            return true
+        } else {
+            // 本周已经用过了
+            // 计算下周一的日期
+            if let nextMonday = calendar.date(byAdding: .weekOfYear, value: 1, to: thisMonday) {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MM月dd日"
+                formatter.locale = Locale(identifier: "zh_CN")
+                nextAvailableDate = formatter.string(from: nextMonday)
+            }
+            return false
+        }
+    }
+    
+    /// 记录本次使用
+    private func recordPoetProfileAnalysisUsage() {
+        UserDefaults.standard.set(Date(), forKey: lastPoetProfileAnalysisKey)
     }
 }
 

@@ -97,15 +97,41 @@ struct PoetProfileView: View {
             Divider()
                 .padding(.vertical, Spacing.sm)
             
-            HStack {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 14))
-                    .foregroundColor(Colors.textSecondary)
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 14))
+                        .foregroundColor(Colors.accentTeal)
+                    
+                    Text("隐藏彩蛋功能")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Colors.textInk)
+                }
                 
-                Text("这是一个隐藏彩蛋功能，连续点击 5 次「诗集」标题即可触发")
+                Text("连续点击 5 次「诗集」标题即可触发这个特殊功能")
                     .font(.system(size: 13))
                     .foregroundColor(Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
+                
+                Divider()
+                    .padding(.vertical, Spacing.xs)
+                
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 14))
+                        .foregroundColor(Colors.accentTeal)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("使用限制")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Colors.textInk)
+                        
+                        Text("每周可使用 1 次，每周一 0 点重置\n无论是否会员，使用次数相同")
+                            .font(.system(size: 13))
+                            .foregroundColor(Colors.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
         }
         .padding(Spacing.lg)
