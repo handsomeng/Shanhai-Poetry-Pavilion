@@ -98,6 +98,7 @@ struct PoetryCollectionView: View {
             Button("设置") {
                 showingSettings = true
             }
+            .buttonStyle(.bordered)
             .foregroundColor(Colors.textSecondary)
         }
         .padding(.horizontal, Spacing.lg)
