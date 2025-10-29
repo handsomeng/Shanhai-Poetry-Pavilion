@@ -65,6 +65,8 @@ struct PoemBottomInfo: View {
     let textColor: Color
     let dividerColor: Color
     
+    @StateObject private var poemManager = PoemManager.shared
+    
     var body: some View {
         VStack(spacing: 12) {
             // 分割线
@@ -72,11 +74,11 @@ struct PoemBottomInfo: View {
                 .fill(dividerColor)
                 .frame(height: 1)
             
-            // 信息行
+            // 信息行（使用当前笔名，而非诗歌保存时的笔名）
             HStack(spacing: 0) {
                 Text("山海诗馆")
                 Text(" · ")
-                Text(poem.authorName)
+                Text(poemManager.currentUserName)
             }
             .font(.system(size: 12, weight: .regular))
             .foregroundColor(textColor)
