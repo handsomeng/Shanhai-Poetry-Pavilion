@@ -187,12 +187,6 @@ struct MyPoemDetailView: View {
                 .foregroundColor(Colors.textInk)
                 .lineSpacing(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            
-            Spacer()
-                .frame(height: Spacing.lg) // 缩短留白
-            
-            // 底部信息
-            poemMetadata
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.bottom, Spacing.xl)
