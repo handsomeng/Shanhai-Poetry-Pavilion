@@ -24,7 +24,7 @@ class SubscriptionManager: ObservableObject {
     
     // AI 点评限额（免费用户）
     @Published private(set) var dailyAICommentCount: Int = 0
-    private let maxFreeAIComments = 3
+    private let maxFreeAIComments = 2
     
     // AI 续写灵感限额（免费用户）
     @Published private(set) var dailyInspirationCount: Int = 0

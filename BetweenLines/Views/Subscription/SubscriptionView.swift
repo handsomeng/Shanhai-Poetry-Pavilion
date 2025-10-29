@@ -147,7 +147,7 @@ struct SubscriptionView: View {
             Divider()
             
             // 对比行
-            comparisonRow(feature: "AI 点评", free: "3次/天", premium: "无限次")
+            comparisonRow(feature: "AI 点评", free: "2次/天", premium: "无限次")
             Divider().padding(.leading, Spacing.md)
             
             comparisonRow(feature: "AI 续写思路", free: "2次/天", premium: "无限次")
