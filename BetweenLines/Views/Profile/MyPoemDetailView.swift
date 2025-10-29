@@ -201,28 +201,12 @@ struct MyPoemDetailView: View {
     // MARK: - Editing View (编辑模式)
     
     private var editingView: some View {
-        VStack(spacing: 0) {
-            // 标题输入
-            TextField("标题（选填）", text: $editedTitle)
-                .font(.system(size: 24, weight: .medium, design: .serif))
-                .foregroundColor(Colors.textInk)
-                .padding(.horizontal, Spacing.lg)
-                .padding(.top, Spacing.lg)
-                .padding(.bottom, Spacing.md)
-                .focused($focusedField, equals: .title)
-            
-            Divider()
-                .padding(.horizontal, Spacing.lg)
-            
-            // 内容输入 - 使用 UITextViewWrapper（自己处理键盘）
-            UITextViewWrapper(
-                text: $editedContent,
-                placeholder: "在这里编辑你的诗...",
-                font: UIFont.systemFont(ofSize: 18),
-                textColor: UIColor(Colors.textInk),
-                placeholderColor: UIColor(Colors.textSecondary.opacity(0.5))
-            )
-        }
+        // 使用全新的纯 UIKit 编辑器
+        PoemTextEditor(
+            title: $editedTitle,
+            content: $editedContent,
+            placeholder: "在这里编辑你的诗..."
+        )
     }
     
     // MARK: - Poem Metadata (底部信息)

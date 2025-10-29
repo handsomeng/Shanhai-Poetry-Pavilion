@@ -2,12 +2,13 @@
 //  PoemEditorView.swift
 //  山海诗馆
 //
-//  通用诗歌编辑器组件
+//  通用诗歌编辑器组件 - 全新纯 UIKit 实现
 //
 
 import SwiftUI
 
 /// 诗歌编辑器（通用组件）
+/// 使用纯 UIKit 实现，参考 iOS 备忘录
 struct PoemEditorView: View {
     
     @Binding var title: String
@@ -30,61 +31,18 @@ struct PoemEditorView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // 标题输入
-            titleField
+            // 使用全新的纯 UIKit 编辑器
+            PoemTextEditor(
+                title: $title,
+                content: $content,
+                placeholder: placeholder
+            )
             
-            Divider()
-                .padding(.horizontal, Spacing.lg)
-            
-            // 内容编辑区
-            contentEditor
-            
-            // 底部工具栏
+            // 底部工具栏（可选）
             if showWordCount {
                 bottomToolbar
             }
         }
-    }
-    
-    // MARK: - Title Field
-    
-    private var titleField: some View {
-        HStack {
-            TextField("诗歌标题", text: Binding(
-                get: { title },
-                set: { newValue in
-                    // 限制标题最多 30 字
-                    if newValue.count <= 30 {
-                        title = newValue
-                    }
-                }
-            ))
-            .font(Fonts.titleMedium())
-            .foregroundColor(Colors.textInk)
-            
-            if !title.isEmpty {
-                Text("\(title.count)/30")
-                    .font(.system(size: 11, weight: .ultraLight))
-                    .foregroundColor(title.count >= 30 ? Colors.error : Colors.textSecondary)
-            }
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
-        .background(Colors.white)
-    }
-    
-    // MARK: - Content Editor
-    
-    private var contentEditor: some View {
-        // 使用原生 UITextView 包装器（自己处理键盘）
-        UITextViewWrapper(
-            text: $content,
-            placeholder: placeholder,
-            font: UIFont.systemFont(ofSize: 17, weight: .regular),
-            textColor: UIColor(Colors.textInk),
-            placeholderColor: UIColor(Colors.textSecondary.opacity(0.5))
-        )
-        .background(Colors.white)
     }
     
     // MARK: - Bottom Toolbar
