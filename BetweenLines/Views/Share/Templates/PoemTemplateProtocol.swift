@@ -80,6 +80,7 @@ struct PoemBottomInfo: View {
             }
             .font(.system(size: 12, weight: .regular))
             .foregroundColor(textColor)
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             // 第几首诗 + 日期
             HStack(spacing: 0) {
@@ -89,6 +90,7 @@ struct PoemBottomInfo: View {
             }
             .font(.system(size: 11, weight: .light))
             .foregroundColor(textColor.opacity(0.7))
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
