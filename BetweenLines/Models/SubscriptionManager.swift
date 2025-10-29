@@ -257,14 +257,9 @@ class SubscriptionManager: ObservableObject {
     
     // MARK: - Premium Features
     
-    /// 检查是否可以使用高级图片风格
+    /// 检查是否可以使用高级图片模板
     func canUseImageStyle(_ style: ImageStyle) -> Bool {
         !style.isPremium || isSubscribed
-    }
-    
-    /// 检查是否可以使用字体样式
-    func canUseFontStyle(_ font: PoemFont) -> Bool {
-        !font.isPremium || isSubscribed
     }
     
     /// 检查是否可以使用 AI 生成模板
@@ -335,7 +330,7 @@ enum SubscriptionError: LocalizedError {
     }
 }
 
-// MARK: - Image Style (Placeholder)
+// MARK: - Image Style
 
 enum ImageStyle: String, CaseIterable {
     case basic = "基础"
@@ -347,19 +342,6 @@ enum ImageStyle: String, CaseIterable {
     
     var isPremium: Bool {
         self != .basic
-    }
-}
-
-// MARK: - Poem Font (Placeholder)
-
-enum PoemFont: String, CaseIterable {
-    case songti = "宋体"
-    case kaiti = "楷体"
-    case xingkai = "行楷"
-    case lishu = "隶书"
-    
-    var isPremium: Bool {
-        self != .songti
     }
 }
 
