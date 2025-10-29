@@ -90,6 +90,7 @@ struct UITextViewWrapper: UIViewRepresentable {
         
         private var keyboardWillShowCancellable: AnyCancellable?
         private var keyboardWillHideCancellable: AnyCancellable?
+        private var currentKeyboardHeight: CGFloat = 0  // 🔑 记录键盘高度
         
         init(_ parent: UITextViewWrapper) {
             self.parent = parent
@@ -100,31 +101,43 @@ struct UITextViewWrapper: UIViewRepresentable {
             // 键盘即将显示
             keyboardWillShowCancellable = NotificationCenter.default
                 .publisher(for: UIResponder.keyboardWillShowNotification)
-                .compactMap { notification -> CGFloat? in
-                    guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+                .compactMap { notification -> (CGFloat, TimeInterval)? in
+                    guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+                          let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
                         return nil
                     }
-                    return keyboardFrame.height
+                    return (keyboardFrame.height, duration)
                 }
-                .sink { [weak textView] keyboardHeight in
-                    guard let textView = textView else { return }
+                .sink { [weak self, weak textView] keyboardInfo in
+                    guard let self = self, let textView = textView else { return }
                     
-                    // 🎯 核心：调整 contentInset，为键盘留出空间
-                    var contentInset = textView.contentInset
-                    contentInset.bottom = keyboardHeight
-                    textView.contentInset = contentInset
+                    let (keyboardHeight, duration) = keyboardInfo
+                    self.currentKeyboardHeight = keyboardHeight
                     
-                    // 同时调整滚动条位置
-                    var scrollIndicatorInsets = textView.verticalScrollIndicatorInsets
-                    scrollIndicatorInsets.bottom = keyboardHeight
-                    textView.verticalScrollIndicatorInsets = scrollIndicatorInsets
+                    // 🎯 调整 contentInset，为键盘留出空间
+                    UIView.animate(withDuration: duration) {
+                        var contentInset = textView.contentInset
+                        contentInset.bottom = keyboardHeight
+                        textView.contentInset = contentInset
+                        
+                        var scrollIndicatorInsets = textView.verticalScrollIndicatorInsets
+                        scrollIndicatorInsets.bottom = keyboardHeight
+                        textView.verticalScrollIndicatorInsets = scrollIndicatorInsets
+                    }
+                    
+                    // 🔑 关键：延迟滚动到光标，确保键盘动画完成后光标可见
+                    DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak textView] in
+                        self.scrollToCursor(in: textView)
+                    }
                 }
             
             // 键盘即将隐藏
             keyboardWillHideCancellable = NotificationCenter.default
                 .publisher(for: UIResponder.keyboardWillHideNotification)
-                .sink { [weak textView] _ in
-                    guard let textView = textView else { return }
+                .sink { [weak self, weak textView] _ in
+                    guard let self = self, let textView = textView else { return }
+                    
+                    self.currentKeyboardHeight = 0
                     
                     // 恢复原始 inset
                     var contentInset = textView.contentInset
@@ -135,6 +148,23 @@ struct UITextViewWrapper: UIViewRepresentable {
                     scrollIndicatorInsets.bottom = 0
                     textView.verticalScrollIndicatorInsets = scrollIndicatorInsets
                 }
+        }
+        
+        // 🎯 滚动到光标位置，确保光标在键盘上方可见
+        private func scrollToCursor(in textView: UITextView?) {
+            guard let textView = textView,
+                  let selectedRange = textView.selectedTextRange else {
+                return
+            }
+            
+            // 获取光标的 CGRect（已经是 textView 坐标系）
+            let caretRect = textView.caretRect(for: selectedRange.start)
+            
+            // 🔑 扩大矩形，确保光标上下有一些缓冲空间
+            let expandedRect = caretRect.insetBy(dx: 0, dy: -20)
+            
+            // 确保光标可见：滚动到光标位置
+            textView.scrollRectToVisible(expandedRect, animated: true)
         }
         
         // MARK: - UITextViewDelegate
@@ -152,6 +182,15 @@ struct UITextViewWrapper: UIViewRepresentable {
         func textViewDidChange(_ textView: UITextView) {
             // 实时更新 SwiftUI 绑定
             parent.text = textView.text
+            
+            // 🔑 关键：每次文字改变时，确保光标可见
+            // 只在键盘显示时才滚动
+            if currentKeyboardHeight > 0 {
+                // 短暂延迟，让文字先渲染
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self, weak textView] in
+                    self?.scrollToCursor(in: textView)
+                }
+            }
         }
         
         func textViewDidEndEditing(_ textView: UITextView) {
