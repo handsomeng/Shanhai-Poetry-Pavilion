@@ -94,12 +94,15 @@ struct PoetryCollectionView: View {
             
             Spacer()
             
-            // 设置按钮（与设置页面"完成"按钮样式完全一致）
-            Button("设置") {
+            // 设置按钮（三个点图标）
+            Button(action: {
                 showingSettings = true
+            }) {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Colors.textInk)
+                    .frame(width: 44, height: 32)
             }
-            .buttonStyle(.bordered)
-            .foregroundColor(Colors.textSecondary)
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.md)
