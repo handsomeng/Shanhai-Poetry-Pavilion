@@ -111,26 +111,119 @@ struct SubscriptionView: View {
     // MARK: - Benefits
     
     private var benefitsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            ForEach(MemberBenefit.allCases, id: \.self) { benefit in
-                HStack(spacing: Spacing.md) {
-                    Image(systemName: benefit.icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(Colors.accentTeal)
-                        .frame(width: 24)
-                    
-                    Text(benefit.rawValue)
-                        .font(Fonts.bodyRegular())
-                        .foregroundColor(Colors.textInk)
-                    
-                    Spacer()
-                }
-            }
+        VStack(spacing: Spacing.lg) {
+            // 对比表格
+            comparisonTable
+            
+            // 会员独享权益
+            exclusiveBenefits
         }
-        .padding(Spacing.lg)
+    }
+    
+    // 对比表格
+    private var comparisonTable: some View {
+        VStack(spacing: 0) {
+            // 表头
+            HStack(spacing: 0) {
+                Text("功能")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Text("免费用户")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Colors.textSecondary)
+                    .frame(width: 80)
+                
+                Text("付费会员")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Colors.accentTeal)
+                    .frame(width: 80)
+            }
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .background(Colors.backgroundCream)
+            
+            Divider()
+            
+            // 对比行
+            comparisonRow(feature: "AI 点评", free: "3次/天", premium: "无限次")
+            Divider().padding(.leading, Spacing.md)
+            
+            comparisonRow(feature: "AI 续写思路", free: "2次/天", premium: "无限次")
+            Divider().padding(.leading, Spacing.md)
+            
+            comparisonRow(feature: "主题写诗", free: "1次/天", premium: "无限次")
+            Divider().padding(.leading, Spacing.md)
+            
+            comparisonRow(feature: "临摹写诗", free: "1次/天", premium: "无限次")
+            Divider().padding(.leading, Spacing.md)
+            
+            comparisonRow(feature: "图片模板", free: "基础", premium: "多种", isPremiumHighlighted: true)
+            Divider().padding(.leading, Spacing.md)
+            
+            comparisonRow(feature: "会员标识", free: "—", premium: "👑", isPremiumHighlighted: true)
+        }
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    // 对比行
+    private func comparisonRow(feature: String, free: String, premium: String, isPremiumHighlighted: Bool = false) -> some View {
+        HStack(spacing: 0) {
+            Text(feature)
+                .font(.system(size: 15))
+                .foregroundColor(Colors.textInk)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Text(free)
+                .font(.system(size: 14))
+                .foregroundColor(Colors.textSecondary)
+                .frame(width: 80)
+            
+            Text(premium)
+                .font(.system(size: 14, weight: isPremiumHighlighted ? .semibold : .regular))
+                .foregroundColor(isPremiumHighlighted ? Colors.accentTeal : Colors.textInk)
+                .frame(width: 80)
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, 12)
+    }
+    
+    // 会员独享权益（简化展示）
+    private var exclusiveBenefits: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("会员独享")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Colors.textSecondary)
+            
+            HStack(spacing: Spacing.md) {
+                benefitBadge(icon: "eye.slash", text: "无广告")
+                benefitBadge(icon: "crown", text: "专属标识")
+            }
+        }
+        .padding(Spacing.md)
+        .background(Colors.white)
+        .cornerRadius(CornerRadius.card)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+    
+    // 权益徽章
+    private func benefitBadge(icon: String, text: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(Colors.accentTeal)
+            
+            Text(text)
+                .font(.system(size: 13))
+                .foregroundColor(Colors.textInk)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Colors.accentTeal.opacity(0.1))
+        .cornerRadius(12)
     }
     
     // MARK: - Subscription Options
