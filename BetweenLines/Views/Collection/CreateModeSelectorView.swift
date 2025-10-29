@@ -14,6 +14,8 @@ struct CreateModeSelectorView: View {
     @Environment(\.dismiss) private var dismiss
     let onSelectMode: (WritingMode) -> Void
     
+    @State private var showingLearning = false
+    
     enum WritingMode {
         case theme, mimic, direct
     }
@@ -53,6 +55,20 @@ struct CreateModeSelectorView: View {
                         dismiss()
                     }
                 )
+                
+                Spacer()
+                    .frame(height: Spacing.md)
+                
+                // "了解现代诗" 文字链接
+                Button(action: {
+                    showingLearning = true
+                }) {
+                    Text("了解现代诗")
+                        .font(.footnote)
+                        .foregroundColor(Colors.textSecondary)
+                        .underline()
+                }
+                .padding(.top, Spacing.sm)
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.vertical, Spacing.xl)
@@ -67,6 +83,11 @@ struct CreateModeSelectorView: View {
                     }
                     .foregroundColor(Colors.textSecondary)
                 }
+            }
+        }
+        .fullScreenCover(isPresented: $showingLearning) {
+            NavigationStack {
+                LearningView()
             }
         }
     }

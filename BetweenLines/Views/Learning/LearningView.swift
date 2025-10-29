@@ -2,21 +2,20 @@
 //  LearningView.swift
 //  BetweenLines - 字里行间
 //
-//  学诗视图:浏览大主题 → 小主题 → 学习内容
+//  了解现代诗视图:浏览大主题 → 小主题 → 学习内容
 //
 
 import SwiftUI
 
-/// 学诗主视图（显示所有大主题）
+/// 了解现代诗主视图（显示所有大主题）
 struct LearningView: View {
     
     // MARK: - 状态
     
+    @Environment(\.dismiss) private var dismiss
+    
     /// 所有大主题
     @State private var topics: [LearningTopic] = LearningContentManager.shared.getAllTopics()
-    
-    /// 显示设置页面
-    @State private var showingSettings = false
     
     // MARK: - Body
     
@@ -27,50 +26,21 @@ struct LearningView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // 顶部标题栏（固定）
-                    headerSection
-                    
                     // 主题列表
                     topicsList
                 }
             }
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showingSettings) {
-                SettingsView()
-            }
-        }
-    }
-    
-    // MARK: - Header Section
-    
-    private var headerSection: some View {
-        VStack(spacing: Spacing.sm) {
-            // 顶部：标题 + 设置按钮（同一行）
-            HStack(alignment: .center) {
-                Text("学诗")
-                    .font(Fonts.titleLarge())
-                    .foregroundColor(Colors.textInk)
-                
-                Spacer()
-                
-                // 设置按钮（与设置页面"完成"按钮样式完全一致）
-                Button("设置") {
-                    showingSettings = true
+            .navigationTitle("了解现代诗")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Colors.textInk)
+                    }
                 }
-                .font(.body)
-                .foregroundColor(Colors.textSecondary)
             }
-            
-            // 副标题
-            Text("从零开始，了解现代诗的创作技巧与美学")
-                .font(Fonts.caption())
-                .foregroundColor(Colors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.md)
-        .padding(.bottom, Spacing.sm)
-        .background(Colors.backgroundCream)
     }
     
     // MARK: - Topics List
