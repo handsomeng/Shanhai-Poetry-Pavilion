@@ -23,6 +23,10 @@ struct CreateModeSelectorView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: Spacing.lg) {
+                // 顶部留白，让卡片整体往下
+                Spacer()
+                    .frame(height: 40)
+                
                 // 主题写诗
                 ModeCard(
                     icon: "🎨",
