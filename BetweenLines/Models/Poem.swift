@@ -117,7 +117,7 @@ struct Poem: Identifiable, Equatable {
     /// 带书名号的标题（用于显示）
     var displayTitle: String {
         if title.isEmpty {
-            return "《无题》"
+            return "《 》"  // 空标题显示为空的书名号
         } else {
             // 如果标题已经包含《》，不重复添加
             if title.hasPrefix("《") && title.hasSuffix("》") {
