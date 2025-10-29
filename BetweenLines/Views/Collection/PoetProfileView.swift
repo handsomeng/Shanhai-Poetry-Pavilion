@@ -98,6 +98,7 @@ struct PoetProfileView: View {
                 .padding(.vertical, Spacing.sm)
             
             VStack(alignment: .leading, spacing: Spacing.sm) {
+                // 隐藏彩蛋功能
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 14))
@@ -116,22 +117,21 @@ struct PoetProfileView: View {
                 Divider()
                     .padding(.vertical, Spacing.xs)
                 
+                // 使用限制
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "clock")
                         .font(.system(size: 14))
                         .foregroundColor(Colors.accentTeal)
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("使用限制")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Colors.textInk)
-                        
-                        Text("每周可使用 1 次，每周一 0 点重置\n无论是否会员，使用次数相同")
-                            .font(.system(size: 13))
-                            .foregroundColor(Colors.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                    Text("使用限制")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Colors.textInk)
                 }
+                
+                Text("每周可使用 1 次，每周一 0 点重置\n无论是否会员，使用次数相同")
+                    .font(.system(size: 13))
+                    .foregroundColor(Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(Spacing.lg)
