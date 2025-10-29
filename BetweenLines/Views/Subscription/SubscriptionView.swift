@@ -203,19 +203,23 @@ struct SubscriptionView: View {
                     .font(.system(size: 14))
                     .foregroundColor(Colors.accentTeal)
             }
+            .padding(.horizontal, Spacing.md)
+            .padding(.top, Spacing.md)
             
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 upcomingFeatureRow(number: "1", text: "支持发表和相互点赞的赏诗广场")
                 upcomingFeatureRow(number: "2", text: "更多字体样式和分享图片样式")
                 upcomingFeatureRow(number: "3", text: "实体诗集册制作")
             }
+            .padding(.horizontal, Spacing.md)
             
             Text("更多你需要的功能，可以联系开发者哦")
                 .font(.system(size: 13))
                 .foregroundColor(Colors.textSecondary)
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.md)
                 .padding(.top, Spacing.xs)
         }
-        .padding(Spacing.md)
         .background(Colors.white)
         .cornerRadius(CornerRadius.card)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
