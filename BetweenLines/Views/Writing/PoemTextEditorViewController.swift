@@ -105,6 +105,10 @@ class PoemTextEditorViewController: UIViewController {
         return indicator
     }()
     
+    // MARK: - SubscriptionManager
+    
+    private var subscriptionManager = SubscriptionManager.shared
+    
     // MARK: - Initialization
     
     init(title: String, content: String, placeholder: String) {
@@ -207,8 +211,42 @@ class PoemTextEditorViewController: UIViewController {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
         
+        // 检查是否可以使用
+        if !subscriptionManager.canUseInspiration() {
+            showLimitReachedAlert()
+            return
+        }
+        
         // 先弹窗确认
         showConfirmationAlert()
+    }
+    
+    private func showLimitReachedAlert() {
+        let remaining = subscriptionManager.remainingInspirations()
+        let alert = UIAlertController(
+            title: "今日次数已用完",
+            message: "免费用户每天可使用 2 次 AI 续写灵感\n\n升级会员即可无限使用 ✨",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
+        alert.addAction(UIAlertAction(title: "升级会员", style: .default) { [weak self] _ in
+            // TODO: 打开订阅页面
+            self?.showUpgradeHint()
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showUpgradeHint() {
+        // 简单提示（可以后续改为跳转到订阅页面）
+        let alert = UIAlertController(
+            title: "💡 提示",
+            message: "请前往【设置】页面升级会员",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "好的", style: .default))
+        present(alert, animated: true)
     }
     
     private func showConfirmationAlert() {
@@ -237,6 +275,9 @@ class PoemTextEditorViewController: UIViewController {
                     currentContent: contentTextView.text ?? "",
                     title: titleTextField.text ?? ""
                 )
+                
+                // 使用一次额度
+                subscriptionManager.useInspiration()
                 
                 // 停止加载
                 setInspirationButtonLoading(false)

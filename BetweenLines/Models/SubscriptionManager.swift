@@ -26,12 +26,17 @@ class SubscriptionManager: ObservableObject {
     @Published private(set) var dailyAICommentCount: Int = 0
     private let maxFreeAIComments = 3
     
+    // AI 续写灵感限额（免费用户）
+    @Published private(set) var dailyInspirationCount: Int = 0
+    private let maxFreeInspirations = 2
+    
     private var updateListenerTask: Task<Void, Error>?
     
     // MARK: - UserDefaults Keys
     
     private let lastResetDateKey = "lastAICommentResetDate"
     private let aiCommentCountKey = "dailyAICommentCount"
+    private let inspirationCountKey = "dailyInspirationCount"
     private let subscriptionTypeKey = "subscriptionType"
     
     // MARK: - Initialization
@@ -201,18 +206,53 @@ class SubscriptionManager: ObservableObject {
             if lastReset < today {
                 // 新的一天，重置计数
                 dailyAICommentCount = 0
+                dailyInspirationCount = 0
                 UserDefaults.standard.set(0, forKey: aiCommentCountKey)
+                UserDefaults.standard.set(0, forKey: inspirationCountKey)
                 UserDefaults.standard.set(today, forKey: lastResetDateKey)
             } else {
                 // 同一天，读取计数
                 dailyAICommentCount = UserDefaults.standard.integer(forKey: aiCommentCountKey)
+                dailyInspirationCount = UserDefaults.standard.integer(forKey: inspirationCountKey)
             }
         } else {
             // 首次运行
             dailyAICommentCount = 0
+            dailyInspirationCount = 0
             UserDefaults.standard.set(0, forKey: aiCommentCountKey)
+            UserDefaults.standard.set(0, forKey: inspirationCountKey)
             UserDefaults.standard.set(today, forKey: lastResetDateKey)
         }
+    }
+    
+    // MARK: - AI Inspiration Limit
+    
+    /// 检查是否可以使用 AI 续写灵感
+    func canUseInspiration() -> Bool {
+        if isSubscribed {
+            return true  // 会员无限次
+        }
+        
+        checkAndResetDailyLimit()
+        return dailyInspirationCount < maxFreeInspirations
+    }
+    
+    /// 使用一次 AI 续写灵感
+    func useInspiration() {
+        if isSubscribed {
+            return  // 会员不计数
+        }
+        
+        dailyInspirationCount += 1
+        UserDefaults.standard.set(dailyInspirationCount, forKey: inspirationCountKey)
+    }
+    
+    /// 获取剩余 AI 续写灵感次数
+    func remainingInspirations() -> Int {
+        if isSubscribed {
+            return -1  // -1 表示无限
+        }
+        return max(0, maxFreeInspirations - dailyInspirationCount)
     }
     
     // MARK: - Premium Features
