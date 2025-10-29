@@ -34,10 +34,10 @@ struct LearningView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(Colors.textInk)
+                    Button("返回") {
+                        dismiss()
                     }
+                    .foregroundColor(Colors.textSecondary)
                 }
             }
         }
@@ -323,7 +323,7 @@ struct ArticleDetailView: View {
                         }) {
                             HStack {
                                 Image(systemName: "arrow.right.circle")
-                                Text("一键开始创作")
+                                Text("关闭并开始创作")
                             }
                             .font(Fonts.bodyRegular())
                             .fontWeight(.medium)
