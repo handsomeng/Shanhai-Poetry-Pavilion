@@ -18,6 +18,7 @@ struct PoetryCollectionView: View {
     @State private var showThemeWriting = false
     @State private var showMimicWriting = false
     @State private var showDirectWriting = false
+    @State private var showingSettings = false
     
     enum CollectionTab: String, CaseIterable, Identifiable {
         case collection = "诗集"
@@ -42,8 +43,14 @@ struct PoetryCollectionView: View {
                     // 诗歌列表
                     poemsList
                 }
+                
+                // 悬浮创作按钮（底部中央）
+                floatingCreateButton
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
             .fullScreenCover(isPresented: $showCreateModeSelector) {
                 CreateModeSelectorView { mode in
                     // 关闭模式选择器后立即打开写诗页面
@@ -88,11 +95,11 @@ struct PoetryCollectionView: View {
             
             Spacer()
             
-            // 创作按钮
-            Button(action: { showCreateModeSelector = true }) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(Colors.accentTeal)
+            // 设置按钮
+            Button(action: { showingSettings = true }) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundColor(Colors.textSecondary)
             }
         }
         .padding(.horizontal, Spacing.lg)
@@ -261,6 +268,34 @@ struct PoemCard: View {
                     }
                 }
             }
+        }
+    }
+    
+    // MARK: - Floating Create Button
+    
+    private var floatingCreateButton: some View {
+        VStack {
+            Spacer()
+            
+            Button(action: {
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+                showCreateModeSelector = true
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 18, weight: .medium))
+                    Text("写诗")
+                        .font(.system(size: 17, weight: .medium))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(Colors.accentTeal)
+                .cornerRadius(28)
+                .shadow(color: Colors.accentTeal.opacity(0.3), radius: 12, x: 0, y: 6)
+            }
+            .padding(.bottom, 24)
         }
     }
 }
