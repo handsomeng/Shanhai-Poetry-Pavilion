@@ -60,10 +60,7 @@ struct CreateModeSelectorView: View {
                     }
                 )
                 
-                Spacer()
-                    .frame(height: Spacing.md)
-                
-                // "了解现代诗" 文字链接
+                // "了解现代诗" 文字链接（紧跟卡片）
                 Button(action: {
                     showingLearning = true
                 }) {
@@ -72,7 +69,10 @@ struct CreateModeSelectorView: View {
                         .foregroundColor(Colors.textSecondary)
                         .underline()
                 }
-                .padding(.top, Spacing.sm)
+                .padding(.top, Spacing.lg)
+                
+                // 底部灵活留白
+                Spacer()
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.vertical, Spacing.xl)
