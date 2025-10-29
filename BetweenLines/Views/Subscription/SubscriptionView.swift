@@ -191,17 +191,29 @@ struct SubscriptionView: View {
         .padding(.vertical, 12)
     }
     
-    // 会员独享权益（简化展示）
+    // 正在开发中的功能
     private var exclusiveBenefits: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("会员独享")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Colors.textSecondary)
-            
-            HStack(spacing: Spacing.md) {
-                benefitBadge(icon: "eye.slash", text: "无广告")
-                benefitBadge(icon: "crown", text: "专属标识")
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                Text("正在开发中的功能")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Colors.textInk)
+                
+                Image(systemName: "hammer.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(Colors.accentTeal)
             }
+            
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                upcomingFeatureRow(number: "1", text: "支持发表和相互点赞的赏诗广场")
+                upcomingFeatureRow(number: "2", text: "更多字体样式和分享图片样式")
+                upcomingFeatureRow(number: "3", text: "实体诗集册制作")
+            }
+            
+            Text("更多你需要的功能，可以联系开发者哦")
+                .font(.system(size: 13))
+                .foregroundColor(Colors.textSecondary)
+                .padding(.top, Spacing.xs)
         }
         .padding(Spacing.md)
         .background(Colors.white)
@@ -209,21 +221,23 @@ struct SubscriptionView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
-    // 权益徽章
-    private func benefitBadge(icon: String, text: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 14))
-                .foregroundColor(Colors.accentTeal)
+    // 即将推出的功能行
+    private func upcomingFeatureRow(number: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(number)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 20, height: 20)
+                .background(
+                    Circle()
+                        .fill(Colors.accentTeal.opacity(0.6))
+                )
             
             Text(text)
-                .font(.system(size: 13))
+                .font(.system(size: 14))
                 .foregroundColor(Colors.textInk)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Colors.accentTeal.opacity(0.1))
-        .cornerRadius(12)
     }
     
     // MARK: - Subscription Options
