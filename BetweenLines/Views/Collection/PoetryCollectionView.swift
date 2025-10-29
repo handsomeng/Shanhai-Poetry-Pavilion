@@ -357,8 +357,8 @@ struct PoetryCollectionView: View {
                     poetProfileText = analysis
                     isLoadingPoetProfile = false
                     
-                    // 记录本次使用时间
-                    recordPoetProfileAnalysisUsage()
+                    // 记录本次使用时间（测试期间暂时禁用）
+                    // recordPoetProfileAnalysisUsage()
                 }
             } catch {
                 await MainActor.run {
@@ -371,6 +371,10 @@ struct PoetryCollectionView: View {
     
     /// 检查是否可以使用诗人画像分析（每周一次）
     private func canUsePoetProfileAnalysis() -> Bool {
+        // TODO: 测试期间暂时关闭限制，测试完成后再启用
+        return true
+        
+        /* 每周限制逻辑（暂时禁用）
         guard let lastUsedDate = UserDefaults.standard.object(forKey: lastPoetProfileAnalysisKey) as? Date else {
             // 从未使用过
             return true
@@ -397,6 +401,7 @@ struct PoetryCollectionView: View {
             }
             return false
         }
+        */
     }
     
     /// 记录本次使用
