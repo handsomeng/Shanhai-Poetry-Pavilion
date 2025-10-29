@@ -28,6 +28,7 @@ struct PoetryCollectionView: View {
     @State private var poetProfileText = ""
     @State private var showingWeeklyLimitAlert = false
     @State private var nextAvailableDate = ""
+    @State private var showingConfirmAlert = false
     
     // UserDefaults Key
     private let lastPoetProfileAnalysisKey = "lastPoetProfileAnalysisDate"
@@ -103,6 +104,14 @@ struct PoetryCollectionView: View {
                 Button("知道了", role: .cancel) {}
             } message: {
                 Text("诗人画像分析每周只能使用 1 次哦\n\n下次可用时间：\(nextAvailableDate)")
+            }
+            .alert("让 AI 读你的诗？", isPresented: $showingConfirmAlert) {
+                Button("取消", role: .cancel) {}
+                Button("好的") {
+                    analyzePoetProfile()
+                }
+            } message: {
+                Text("AI 将阅读你最近的 10 首诗，并给出一份诗人画像分析")
             }
         }
     }
@@ -320,7 +329,7 @@ struct PoetryCollectionView: View {
         // 连续点击5次触发
         if tapCount >= 5 {
             tapCount = 0
-            analyzePoetProfile()
+            showingConfirmAlert = true
         }
     }
     
@@ -332,21 +341,29 @@ struct PoetryCollectionView: View {
             return
         }
         
+        // 立即显示加载状态和弹窗
+        isLoadingPoetProfile = true
+        poetProfileText = ""
+        showingPoetProfile = true
+        
         // 获取最近10首已完成的诗（在诗集中的诗）
         let recentPoems = poemManager.myCollection
             .prefix(10)
         
         // 检查是否有足够的诗
         guard !recentPoems.isEmpty else {
-            poetProfileText = "你还没有创作诗歌哦，多写几首诗，我就能更了解你了~"
-            showingPoetProfile = true
+            // 即使没有诗，也要有个提示
+            Task {
+                // 模拟思考一下
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1秒
+                
+                await MainActor.run {
+                    poetProfileText = "你还没有创作诗歌哦，多写几首诗，我就能更了解你了~"
+                    isLoadingPoetProfile = false
+                }
+            }
             return
         }
-        
-        // 显示加载状态
-        isLoadingPoetProfile = true
-        poetProfileText = ""
-        showingPoetProfile = true
         
         // 调用 AI 分析
         Task {
