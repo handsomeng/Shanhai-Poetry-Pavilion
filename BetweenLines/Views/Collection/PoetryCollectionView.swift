@@ -181,13 +181,6 @@ struct PoetryCollectionView: View {
                 .font(.system(size: 20, weight: .medium, design: .serif))
                 .foregroundColor(Colors.textInk)
             
-            // 副标题
-            Text(emptyStateSubtitle)
-                .font(Fonts.bodyRegular())
-                .foregroundColor(Colors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.xl)
-            
             // 操作提示（带下箭头）
             VStack(spacing: 8) {
                 Image(systemName: "arrow.down")
@@ -222,15 +215,6 @@ struct PoetryCollectionView: View {
             return "还没有诗歌哦"
         case .drafts:
             return "还没有草稿"
-        }
-    }
-    
-    private var emptyStateSubtitle: String {
-        switch selectedTab {
-        case .collection:
-            return "开始创作你的第一首诗\n记录此刻的心情与感悟"
-        case .drafts:
-            return "暂无未完成的草稿\n开始新的创作吧"
         }
     }
     
