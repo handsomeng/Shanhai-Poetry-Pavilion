@@ -213,6 +213,34 @@ struct PoetryCollectionView: View {
     private func isDraft(_ poem: Poem) -> Bool {
         !poem.inMyCollection && !poem.inSquare
     }
+    
+    // MARK: - Floating Create Button
+    
+    private var floatingCreateButton: some View {
+        VStack {
+            Spacer()
+            
+            Button(action: {
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+                showCreateModeSelector = true
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.system(size: 18, weight: .medium))
+                    Text("写诗")
+                        .font(.system(size: 17, weight: .medium))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(Colors.accentTeal)
+                .cornerRadius(28)
+                .shadow(color: Colors.accentTeal.opacity(0.3), radius: 12, x: 0, y: 6)
+            }
+            .padding(.bottom, 24)
+        }
+    }
 }
 
 // MARK: - Poem Card
@@ -268,34 +296,6 @@ struct PoemCard: View {
                     }
                 }
             }
-        }
-    }
-    
-    // MARK: - Floating Create Button
-    
-    private var floatingCreateButton: some View {
-        VStack {
-            Spacer()
-            
-            Button(action: {
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
-                showCreateModeSelector = true
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 18, weight: .medium))
-                    Text("写诗")
-                        .font(.system(size: 17, weight: .medium))
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 14)
-                .background(Colors.accentTeal)
-                .cornerRadius(28)
-                .shadow(color: Colors.accentTeal.opacity(0.3), radius: 12, x: 0, y: 6)
-            }
-            .padding(.bottom, 24)
         }
     }
 }

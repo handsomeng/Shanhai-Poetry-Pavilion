@@ -222,7 +222,6 @@ class PoemTextEditorViewController: UIViewController {
     }
     
     private func showLimitReachedAlert() {
-        let remaining = subscriptionManager.remainingInspirations()
         let alert = UIAlertController(
             title: "今日次数已用完",
             message: "免费用户每天可使用 2 次 AI 续写灵感\n\n升级会员即可无限使用 ✨",
