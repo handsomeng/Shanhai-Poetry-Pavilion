@@ -22,31 +22,31 @@ class SubscriptionManager: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var expirationDate: Date?
     
-    // AI 点评限额（免费用户）
-    @Published private(set) var dailyAICommentCount: Int = 0
+    // AI 点评限额（免费用户 - 每周限制）
+    @Published private(set) var weeklyAICommentCount: Int = 0
     private let maxFreeAIComments = 2
     
-    // AI 续写灵感限额（免费用户）
-    @Published private(set) var dailyInspirationCount: Int = 0
+    // AI 续写灵感限额（免费用户 - 每周限制）
+    @Published private(set) var weeklyInspirationCount: Int = 0
     private let maxFreeInspirations = 2
     
-    // 主题写诗限额（免费用户）
-    @Published private(set) var dailyThemeWritingCount: Int = 0
-    private let maxFreeThemeWriting = 1
+    // 主题写诗限额（免费用户 - 每周限制）
+    @Published private(set) var weeklyThemeWritingCount: Int = 0
+    private let maxFreeThemeWriting = 2
     
-    // 临摹写诗限额（免费用户）
-    @Published private(set) var dailyMimicWritingCount: Int = 0
-    private let maxFreeMimicWriting = 1
+    // 临摹写诗限额（免费用户 - 每周限制）
+    @Published private(set) var weeklyMimicWritingCount: Int = 0
+    private let maxFreeMimicWriting = 2
     
     private var updateListenerTask: Task<Void, Error>?
     
     // MARK: - UserDefaults Keys
     
-    private let lastResetDateKey = "lastAICommentResetDate"
-    private let aiCommentCountKey = "dailyAICommentCount"
-    private let inspirationCountKey = "dailyInspirationCount"
-    private let themeWritingCountKey = "dailyThemeWritingCount"
-    private let mimicWritingCountKey = "dailyMimicWritingCount"
+    private let lastResetDateKey = "lastWeeklyResetDate"
+    private let aiCommentCountKey = "weeklyAICommentCount"
+    private let inspirationCountKey = "weeklyInspirationCount"
+    private let themeWritingCountKey = "weeklyThemeWritingCount"
+    private let mimicWritingCountKey = "weeklyMimicWritingCount"
     private let subscriptionTypeKey = "subscriptionType"
     
     // MARK: - Initialization
@@ -58,7 +58,7 @@ class SubscriptionManager: ObservableObject {
         Task {
             await loadProducts()
             await updateSubscriptionStatus()
-            checkAndResetDailyLimit()
+            checkAndResetWeeklyLimit()
         }
     }
     
@@ -184,8 +184,8 @@ class SubscriptionManager: ObservableObject {
             return true  // 会员无限次
         }
         
-        checkAndResetDailyLimit()
-        return dailyAICommentCount < maxFreeAIComments
+        checkAndResetWeeklyLimit()
+        return weeklyAICommentCount < maxFreeAIComments
     }
     
     /// 使用一次 AI 点评
@@ -194,8 +194,8 @@ class SubscriptionManager: ObservableObject {
             return  // 会员不计数
         }
         
-        dailyAICommentCount += 1
-        UserDefaults.standard.set(dailyAICommentCount, forKey: aiCommentCountKey)
+        weeklyAICommentCount += 1
+        UserDefaults.standard.set(weeklyAICommentCount, forKey: aiCommentCountKey)
     }
     
     /// 获取剩余 AI 点评次数
@@ -203,45 +203,48 @@ class SubscriptionManager: ObservableObject {
         if isSubscribed {
             return -1  // -1 表示无限
         }
-        return max(0, maxFreeAIComments - dailyAICommentCount)
+        return max(0, maxFreeAIComments - weeklyAICommentCount)
     }
     
     /// 检查并重置每日限额
-    private func checkAndResetDailyLimit() {
-        let today = Calendar.current.startOfDay(for: Date())
+    private func checkAndResetWeeklyLimit() {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // 获取本周一的0点（周的开始）
+        let thisMonday = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
         
         if let lastResetDate = UserDefaults.standard.object(forKey: lastResetDateKey) as? Date {
-            let lastReset = Calendar.current.startOfDay(for: lastResetDate)
-            
-            if lastReset < today {
-                // 新的一天，重置计数
-                dailyAICommentCount = 0
-                dailyInspirationCount = 0
-                dailyThemeWritingCount = 0
-                dailyMimicWritingCount = 0
+            // 检查上次重置是否在本周一之前
+            if lastResetDate < thisMonday {
+                // 新的一周，重置计数
+                weeklyAICommentCount = 0
+                weeklyInspirationCount = 0
+                weeklyThemeWritingCount = 0
+                weeklyMimicWritingCount = 0
                 UserDefaults.standard.set(0, forKey: aiCommentCountKey)
                 UserDefaults.standard.set(0, forKey: inspirationCountKey)
                 UserDefaults.standard.set(0, forKey: themeWritingCountKey)
                 UserDefaults.standard.set(0, forKey: mimicWritingCountKey)
-                UserDefaults.standard.set(today, forKey: lastResetDateKey)
+                UserDefaults.standard.set(thisMonday, forKey: lastResetDateKey)
             } else {
-                // 同一天，读取计数
-                dailyAICommentCount = UserDefaults.standard.integer(forKey: aiCommentCountKey)
-                dailyInspirationCount = UserDefaults.standard.integer(forKey: inspirationCountKey)
-                dailyThemeWritingCount = UserDefaults.standard.integer(forKey: themeWritingCountKey)
-                dailyMimicWritingCount = UserDefaults.standard.integer(forKey: mimicWritingCountKey)
+                // 同一周，读取计数
+                weeklyAICommentCount = UserDefaults.standard.integer(forKey: aiCommentCountKey)
+                weeklyInspirationCount = UserDefaults.standard.integer(forKey: inspirationCountKey)
+                weeklyThemeWritingCount = UserDefaults.standard.integer(forKey: themeWritingCountKey)
+                weeklyMimicWritingCount = UserDefaults.standard.integer(forKey: mimicWritingCountKey)
             }
         } else {
             // 首次运行
-            dailyAICommentCount = 0
-            dailyInspirationCount = 0
-            dailyThemeWritingCount = 0
-            dailyMimicWritingCount = 0
+            weeklyAICommentCount = 0
+            weeklyInspirationCount = 0
+            weeklyThemeWritingCount = 0
+            weeklyMimicWritingCount = 0
             UserDefaults.standard.set(0, forKey: aiCommentCountKey)
             UserDefaults.standard.set(0, forKey: inspirationCountKey)
             UserDefaults.standard.set(0, forKey: themeWritingCountKey)
             UserDefaults.standard.set(0, forKey: mimicWritingCountKey)
-            UserDefaults.standard.set(today, forKey: lastResetDateKey)
+            UserDefaults.standard.set(thisMonday, forKey: lastResetDateKey)
         }
     }
     
@@ -253,8 +256,8 @@ class SubscriptionManager: ObservableObject {
             return true  // 会员无限次
         }
         
-        checkAndResetDailyLimit()
-        return dailyInspirationCount < maxFreeInspirations
+        checkAndResetWeeklyLimit()
+        return weeklyInspirationCount < maxFreeInspirations
     }
     
     /// 使用一次 AI 续写灵感
@@ -263,8 +266,8 @@ class SubscriptionManager: ObservableObject {
             return  // 会员不计数
         }
         
-        dailyInspirationCount += 1
-        UserDefaults.standard.set(dailyInspirationCount, forKey: inspirationCountKey)
+        weeklyInspirationCount += 1
+        UserDefaults.standard.set(weeklyInspirationCount, forKey: inspirationCountKey)
     }
     
     /// 获取剩余 AI 续写灵感次数
@@ -272,7 +275,7 @@ class SubscriptionManager: ObservableObject {
         if isSubscribed {
             return -1  // -1 表示无限
         }
-        return max(0, maxFreeInspirations - dailyInspirationCount)
+        return max(0, maxFreeInspirations - weeklyInspirationCount)
     }
     
     // MARK: - Theme Writing Limit
@@ -283,8 +286,8 @@ class SubscriptionManager: ObservableObject {
             return true  // 会员无限次
         }
         
-        checkAndResetDailyLimit()
-        return dailyThemeWritingCount < maxFreeThemeWriting
+        checkAndResetWeeklyLimit()
+        return weeklyThemeWritingCount < maxFreeThemeWriting
     }
     
     /// 使用一次主题写诗
@@ -293,8 +296,8 @@ class SubscriptionManager: ObservableObject {
             return  // 会员不计数
         }
         
-        dailyThemeWritingCount += 1
-        UserDefaults.standard.set(dailyThemeWritingCount, forKey: themeWritingCountKey)
+        weeklyThemeWritingCount += 1
+        UserDefaults.standard.set(weeklyThemeWritingCount, forKey: themeWritingCountKey)
     }
     
     /// 获取剩余主题写诗次数
@@ -302,7 +305,7 @@ class SubscriptionManager: ObservableObject {
         if isSubscribed {
             return -1  // -1 表示无限
         }
-        return max(0, maxFreeThemeWriting - dailyThemeWritingCount)
+        return max(0, maxFreeThemeWriting - weeklyThemeWritingCount)
     }
     
     // MARK: - Mimic Writing Limit
@@ -313,8 +316,8 @@ class SubscriptionManager: ObservableObject {
             return true  // 会员无限次
         }
         
-        checkAndResetDailyLimit()
-        return dailyMimicWritingCount < maxFreeMimicWriting
+        checkAndResetWeeklyLimit()
+        return weeklyMimicWritingCount < maxFreeMimicWriting
     }
     
     /// 使用一次临摹写诗
@@ -323,8 +326,8 @@ class SubscriptionManager: ObservableObject {
             return  // 会员不计数
         }
         
-        dailyMimicWritingCount += 1
-        UserDefaults.standard.set(dailyMimicWritingCount, forKey: mimicWritingCountKey)
+        weeklyMimicWritingCount += 1
+        UserDefaults.standard.set(weeklyMimicWritingCount, forKey: mimicWritingCountKey)
     }
     
     /// 获取剩余临摹写诗次数
@@ -332,7 +335,7 @@ class SubscriptionManager: ObservableObject {
         if isSubscribed {
             return -1  // -1 表示无限
         }
-        return max(0, maxFreeMimicWriting - dailyMimicWritingCount)
+        return max(0, maxFreeMimicWriting - weeklyMimicWritingCount)
     }
     
     // MARK: - Premium Features
