@@ -69,6 +69,7 @@ class SubscriptionManager: ObservableObject {
     // MARK: - Product Loading
     
     func loadProducts() async {
+        print("📱 [SubscriptionManager] Starting to load products...")
         isLoading = true
         defer { isLoading = false }
         
@@ -79,13 +80,20 @@ class SubscriptionManager: ObservableObject {
                 SubscriptionType.yearly.productID
             ]
             
+            print("📱 [SubscriptionManager] Product IDs: \(productIDs)")
+            
             products = try await Product.products(for: productIDs)
                 .sorted { product1, product2 in
                     // 按价格排序：月卡 < 季卡 < 年卡
                     product1.price < product2.price
                 }
+            
+            print("✅ [SubscriptionManager] Loaded \(products.count) products")
+            for product in products {
+                print("   - \(product.displayName): \(product.displayPrice) (\(product.id))")
+            }
         } catch {
-            print("Failed to load products: \(error)")
+            print("❌ [SubscriptionManager] Failed to load products: \(error)")
         }
     }
     

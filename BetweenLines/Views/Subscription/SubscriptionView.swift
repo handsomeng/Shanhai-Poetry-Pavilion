@@ -69,16 +69,24 @@ struct SubscriptionView: View {
             }
         }
         .onAppear {
+            print("📱 [SubscriptionView] onAppear - products count: \(subscriptionManager.products.count)")
+            
             if subscriptionManager.products.isEmpty {
                 Task {
+                    print("📱 [SubscriptionView] Loading products...")
                     await subscriptionManager.loadProducts()
+                    print("📱 [SubscriptionView] Products loaded: \(subscriptionManager.products.count)")
+                    
                     // 默认选中季卡（推荐）
                     selectedProduct = subscriptionManager.products.first { $0.id.contains("quarterly") }
                         ?? subscriptionManager.products.first
+                    
+                    print("📱 [SubscriptionView] Selected product: \(selectedProduct?.id ?? "none")")
                 }
             } else {
                 selectedProduct = subscriptionManager.products.first { $0.id.contains("quarterly") }
                     ?? subscriptionManager.products.first
+                print("📱 [SubscriptionView] Selected product: \(selectedProduct?.id ?? "none")")
             }
         }
         .alert("购买失败", isPresented: $showingError) {
@@ -318,26 +326,67 @@ struct SubscriptionView: View {
     // MARK: - Disclaimer
     
     private var disclaimer: some View {
-        VStack(spacing: Spacing.xs) {
-            Text("• 前 7 天免费试用，试用期内随时可退款")
-            Text("• 试用结束后自动续费，可随时在设置中取消")
-            Text("• 更多详情请查看用户协议和隐私政策")
+        VStack(spacing: Spacing.md) {
+            // 订阅说明
+            VStack(spacing: 4) {
+                Text("• 订阅自动续费，可随时在 App Store 订阅管理中取消")
+                Text("• 前 7 天免费试用，试用期内随时可退款")
+                Text("• 取消订阅将在当前计费周期结束后生效")
+            }
+            .font(.system(size: 11))
+            .foregroundColor(Colors.textTertiary)
+            .multilineTextAlignment(.center)
+            
+            // 用户协议和隐私政策链接
+            HStack(spacing: 12) {
+                Button(action: {
+                    if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") {
+                        UIApplication.shared.open(url)
+                    }
+                }) {
+                    Text("用户协议")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Colors.accentTeal)
+                        .underline()
+                }
+                
+                Text("·")
+                    .font(.system(size: 12))
+                    .foregroundColor(Colors.textTertiary)
+                
+                Button(action: {
+                    if let url = URL(string: "https://www.apple.com/legal/privacy/") {
+                        UIApplication.shared.open(url)
+                    }
+                }) {
+                    Text("隐私政策")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Colors.accentTeal)
+                        .underline()
+                }
+            }
         }
-        .font(.system(size: 10))
-        .foregroundColor(Colors.textTertiary)
-        .multilineTextAlignment(.center)
         .padding(.top, Spacing.lg)
     }
     
     // MARK: - Actions
     
     private func purchaseSelectedProduct() async {
-        guard let product = selectedProduct else { return }
+        guard let product = selectedProduct else {
+            print("❌ [SubscriptionView] No product selected")
+            await MainActor.run {
+                errorMessage = "请选择订阅套餐"
+                showingError = true
+            }
+            return
+        }
         
+        print("📱 [SubscriptionView] Starting purchase for: \(product.id)")
         isPurchasing = true
         
         do {
             try await subscriptionManager.purchase(product)
+            print("✅ [SubscriptionView] Purchase successful")
             await MainActor.run {
                 isPurchasing = false
                 toastManager.showSuccess("订阅成功！")
@@ -348,6 +397,7 @@ struct SubscriptionView: View {
                 }
             }
         } catch let error as SubscriptionError {
+            print("❌ [SubscriptionView] Purchase failed: \(error)")
             await MainActor.run {
                 isPurchasing = false
                 if error != .userCancelled {
@@ -356,6 +406,7 @@ struct SubscriptionView: View {
                 }
             }
         } catch {
+            print("❌ [SubscriptionView] Purchase failed with error: \(error)")
             await MainActor.run {
                 isPurchasing = false
                 errorMessage = "购买失败，请重试"
