@@ -25,7 +25,7 @@ struct SettingsView: View {
     @State private var showResetAlert = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Colors.backgroundCream
                     .ignoresSafeArea()
@@ -408,7 +408,7 @@ struct EditPenNameView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 // 输入框
                 VStack(alignment: .leading, spacing: 8) {
@@ -487,7 +487,7 @@ struct PoetTitleView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 12) {
                     ForEach(PoetTitle.allCases, id: \.self) { title in

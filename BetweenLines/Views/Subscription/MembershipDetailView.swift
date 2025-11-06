@@ -13,7 +13,7 @@ struct MembershipDetailView: View {
     @StateObject private var subscriptionManager = SubscriptionManager.shared
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Colors.backgroundCream
                     .ignoresSafeArea()

@@ -94,14 +94,26 @@ struct PrivacyPolicyView: View {
                     )
                     
                     sectionView(
-                        title: "7. 政策更新",
+                        title: "7. 订阅与支付",
+                        content: """
+                        山海诗馆提供自动续期订阅服务：
+                        
+                        • 订阅信息通过 Apple 的 StoreKit 处理
+                        • 我们不会存储您的支付信息
+                        • 订阅管理由 App Store 统一处理
+                        • 您可以随时在 App Store 设置中取消订阅
+                        """
+                    )
+                    
+                    sectionView(
+                        title: "8. 政策更新",
                         content: """
                         我们可能会不定期更新本隐私政策。重大变更时，我们会在应用内通知您。
                         """
                     )
                     
                     sectionView(
-                        title: "8. 联系我们",
+                        title: "9. 联系我们",
                         content: """
                         如有任何关于隐私的问题，请联系我们：
                         

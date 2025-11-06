@@ -20,7 +20,7 @@ struct SubscriptionView: View {
     @State private var errorMessage = ""
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Colors.backgroundCream
                     .ignoresSafeArea()
@@ -274,6 +274,10 @@ struct SubscriptionView: View {
     
     private var purchaseButton: some View {
         Button(action: {
+            print("🔘 [SubscriptionView] Purchase button tapped!")
+            print("🔘 [SubscriptionView] selectedProduct: \(selectedProduct?.id ?? "nil")")
+            print("🔘 [SubscriptionView] isPurchasing: \(isPurchasing)")
+            
             Task {
                 await purchaseSelectedProduct()
             }
@@ -304,7 +308,9 @@ struct SubscriptionView: View {
             .shadow(color: Colors.accentTeal.opacity(0.3), radius: 8, x: 0, y: 4)
         }
         .disabled(selectedProduct == nil || isPurchasing)
-        .scaleButtonStyle()
+        .buttonStyle(PlainButtonStyle())
+        .opacity((selectedProduct == nil || isPurchasing) ? 0.5 : 1.0)  // 视觉反馈
+        .contentShape(Rectangle())  // 确保整个区域可点击
     }
     
     // MARK: - Restore Button
@@ -337,13 +343,9 @@ struct SubscriptionView: View {
             .foregroundColor(Colors.textTertiary)
             .multilineTextAlignment(.center)
             
-            // 用户协议和隐私政策链接
+            // 用户协议和隐私政策链接 - 指向App内部页面
             HStack(spacing: 12) {
-                Button(action: {
-                    if let url = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") {
-                        UIApplication.shared.open(url)
-                    }
-                }) {
+                NavigationLink(destination: TermsOfServiceView()) {
                     Text("用户协议")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Colors.accentTeal)
@@ -354,11 +356,7 @@ struct SubscriptionView: View {
                     .font(.system(size: 12))
                     .foregroundColor(Colors.textTertiary)
                 
-                Button(action: {
-                    if let url = URL(string: "https://www.apple.com/legal/privacy/") {
-                        UIApplication.shared.open(url)
-                    }
-                }) {
+                NavigationLink(destination: PrivacyPolicyView()) {
                     Text("隐私政策")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Colors.accentTeal)

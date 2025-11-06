@@ -94,7 +94,27 @@ struct TermsOfServiceView: View {
                     )
                     
                     sectionView(
-                        title: "7. 账号终止",
+                        title: "7. 订阅服务条款",
+                        content: """
+                        自动续期订阅说明：
+                        
+                        • 订阅周期：月度、季度或年度订阅
+                        • 免费试用：所有订阅提供 7 天免费试用期
+                        • 自动续费：订阅将自动续期，除非在当前周期结束前至少 24 小时取消
+                        • 取消方式：在 iPhone 的"设置" → "Apple ID" → "订阅"中管理
+                        • 退款政策：试用期内取消不收费，已付费用户可联系 Apple 申请退款
+                        
+                        订阅价格：
+                        • 月度订阅：¥9.9/月
+                        • 季度订阅：¥19.9/季（推荐）
+                        • 年度订阅：¥69.9/年
+                        
+                        付款将在确认购买时从您的 Apple ID 账户扣除。
+                        """
+                    )
+                    
+                    sectionView(
+                        title: "8. 账号终止",
                         content: """
                         您可以随时删除账号。删除后：
                         
@@ -107,14 +127,14 @@ struct TermsOfServiceView: View {
                     )
                     
                     sectionView(
-                        title: "8. 争议解决",
+                        title: "9. 争议解决",
                         content: """
                         本协议受中华人民共和国法律管辖。如发生争议，双方应友好协商解决。
                         """
                     )
                     
                     sectionView(
-                        title: "9. 联系方式",
+                        title: "10. 联系方式",
                         content: """
                         如有任何问题，请联系我们：
                         

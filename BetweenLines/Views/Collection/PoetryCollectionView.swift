@@ -41,7 +41,7 @@ struct PoetryCollectionView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Colors.backgroundCream
                     .ignoresSafeArea()
@@ -64,7 +64,7 @@ struct PoetryCollectionView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
-            .fullScreenCover(isPresented: $showCreateModeSelector) {
+            .sheet(isPresented: $showCreateModeSelector) {
                 CreateModeSelectorView { mode in
                     // 关闭模式选择器后立即打开写诗页面
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -79,17 +79,17 @@ struct PoetryCollectionView: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $showThemeWriting) {
+            .sheet(isPresented: $showThemeWriting) {
                 NavigationStack {
                     ThemeWritingView()
                 }
             }
-            .fullScreenCover(isPresented: $showMimicWriting) {
+            .sheet(isPresented: $showMimicWriting) {
                 NavigationStack {
                     MimicWritingView()
                 }
             }
-            .fullScreenCover(isPresented: $showDirectWriting) {
+            .sheet(isPresented: $showDirectWriting) {
                 NavigationStack {
                     DirectWritingView()
                 }

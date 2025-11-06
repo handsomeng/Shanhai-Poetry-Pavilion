@@ -89,7 +89,7 @@ struct CreateModeSelectorView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showingLearning) {
+        .sheet(isPresented: $showingLearning) {
             NavigationStack {
                 LearningView()
             }

@@ -14,7 +14,7 @@ struct PoetProfileView: View {
     let isLoading: Bool
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Colors.backgroundCream
                     .ignoresSafeArea()

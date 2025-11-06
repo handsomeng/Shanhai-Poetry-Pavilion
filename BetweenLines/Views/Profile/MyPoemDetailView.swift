@@ -165,7 +165,7 @@ struct MyPoemDetailView: View {
                 SubscriptionView()
             }
         }
-        .fullScreenCover(isPresented: $showingShareView) {
+        .sheet(isPresented: $showingShareView) {
             PoemShareView(poem: poem)
         }
     }

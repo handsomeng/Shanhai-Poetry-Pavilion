@@ -14,7 +14,7 @@ struct AICommentSheet: View {
     let onDismiss: () -> Void
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 Colors.backgroundCream
                     .ignoresSafeArea()

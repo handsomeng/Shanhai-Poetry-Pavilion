@@ -28,7 +28,7 @@ struct PoemShareView: View {
     
     var body: some View {
         ZStack {
-            NavigationView {
+            NavigationStack {
                 ZStack {
                     Colors.backgroundCream
                         .ignoresSafeArea()
@@ -55,7 +55,7 @@ struct PoemShareView: View {
                         .foregroundColor(Colors.textSecondary)
                     }
                 }
-                .fullScreenCover(isPresented: $showingTemplateSelector) {
+                .sheet(isPresented: $showingTemplateSelector) {
                     TemplateSelector(selectedTemplate: $selectedTemplate, poem: poem)
                 }
             }

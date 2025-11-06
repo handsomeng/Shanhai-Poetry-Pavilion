@@ -18,7 +18,7 @@ struct SearchView: View {
     @FocusState private var isSearchFieldFocused: Bool
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // 搜索框
                 searchBar

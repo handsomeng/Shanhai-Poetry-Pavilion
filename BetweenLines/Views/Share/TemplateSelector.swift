@@ -29,7 +29,7 @@ struct TemplateSelector: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // 主视觉区域：实时预览（占据大部分空间）
                 ScrollView(showsIndicators: false) {

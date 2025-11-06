@@ -120,7 +120,7 @@ struct AboutAppView: View {
 }
 
 #Preview {
-    NavigationView {
+    NavigationStack {
         AboutAppView()
     }
 }
