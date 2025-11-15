@@ -58,9 +58,8 @@ enum SubscriptionType: String, Codable {
 /// 会员权益
 enum MemberBenefit: String, CaseIterable {
     case unlimitedAI = "AI 点评无限次"
-    case aiInspiration = "AI 续写思路无限次"
-    case aiTemplates = "临摹写诗无限次"
-    case aiThemes = "主题写诗无限次"
+    case aiThemeGuidance = "AI 主题思路无限次"
+    case aiInspiration = "AI 续写灵感无限次"
     case imageStyles = "多种图片模板"
     case noAds = "无广告体验"
     case exclusiveBadge = "会员专属标识"
@@ -68,9 +67,8 @@ enum MemberBenefit: String, CaseIterable {
     var icon: String {
         switch self {
         case .unlimitedAI: return "sparkles"
+        case .aiThemeGuidance: return "lightbulb"
         case .aiInspiration: return "lightbulb.fill"
-        case .aiTemplates: return "doc.text.image"
-        case .aiThemes: return "lightbulb"
         case .imageStyles: return "photo.stack"
         case .noAds: return "eye.slash"
         case .exclusiveBadge: return "crown"

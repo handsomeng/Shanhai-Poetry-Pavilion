@@ -158,13 +158,10 @@ struct SubscriptionView: View {
             comparisonRow(feature: "AI 点评", free: "2次/周", premium: "无限次")
             Divider().padding(.leading, Spacing.md)
             
-            comparisonRow(feature: "AI 续写思路", free: "2次/周", premium: "无限次")
+            comparisonRow(feature: "AI 主题思路", free: "2次/天", premium: "无限次")
             Divider().padding(.leading, Spacing.md)
             
-            comparisonRow(feature: "主题写诗", free: "2次/周", premium: "无限次")
-            Divider().padding(.leading, Spacing.md)
-            
-            comparisonRow(feature: "临摹写诗", free: "2次/周", premium: "无限次")
+            comparisonRow(feature: "AI 续写灵感", free: "2次/周", premium: "无限次")
             Divider().padding(.leading, Spacing.md)
             
             comparisonRow(feature: "图片模板", free: "基础", premium: "多种", isPremiumHighlighted: true)
