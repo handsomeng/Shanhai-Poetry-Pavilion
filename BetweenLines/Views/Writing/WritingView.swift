@@ -98,26 +98,8 @@ struct WritingView: View {
     // MARK: - Drafts Section
     
     private var draftsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack {
-                Text("最近草稿")
-                    .font(Fonts.bodyRegular())
-                    .foregroundColor(Colors.textInk)
-                
-                Spacer()
-                
-                Text("\(poemManager.myDrafts.count) 篇")
-                    .font(Fonts.caption())
-                    .foregroundColor(Colors.textSecondary)
-            }
-            
-            ForEach(poemManager.myDrafts.prefix(3)) { draft in
-                NavigationLink(destination: DirectWritingView(existingPoem: draft)) {
-                    DraftCardView(poem: draft)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-        }
+        // 草稿概念已废弃，统一显示在"我的诗歌"中
+        EmptyView()
     }
 }
 

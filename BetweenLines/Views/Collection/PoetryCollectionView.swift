@@ -3,7 +3,7 @@
 //  山海诗馆
 //
 //  【诗集】Tab 主界面
-//  - 诗歌列表（诗集/草稿/已发布）
+//  - 诗歌列表（统一管理，不再区分草稿和诗集）
 //  - 右上角【+】创作按钮
 //  - 搜索功能
 //
@@ -13,10 +13,6 @@ import SwiftUI
 struct PoetryCollectionView: View {
     
     @StateObject private var poemManager = PoemManager.shared
-    @State private var selectedTab: CollectionTab = .collection
-    @State private var showCreateModeSelector = false
-    @State private var showThemeWriting = false
-    @State private var showMimicWriting = false
     @State private var showDirectWriting = false
     @State private var showingSettings = false
     
@@ -33,13 +29,6 @@ struct PoetryCollectionView: View {
     // UserDefaults Key
     private let lastPoetProfileAnalysisKey = "lastPoetProfileAnalysisDate"
     
-    enum CollectionTab: String, CaseIterable, Identifiable {
-        case collection = "诗集"
-        case drafts = "草稿"
-        
-        var id: String { rawValue }
-    }
-    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -49,9 +38,6 @@ struct PoetryCollectionView: View {
                 VStack(spacing: 0) {
                     // 顶部标题栏（固定）
                     headerSection
-                    
-                    // Tab 切换
-                    tabSwitcher
                     
                     // 诗歌列表
                     poemsList
@@ -63,31 +49,6 @@ struct PoetryCollectionView: View {
             .navigationBarHidden(true)
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
-            }
-            .sheet(isPresented: $showCreateModeSelector) {
-                CreateModeSelectorView { mode in
-                    // 关闭模式选择器后立即打开写诗页面
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        switch mode {
-                        case .theme:
-                            showThemeWriting = true
-                        case .mimic:
-                            showMimicWriting = true
-                        case .direct:
-                            showDirectWriting = true
-                        }
-                    }
-                }
-            }
-            .sheet(isPresented: $showThemeWriting) {
-                NavigationStack {
-                    ThemeWritingView()
-                }
-            }
-            .sheet(isPresented: $showMimicWriting) {
-                NavigationStack {
-                    MimicWritingView()
-                }
             }
             .sheet(isPresented: $showDirectWriting) {
                 NavigationStack {
@@ -146,35 +107,6 @@ struct PoetryCollectionView: View {
         .background(Colors.backgroundCream)
     }
     
-    // MARK: - Tab Switcher
-    
-    private var tabSwitcher: some View {
-        HStack(spacing: 0) {
-            ForEach(CollectionTab.allCases) { tab in
-                Button(action: {
-                    withAnimation(.easeOut(duration: 0.3)) {
-                        selectedTab = tab
-                    }
-                }) {
-                    VStack(spacing: 8) {
-                        Text(tab.rawValue)
-                            .font(Fonts.bodyRegular())
-                            .foregroundColor(selectedTab == tab ? Colors.accentTeal : Colors.textSecondary)
-                        
-                        // 下划线
-                        Rectangle()
-                            .fill(selectedTab == tab ? Colors.accentTeal : Color.clear)
-                            .frame(height: 2)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
-        .background(Colors.backgroundCream)
-    }
-    
     // MARK: - Poems List
     
     private var poemsList: some View {
@@ -185,7 +117,7 @@ struct PoetryCollectionView: View {
                 ScrollView {
                     LazyVStack(spacing: Spacing.sm) {
                         ForEach(currentPoems) { poem in
-                            NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: isDraft(poem))) {
+                            NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: false)) {
                                 PoemCard(poem: poem, isNew: isNewPoem(poem))
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -240,42 +172,22 @@ struct PoetryCollectionView: View {
     }
     
     private var emptyStateIcon: String {
-        switch selectedTab {
-        case .collection:
-            return "doc.text.fill"
-        case .drafts:
-            return "square.and.pencil"
-        }
+        return "doc.text.fill"
     }
     
     private var emptyStateTitle: String {
-        switch selectedTab {
-        case .collection:
-            return "还没有诗歌哦"
-        case .drafts:
-            return "还没有草稿"
-        }
+        return "还没有诗歌哦"
     }
     
     // MARK: - Helpers
     
     private var currentPoems: [Poem] {
-        switch selectedTab {
-        case .collection:
-            return poemManager.myCollection.sorted { $0.createdAt > $1.createdAt }
-        case .drafts:
-            return poemManager.myDrafts.sorted { $0.createdAt > $1.createdAt }
-        }
+        return poemManager.myCollection.sorted { $0.createdAt > $1.createdAt }
     }
     
     /// 判断是否是新诗（5秒内创建）
     private func isNewPoem(_ poem: Poem) -> Bool {
         Date().timeIntervalSince(poem.createdAt) < 5
-    }
-    
-    /// 判断是否是草稿
-    private func isDraft(_ poem: Poem) -> Bool {
-        !poem.inMyCollection && !poem.inSquare
     }
     
     // MARK: - Floating Create Button
@@ -287,7 +199,7 @@ struct PoetryCollectionView: View {
             Button(action: {
                 let generator = UIImpactFeedbackGenerator(style: .medium)
                 generator.impactOccurred()
-                showCreateModeSelector = true
+                showDirectWriting = true
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "square.and.pencil")
@@ -437,32 +349,33 @@ struct PoemCard: View {
     @State private var isHighlighted = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // 标题（带书名号）
+        VStack(alignment: .leading, spacing: 12) {
+            // 标题（带书名号）- 增大字体
             Text(poem.displayTitle)
-                .font(.system(size: 17, weight: .medium, design: .serif))
+                .font(.system(size: 19, weight: .semibold, design: .serif))
                 .foregroundColor(Colors.textInk)
                 .lineLimit(1)
             
-            // 内容预览
+            // 内容预览 - 增大字体和行间距
             Text(poem.content)
-                .font(Fonts.bodyRegular())
-                .foregroundColor(Colors.textSecondary)
-                .lineLimit(2)
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(Colors.textInk.opacity(0.8))
+                .lineSpacing(4)
+                .lineLimit(3)  // 从2行增加到3行，展示更多内容
             
             // 时间戳
             Text(poem.shortDate)
-                .font(Fonts.caption())
-                .foregroundColor(Colors.textTertiary)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(Colors.textSecondary)
         }
-        .padding(Spacing.md)
+        .padding(Spacing.lg)  // 从 md 增加到 lg，内边距更大
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Colors.white)
-        .cornerRadius(CornerRadius.medium)
-        .shadow(color: .black.opacity(0.03), radius: 8, x: 0, y: 2)
+        .cornerRadius(CornerRadius.card)  // 使用 card 圆角，更圆润
+        .shadow(color: .black.opacity(0.08), radius: 12, x: 0, y: 4)  // 增强阴影：透明度从0.03到0.08，半径从8到12，y偏移从2到4
         .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(isHighlighted ? Colors.accentTeal : Color.clear, lineWidth: 2)
+            RoundedRectangle(cornerRadius: CornerRadius.card)
+                .stroke(isHighlighted ? Colors.accentTeal : Color(red: 0.9, green: 0.88, blue: 0.85).opacity(0.3), lineWidth: 1)  // 添加轻微边框增强对比度
         )
         .scaleEffect(isHighlighted ? 1.02 : 1.0)
         .onAppear {

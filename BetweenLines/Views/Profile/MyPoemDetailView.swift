@@ -288,23 +288,17 @@ struct MyPoemDetailView: View {
         updatedPoem.content = editedContent
         updatedPoem.updatedAt = Date()
         
-        // 如果是草稿，保存时转为诗集
-        if isDraft {
-            updatedPoem.inMyCollection = true  // 将草稿转为诗集
+        // 统一为已完成状态（草稿概念已废弃）
+        updatedPoem.inMyCollection = true
             let saved = poemManager.saveToCollection(updatedPoem)
             if saved {
-                toastManager.showSuccess("已保存到诗集")
+            toastManager.showSuccess("已保存")
                 // 延迟返回，让用户看到提示
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     dismiss() // 返回诗集页面
                 }
             } else {
-                toastManager.showInfo("这首诗已经在诗集中了")
-            }
-        } else {
-            // 如果已经是诗集作品，只是更新内容
-            poemManager.savePoem(updatedPoem)
-            toastManager.showSuccess("保存成功")
+            toastManager.showInfo("这首诗已经保存过了")
         }
         
         isEditing = false

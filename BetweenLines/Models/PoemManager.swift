@@ -91,10 +91,11 @@ class PoemManager: ObservableObject {
     
     // MARK: - 计算属性（新逻辑）
     
-    /// 我的诗集（已保存到本地的诗歌）
+    /// 我的诗歌（所有诗歌，统一管理，不再区分草稿和诗集）
     var myCollection: [Poem] {
         let filtered = allPoems.filter { poem in
-            guard poem.inMyCollection else { return false }
+            // 排除发布到广场的副本（广场有独立副本）
+            guard !poem.inSquare || poem.squareId == nil else { return false }
             
             // 优先使用 userId 过滤
             if let poemUserId = poem.userId {
@@ -114,7 +115,7 @@ class PoemManager: ObservableObject {
         }
         .sorted { $0.updatedAt > $1.updatedAt }
         
-        print("📚 [myCollection] 诗集数量: \(filtered.count) (allPoems: \(allPoems.count))")
+        print("📚 [myCollection] 诗歌数量: \(filtered.count) (allPoems: \(allPoems.count))")
         if !filtered.isEmpty {
             print("   诗歌列表:")
             for (index, poem) in filtered.enumerated() {
@@ -125,20 +126,11 @@ class PoemManager: ObservableObject {
         return filtered
     }
     
-    /// 我的草稿（未保存的诗歌，兼容旧逻辑）
+    /// 我的草稿（已废弃，统一使用 myCollection）
+    @available(*, deprecated, message: "草稿概念已废弃，统一使用 myCollection")
     var myDrafts: [Poem] {
-        allPoems.filter { poem in
-            guard !poem.inMyCollection && !poem.inSquare else { return false }
-            
-            // 优先使用 userId 过滤
-            if let poemUserId = poem.userId {
-                return poemUserId == currentUserId
-            }
-            
-            // 兼容旧数据
-            return poem.authorName == currentUserName
-        }
-        .sorted { $0.updatedAt > $1.updatedAt }
+        // 返回空数组，所有诗歌都在 myCollection 中
+        return []
     }
     
     /// 我发布到广场的诗歌（引用列表）
@@ -179,8 +171,8 @@ class PoemManager: ObservableObject {
     
     // MARK: - CRUD 操作
     
-    /// 创建新诗歌（草稿）
-    func createDraft(title: String, content: String, tags: [String] = [], writingMode: WritingMode = .direct, referencePoem: String? = nil) -> Poem {
+    /// 创建新诗歌（统一为已完成状态，不再区分草稿）
+    func createPoem(title: String, content: String, tags: [String] = [], writingMode: WritingMode = .direct, referencePoem: String? = nil) -> Poem {
         let poem = Poem(
             title: title,
             content: content,
@@ -189,7 +181,7 @@ class PoemManager: ObservableObject {
             tags: tags,
             writingMode: writingMode,
             referencePoem: referencePoem,
-            inMyCollection: false,
+            inMyCollection: true,  // 统一为已完成状态
             inSquare: false
         )
         allPoems.append(poem)
@@ -197,7 +189,13 @@ class PoemManager: ObservableObject {
         return poem
     }
     
-    /// 保存诗歌到【我的诗集】
+    /// 创建新诗歌（草稿）- 已废弃，统一使用 createPoem
+    @available(*, deprecated, message: "草稿概念已废弃，统一使用 createPoem")
+    func createDraft(title: String, content: String, tags: [String] = [], writingMode: WritingMode = .direct, referencePoem: String? = nil) -> Poem {
+        return createPoem(title: title, content: content, tags: tags, writingMode: writingMode, referencePoem: referencePoem)
+    }
+    
+    /// 保存诗歌到【我的诗歌】（统一保存，不再区分草稿和诗集）
     /// - Returns: 是否成功保存（false表示重复）
     @discardableResult
     func saveToCollection(_ poem: Poem) -> Bool {
@@ -263,16 +261,19 @@ class PoemManager: ObservableObject {
     }
     
     /// 保存诗歌（通用方法，更新现有诗歌或添加新诗歌）
+    /// 统一设为已完成状态（inMyCollection = true）
     func savePoem(_ poem: Poem) {
         if let index = allPoems.firstIndex(where: { $0.id == poem.id }) {
             // 更新现有诗歌
             var updatedPoem = poem
+            updatedPoem.inMyCollection = true  // 统一为已完成状态
             updatedPoem.updatedAt = Date()
             allPoems[index] = updatedPoem
             savePoems()
         } else {
             // 添加新诗歌
             var newPoem = poem
+            newPoem.inMyCollection = true  // 统一为已完成状态
             newPoem.updatedAt = Date()
             allPoems.append(newPoem)
             savePoems()
@@ -495,7 +496,7 @@ class PoemManager: ObservableObject {
         print("📝 [PoemManager] 无数据，全新开始 (key: \(localKey))")
     }
     
-    /// 迁移旧数据：为没有 userId 的诗歌设置 userId
+    /// 迁移旧数据：为没有 userId 的诗歌设置 userId，将所有诗歌统一为已完成状态，并将临摹写诗数据迁移为普通诗歌
     private func migrateOldPoems() {
         var needsMigration = false
         let userId = currentUserId
@@ -503,16 +504,36 @@ class PoemManager: ObservableObject {
         for i in 0..<allPoems.count {
             // V2-lite: 已移除示例诗歌，无需跳过
             
+            var poemChanged = false
+            
             // 如果诗歌没有 userId，设置为当前用户的 ID
             if allPoems[i].userId == nil {
                 allPoems[i].userId = userId
-                needsMigration = true
+                poemChanged = true
                 print("🔄 [PoemManager] 为诗歌 \(allPoems[i].title) 设置 userId: \(userId)")
+            }
+            
+            // 将所有诗歌统一为已完成状态（去掉草稿概念）
+            if !allPoems[i].inMyCollection && !allPoems[i].inSquare {
+                allPoems[i].inMyCollection = true
+                poemChanged = true
+                print("🔄 [PoemManager] 将诗歌 \(allPoems[i].title) 统一为已完成状态")
+            }
+            
+            // 将临摹写诗数据迁移为普通诗歌（writingMode 改为 direct）
+            if allPoems[i].writingMode == .mimic {
+                allPoems[i].writingMode = .direct
+                poemChanged = true
+                print("🔄 [PoemManager] 将临摹写诗 \(allPoems[i].title) 迁移为普通诗歌")
+            }
+            
+            if poemChanged {
+                needsMigration = true
             }
         }
         
         if needsMigration {
-            print("✅ [PoemManager] 已迁移 \(allPoems.filter { $0.userId != nil }.count) 首旧诗歌，设置 userId")
+            print("✅ [PoemManager] 已迁移 \(allPoems.filter { $0.userId != nil }.count) 首旧诗歌，统一为已完成状态")
             // 注意：不在这里调用 savePoems()，避免在 reloadData() 过程中保存
             // 数据会在下次 savePoems() 时自动保存
         }
@@ -701,7 +722,7 @@ class PoemManager: ObservableObject {
     /// 我的统计（新逻辑）
     var myStats: (totalPoems: Int, totalDrafts: Int, totalLikes: Int) {
         let collection = myCollection.count
-        let drafts = myDrafts.count
+        let drafts = 0  // 草稿概念已废弃，统一为0
         let likes = myPublishedToSquare.reduce(0) { $0 + $1.squareLikeCount }
         return (collection, drafts, likes)
     }

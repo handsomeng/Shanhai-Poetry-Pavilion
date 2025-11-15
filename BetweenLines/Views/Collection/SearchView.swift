@@ -122,7 +122,7 @@ struct SearchView: View {
         ScrollView {
             LazyVStack(spacing: Spacing.sm) {
                 ForEach(filteredPoems) { poem in
-                    NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: isDraft(poem))) {
+                    NavigationLink(destination: MyPoemDetailView(poem: poem, isDraft: false)) {
                         PoemCard(poem: poem, isNew: false)
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -143,9 +143,11 @@ struct SearchView: View {
         .sorted { $0.createdAt > $1.createdAt }
     }
     
-    /// 判断是否是草稿
+    /// 判断是否是草稿（已废弃，统一返回false）
+    @available(*, deprecated, message: "草稿概念已废弃")
     private func isDraft(_ poem: Poem) -> Bool {
-        !poem.inMyCollection && !poem.inSquare
+        // 统一返回false，所有诗歌都是已完成状态
+        return false
     }
 }
 

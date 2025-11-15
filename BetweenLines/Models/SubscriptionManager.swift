@@ -30,7 +30,12 @@ class SubscriptionManager: ObservableObject {
     @Published private(set) var weeklyInspirationCount: Int = 0
     private let maxFreeInspirations = 2
     
-    // 主题写诗限额（免费用户 - 每周限制）
+    // AI 主题思路限额（免费用户 - 每天限制）
+    @Published private(set) var dailyThemeGuidanceCount: Int = 0
+    private let maxFreeThemeGuidance = 2
+    private let lastThemeGuidanceResetDateKey = "lastThemeGuidanceResetDate"
+    
+    // 主题写诗限额（免费用户 - 每周限制，已废弃）
     @Published private(set) var weeklyThemeWritingCount: Int = 0
     private let maxFreeThemeWriting = 2
     
@@ -59,6 +64,7 @@ class SubscriptionManager: ObservableObject {
             await loadProducts()
             await updateSubscriptionStatus()
             checkAndResetWeeklyLimit()
+            checkAndResetDailyThemeGuidanceLimit()
         }
     }
     
@@ -284,6 +290,62 @@ class SubscriptionManager: ObservableObject {
             return -1  // -1 表示无限
         }
         return max(0, maxFreeInspirations - weeklyInspirationCount)
+    }
+    
+    // MARK: - AI Theme Guidance Limit (每天限制)
+    
+    /// 检查并重置每日限制（主题思路）
+    private func checkAndResetDailyThemeGuidanceLimit() {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        if let lastResetDate = UserDefaults.standard.object(forKey: lastThemeGuidanceResetDateKey) as? Date {
+            // 检查是否是同一天
+            if !calendar.isDate(lastResetDate, inSameDayAs: now) {
+                // 不是同一天，重置计数
+                dailyThemeGuidanceCount = 0
+                UserDefaults.standard.set(0, forKey: "dailyThemeGuidanceCount")
+                UserDefaults.standard.set(now, forKey: lastThemeGuidanceResetDateKey)
+            } else {
+                // 是同一天，加载计数
+                dailyThemeGuidanceCount = UserDefaults.standard.integer(forKey: "dailyThemeGuidanceCount")
+            }
+        } else {
+            // 首次使用，初始化
+            dailyThemeGuidanceCount = 0
+            UserDefaults.standard.set(0, forKey: "dailyThemeGuidanceCount")
+            UserDefaults.standard.set(now, forKey: lastThemeGuidanceResetDateKey)
+        }
+    }
+    
+    /// 检查是否可以使用 AI 主题思路
+    func canUseThemeGuidance() -> Bool {
+        if isSubscribed {
+            return true  // 会员无限次
+        }
+        
+        checkAndResetDailyThemeGuidanceLimit()
+        return dailyThemeGuidanceCount < maxFreeThemeGuidance
+    }
+    
+    /// 使用一次 AI 主题思路
+    func useThemeGuidance() {
+        if isSubscribed {
+            return  // 会员不计数
+        }
+        
+        checkAndResetDailyThemeGuidanceLimit()
+        dailyThemeGuidanceCount += 1
+        UserDefaults.standard.set(dailyThemeGuidanceCount, forKey: "dailyThemeGuidanceCount")
+    }
+    
+    /// 获取剩余 AI 主题思路次数
+    func remainingThemeGuidance() -> Int {
+        if isSubscribed {
+            return -1  // -1 表示无限
+        }
+        checkAndResetDailyThemeGuidanceLimit()
+        return max(0, maxFreeThemeGuidance - dailyThemeGuidanceCount)
     }
     
     // MARK: - Theme Writing Limit

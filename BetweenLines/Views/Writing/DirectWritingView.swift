@@ -88,15 +88,15 @@ struct DirectWritingView: View {
             Button("放弃", role: .destructive) {
                 dismiss()
             }
-            Button("自动保存草稿") {
-                // 使用 autoSaveDraft() 方法保存草稿（会更新现有草稿或创建新草稿）
+            Button("自动保存") {
+                // 使用 autoSaveDraft() 方法保存诗歌（会更新现有诗歌或创建新诗歌）
                 autoSaveDraft()
-                ToastManager.shared.showSuccess("已自动保存到草稿")
+                ToastManager.shared.showSuccess("已自动保存")
                 dismiss()
             }
             Button("继续编辑", role: .cancel) {}
         } message: {
-            Text("诗歌尚未保存，是否保存为草稿？")
+            Text("诗歌尚未保存，是否自动保存？")
         }
         .onAppear {
             loadExistingPoem()
@@ -167,24 +167,25 @@ struct DirectWritingView: View {
         startAutoSave()
     }
     
-    /// 自动保存草稿
+    /// 自动保存诗歌（统一为已完成状态）
     private func autoSaveDraft() {
         // 只有在有内容且未手动保存时才自动保存
         guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard !hasSaved else { return }
         
-        // 检查草稿是否已存在
-        if let existingDraft = poemManager.getPoem(by: draftId) {
-            // ✅ 更新现有草稿
-            var updatedDraft = existingDraft
-            updatedDraft.title = title.isEmpty ? "无标题" : title
-            updatedDraft.content = content
-            updatedDraft.updatedAt = Date()
-            poemManager.savePoem(updatedDraft)
-            print("📝 [DirectWriting] 自动保存 - 已更新草稿: \(draftId)")
+        // 检查诗歌是否已存在
+        if let existingPoem = poemManager.getPoem(by: draftId) {
+            // ✅ 更新现有诗歌
+            var updatedPoem = existingPoem
+            updatedPoem.title = title.isEmpty ? "无标题" : title
+            updatedPoem.content = content
+            updatedPoem.inMyCollection = true  // 统一为已完成状态
+            updatedPoem.updatedAt = Date()
+            poemManager.savePoem(updatedPoem)
+            print("📝 [DirectWriting] 自动保存 - 已更新诗歌: \(draftId)")
         } else {
-            // ✅ 首次创建草稿（使用固定的 draftId）
-            let draft = Poem(
+            // ✅ 首次创建诗歌（使用固定的 draftId）
+            let poem = Poem(
                 id: draftId,  // 使用固定ID
                 title: title.isEmpty ? "无标题" : title,
                 content: content,
@@ -192,35 +193,35 @@ struct DirectWritingView: View {
                 userId: identityService.userId,  // 设置 userId
                 tags: [],
                 writingMode: .direct,
-                inMyCollection: false,  // 草稿状态
+                inMyCollection: true,  // 统一为已完成状态
                 inSquare: false
             )
-            poemManager.savePoem(draft)  // savePoem 现在会自动添加新诗歌
-            print("📝 [DirectWriting] 自动保存 - 已创建草稿: \(draftId)")
+            poemManager.savePoem(poem)  // savePoem 现在会自动添加新诗歌
+            print("📝 [DirectWriting] 自动保存 - 已创建诗歌: \(draftId)")
         }
     }
     
     // MARK: - Save Actions
     
-    /// 保存到诗集
+    /// 保存诗歌（统一保存，不再区分草稿和诗集）
     private func saveToCollection() {
-        // 1. 检查是否有对应的草稿
-        if let existingDraft = poemManager.getPoem(by: draftId), !existingDraft.inMyCollection {
-            // ✅ 将草稿转为诗集作品（保持同一个ID）
-            var poemToSave = existingDraft
+        // 检查是否有对应的诗歌
+        if let existingPoem = poemManager.getPoem(by: draftId) {
+            // ✅ 更新现有诗歌
+            var poemToSave = existingPoem
             poemToSave.title = title.isEmpty ? "无标题" : title
             poemToSave.content = content
-            poemToSave.inMyCollection = true  // 转为诗集
+            poemToSave.inMyCollection = true  // 统一为已完成状态
             poemToSave.updatedAt = Date()
             
             let saved = poemManager.saveToCollection(poemToSave)
             if !saved {
-                ToastManager.shared.showInfo("这首诗已经在诗集中了")
+                ToastManager.shared.showInfo("这首诗已经保存过了")
                 return
             }
-            print("📚 [DirectWriting] 草稿已转为诗集: \(draftId)")
+            print("📚 [DirectWriting] 已更新诗歌: \(draftId)")
         } else {
-            // ✅ 没有草稿，直接创建新诗歌（极少发生，除非自动保存失败）
+            // ✅ 创建新诗歌
             let newPoem = Poem(
                 id: draftId,  // 使用同一个ID
                 title: title.isEmpty ? "无标题" : title,
@@ -229,16 +230,16 @@ struct DirectWritingView: View {
                 userId: identityService.userId,
                 tags: [],
                 writingMode: .direct,
-                inMyCollection: true,
+                inMyCollection: true,  // 统一为已完成状态
                 inSquare: false
             )
             
             let saved = poemManager.saveToCollection(newPoem)
             if !saved {
-                ToastManager.shared.showInfo("这首诗已经在诗集中了")
+                ToastManager.shared.showInfo("这首诗已经保存过了")
                 return
             }
-            print("📚 [DirectWriting] 直接创建诗集作品: \(draftId)")
+            print("📚 [DirectWriting] 已创建新诗歌: \(draftId)")
         }
         
         hasSaved = true  // 标记已保存

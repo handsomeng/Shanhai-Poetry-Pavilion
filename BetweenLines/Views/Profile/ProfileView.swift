@@ -247,10 +247,7 @@ struct ProfileView: View {
             Divider()
                 .frame(height: 40)
             
-            StatItem(
-                value: "\(poemManager.myStats.totalDrafts)",
-                label: "草稿"
-            )
+            // 草稿统计已移除，统一显示在"诗歌"中
             
             Divider()
                 .frame(height: 40)

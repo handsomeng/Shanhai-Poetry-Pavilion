@@ -31,8 +31,15 @@ class PoemTextEditorViewController: UIViewController {
     private lazy var titleTextField: UITextField = {
         let field = UITextField()
         field.placeholder = "诗歌标题"
-        field.font = .systemFont(ofSize: 22, weight: .medium)
+        
+        // 使用更精确的字体配置，确保光标对齐
+        let font = UIFont.systemFont(ofSize: 22, weight: .medium)
+        field.font = font
         field.textColor = UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 1.0) // Colors.textInk
+        
+        // 设置垂直对齐（确保文字和光标居中）
+        field.contentVerticalAlignment = .center
+        
         field.returnKeyType = .next
         field.delegate = self
         field.translatesAutoresizingMaskIntoConstraints = false
@@ -50,10 +57,34 @@ class PoemTextEditorViewController: UIViewController {
     /// 内容输入框
     private lazy var contentTextView: UITextView = {
         let textView = UITextView()
-        textView.font = .systemFont(ofSize: 17, weight: .regular)
+        
+        // 设置字体和样式
+        let font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        textView.font = font
         textView.textColor = UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 1.0)
         textView.backgroundColor = .white
+        
+        // 设置行间距，让文字更舒适
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6  // 行间距6pt
+        paragraphStyle.lineHeightMultiple = 1.0
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 1.0),
+            .paragraphStyle: paragraphStyle
+        ]
+        textView.typingAttributes = attributes
+        
+        // 设置内边距（确保光标和文字对齐）
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 20, bottom: 100, right: 20)
+        
+        // 移除默认的左右内边距，使用 textContainerInset 控制
+        textView.textContainer.lineFragmentPadding = 0
+        
+        // 确保光标和文字对齐
+        textView.textContainer.widthTracksTextView = true
+        textView.textContainer.heightTracksTextView = false
+        
         textView.keyboardDismissMode = .interactive
         textView.autocorrectionType = .default
         textView.autocapitalizationType = .sentences
@@ -65,9 +96,19 @@ class PoemTextEditorViewController: UIViewController {
     /// 占位符 Label
     private lazy var placeholderLabel: UILabel = {
         let label = UILabel()
-        label.text = placeholder
-        label.font = .systemFont(ofSize: 17, weight: .regular)
-        label.textColor = UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 0.5)
+        let font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        
+        // 设置行间距，与 TextView 保持一致
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 0.5),
+            .paragraphStyle: paragraphStyle
+        ]
+        label.attributedText = NSAttributedString(string: placeholder, attributes: attributes)
+        
+        label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -148,11 +189,11 @@ class PoemTextEditorViewController: UIViewController {
         
         // 布局约束
         NSLayoutConstraint.activate([
-            // 标题
+            // 标题（高度根据字体自动调整，确保光标对齐）
             titleTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            titleTextField.heightAnchor.constraint(equalToConstant: 44),
+            titleTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: 44), // 最小高度44
             
             // 分隔线
             dividerView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 12),
@@ -166,9 +207,10 @@ class PoemTextEditorViewController: UIViewController {
             contentTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             contentTextView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            // 占位符
-            placeholderLabel.topAnchor.constraint(equalTo: contentTextView.topAnchor, constant: 16 + 8),
-            placeholderLabel.leadingAnchor.constraint(equalTo: contentTextView.leadingAnchor, constant: 20 + 5),
+            // 占位符（精确对齐文字位置）
+            placeholderLabel.topAnchor.constraint(equalTo: contentTextView.topAnchor, constant: 16),
+            placeholderLabel.leadingAnchor.constraint(equalTo: contentTextView.leadingAnchor, constant: 20),
+            placeholderLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentTextView.trailingAnchor, constant: -20),
             
             // AI 灵感按钮（悬浮在右下角）
             inspirationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -184,7 +226,23 @@ class PoemTextEditorViewController: UIViewController {
     
     private func setupInitialValues() {
         titleTextField.text = initialTitle
-        contentTextView.text = initialContent
+        
+        // 设置初始内容时也要应用行间距样式
+        if !initialContent.isEmpty {
+            let font = UIFont.systemFont(ofSize: 17, weight: .regular)
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.lineSpacing = 6
+            paragraphStyle.lineHeightMultiple = 1.0
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .foregroundColor: UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 1.0),
+                .paragraphStyle: paragraphStyle
+            ]
+            contentTextView.attributedText = NSAttributedString(string: initialContent, attributes: attributes)
+        } else {
+            contentTextView.text = initialContent
+        }
+        
         updatePlaceholderVisibility()
     }
     
@@ -201,65 +259,111 @@ class PoemTextEditorViewController: UIViewController {
             titleTextField.text = title
         }
         if contentTextView.text != content {
-            contentTextView.text = content
+            // 应用行间距样式
+            let font = UIFont.systemFont(ofSize: 17, weight: .regular)
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.lineSpacing = 6
+            paragraphStyle.lineHeightMultiple = 1.0
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .foregroundColor: UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 1.0),
+                .paragraphStyle: paragraphStyle
+            ]
+            contentTextView.attributedText = NSAttributedString(string: content, attributes: attributes)
             updatePlaceholderVisibility()
         }
     }
     
-    // MARK: - AI Inspiration
+    // MARK: - AI Inspiration (智能切换)
+    
+    /// 检测编辑器是否有内容
+    private var hasContent: Bool {
+        let titleText = titleTextField.text?.trimmingCharacters(in: .whitespaces) ?? ""
+        let contentText = contentTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return !titleText.isEmpty || !contentText.isEmpty
+    }
     
     @objc private func inspirationButtonTapped() {
         // 触觉反馈
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
         
-        // 检查是否可以使用
-        if !subscriptionManager.canUseInspiration() {
-            showLimitReachedAlert()
+        // 根据编辑器状态调用不同功能
+        if hasContent {
+            // 已编辑：调用续写灵感
+            requestWritingInspiration()
+        } else {
+            // 未编辑：调用主题思路
+            requestThemeGuidance()
+        }
+    }
+    
+    // MARK: - AI 主题思路（未编辑时）
+    
+    private func requestThemeGuidance() {
+        // 检查是否可以使用（主题思路使用独立的限制）
+        if !subscriptionManager.canUseThemeGuidance() {
+            showThemeLimitReachedAlert()
             return
         }
         
-        // 先弹窗确认
-        showConfirmationAlert()
+        // 开始加载
+        setInspirationButtonLoading(true)
+        
+        // 异步调用 AI
+        Task { @MainActor in
+            do {
+                let themeResult = try await AIService.shared.generatePoemThemeWithGuidance()
+                
+                // 使用一次额度
+                subscriptionManager.useThemeGuidance()
+                
+                // 停止加载
+                setInspirationButtonLoading(false)
+                
+                // 展示主题思路
+                showThemeGuidanceAlert(theme: themeResult.theme, guidance: themeResult.guidance)
+                
+            } catch {
+                // 停止加载
+                setInspirationButtonLoading(false)
+                
+                // 展示错误
+                showErrorAlert(error: error)
+            }
+        }
     }
     
-    private func showLimitReachedAlert() {
+    private func showThemeLimitReachedAlert() {
         let alert = UIAlertController(
             title: "今日次数已用完",
-            message: "免费用户每天可使用 2 次 AI 续写灵感\n\n升级会员即可无限使用 ✨",
+            message: "免费用户每天可使用 2 次 AI 主题思路\n\n升级会员即可无限使用 ✨",
             preferredStyle: .alert
         )
         
         alert.addAction(UIAlertAction(title: "取消", style: .cancel))
         alert.addAction(UIAlertAction(title: "升级会员", style: .default) { [weak self] _ in
-            // TODO: 打开订阅页面
             self?.showUpgradeHint()
         })
         
         present(alert, animated: true)
     }
     
-    private func showUpgradeHint() {
-        // 直接弹出会员付费页面
-        onShowMembership?()
+    private func showThemeGuidanceAlert(theme: String, guidance: String) {
+        // 使用统一的弹窗样式
+        let message = "主题：\(theme)\n\n\(guidance)"
+        showUnifiedAlert(title: "✨ AI 主题思路", message: message)
     }
     
-    private func showConfirmationAlert() {
-        let alert = UIAlertController(
-            title: "💡 寻求灵感",
-            message: "让 AI 帮你打开思路？",
-            preferredStyle: .alert
-        )
-        
-        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
-        alert.addAction(UIAlertAction(title: "好的", style: .default) { [weak self] _ in
-            self?.requestInspiration()
-        })
-        
-        present(alert, animated: true)
-    }
+    // MARK: - AI 续写灵感（已编辑时）
     
-    private func requestInspiration() {
+    private func requestWritingInspiration() {
+        // 检查是否可以使用
+        if !subscriptionManager.canUseInspiration() {
+            showInspirationLimitReachedAlert()
+            return
+        }
+        
         // 开始加载
         setInspirationButtonLoading(true)
         
@@ -290,6 +394,26 @@ class PoemTextEditorViewController: UIViewController {
         }
     }
     
+    private func showInspirationLimitReachedAlert() {
+        let alert = UIAlertController(
+            title: "本周次数已用完",
+            message: "免费用户每周可使用 2 次 AI 续写灵感\n\n升级会员即可无限使用 ✨",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
+        alert.addAction(UIAlertAction(title: "升级会员", style: .default) { [weak self] _ in
+            self?.showUpgradeHint()
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func showUpgradeHint() {
+        // 直接弹出会员付费页面
+        onShowMembership?()
+    }
+    
     private func setInspirationButtonLoading(_ loading: Bool) {
         if loading {
             inspirationButton.setImage(nil, for: .normal)
@@ -305,9 +429,15 @@ class PoemTextEditorViewController: UIViewController {
     }
     
     private func showInspirationAlert(inspiration: String) {
+        // 使用统一的弹窗样式
+        showUnifiedAlert(title: "✨ 创作灵感", message: inspiration)
+    }
+    
+    /// 统一弹窗样式（主题思路和续写灵感使用相同样式）
+    private func showUnifiedAlert(title: String, message: String) {
         let alert = UIAlertController(
-            title: "✨ 创作灵感",
-            message: inspiration,
+            title: title,
+            message: message,
             preferredStyle: .alert
         )
         
@@ -360,6 +490,18 @@ extension PoemTextEditorViewController: UITextFieldDelegate {
 extension PoemTextEditorViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         updatePlaceholderVisibility()
+        
+        // 保持行间距样式
+        let font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
+        paragraphStyle.lineHeightMultiple = 1.0
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor(red: 0.18, green: 0.16, blue: 0.14, alpha: 1.0),
+            .paragraphStyle: paragraphStyle
+        ]
+        textView.typingAttributes = attributes
         
         // 触发回调
         onContentChange?(textView.text)

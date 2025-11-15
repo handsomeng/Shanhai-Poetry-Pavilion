@@ -12,35 +12,23 @@ struct LearningView: View {
     
     // MARK: - 状态
     
-    @Environment(\.dismiss) private var dismiss
-    
     /// 所有大主题
     @State private var topics: [LearningTopic] = LearningContentManager.shared.getAllTopics()
     
     // MARK: - Body
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Colors.backgroundCream
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    // 主题列表
-                    topicsList
-                }
-            }
-            .navigationTitle("了解现代诗")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("返回") {
-                        dismiss()
-                    }
-                    .foregroundColor(Colors.textSecondary)
-                }
+        ZStack {
+            Colors.backgroundCream
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // 主题列表
+                topicsList
             }
         }
+        .navigationTitle("了解现代诗")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     // MARK: - Topics List
@@ -358,7 +346,9 @@ struct ArticleDetailView: View {
 // MARK: - 预览
 
 #Preview("学诗主页") {
-    LearningView()
+    NavigationStack {
+        LearningView()
+    }
 }
 
 #Preview("主题详情") {

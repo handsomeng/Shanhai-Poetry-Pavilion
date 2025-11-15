@@ -85,7 +85,7 @@ struct SettingsView: View {
                 resetAllData()
             }
         } message: {
-            Text("此操作将删除所有诗歌、草稿、个人信息和云端数据，且不可恢复。确定要继续吗？")
+            Text("此操作将删除所有诗歌、个人信息和云端数据，且不可恢复。确定要继续吗？")
         }
     }
     
@@ -227,8 +227,17 @@ struct SettingsView: View {
             .cornerRadius(12)
             .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
             
-            // 分组2: 关于
+            // 分组2: 学习与关于
             VStack(spacing: 0) {
+                // 了解现代诗
+                NavigationLink(destination: LearningView()) {
+                    settingRow(label: "了解现代诗", showArrow: true)
+                }
+                .buttonStyle(.plain)
+                
+                Divider()
+                    .padding(.horizontal, 20)
+                
                 // 关于山海诗馆
                 NavigationLink(destination: AboutAppView()) {
                     settingRow(label: "关于山海诗馆", showArrow: true)
